@@ -1,6 +1,7 @@
 <?php
-/* A new version of chat
-	Copyright (c) 2008 Alan Chandler
+  /*
+    Air Hockey
+	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
 // Link to SMF forum as this is only for logged in members
