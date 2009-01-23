@@ -13,7 +13,7 @@ define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
 require_once(AIR_HOCKEY_PATH.'../forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
 if($user_info['is_guest']) {
-	header( 'Location: http://mb.home/static/airhockey.html' ) ;
+	header( 'Location: /static/airhockey.html' ) ;
 	exit;
 };
 $uid = $ID_MEMBER;
