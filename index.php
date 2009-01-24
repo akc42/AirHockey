@@ -10,6 +10,7 @@ error_reporting(E_ALL);
 // Path to the chat directory:
 
 define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
+define('AIR_HOCKEY_PIPENAME',	AIR_HOCKEY_PATH.'pipes/player');
 
 require_once(AIR_HOCKEY_PATH.'../forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
@@ -18,7 +19,9 @@ if($user_info['is_guest']) {
 	exit;
 };
 $uid = $ID_MEMBER;
-$name =& $user_info['name'];
+$name = &$user_info['name'];
+
+if(file_exists(AIR_HOCKEY_PIPENAME.$uid)) unlink(AIR_HOCKEY_PIPENAME.$uid);
 
 //define ('MBA',1);   //defined so we can control access to some of the files.
 //require_once('db.php');
@@ -34,6 +37,7 @@ $name =& $user_info['name'];
 		<link rel="stylesheet" type="text/css" href="airh-ie.css"/>
 	<![endif]-->
 	<script src="/static/scripts/mootools-1.2-core.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -49,45 +53,15 @@ pageTracker._trackPageview();
 
 <script type="text/javascript">
 	<!--
-
 window.addEvent('domready', function() {
-	var me = {};
-	me.uid = <?php echo $uid;?> ;
-	me.name = '<?php echo $name ; ?>' ;
-	me.password =  '<?php echo sha1("Key".$uid); ?>';
-	
-	var startTime;
-	var prevOffset = 0;
-	var i = 10;
-	var req = new Request.JSON({url:'time.php',method:'get',onComplete: function(response,errorstr) {
-		if (response ) {
-			var endTime = new Date().getTime();
-			var commsTime = endTime - startTime;
-			var midTime = parseInt(startTime+ commsTime/2);
-			var offsetTime = response.servertime - midTime;
-			var corrected = offsetTime-prevOffset;
-			var row = new Element('tr');
-			var cell = new Element('td',{'text':startTime}).inject(row);
-			cell = new Element('td',{'text':endTime}).inject(row);
-			cell = new Element('td',{'text':commsTime}).inject(row);
-			cell = new Element('td',{'text':midTime}).inject(row);
-			cell = new Element('td',{'text':response.servertime}).inject(row);
-			cell = new Element('td',{'text':offsetTime}).inject(row);
-			cell = new Element('td',{'text':corrected}).inject(row);
-			
-			row.inject($('listing'),'top');
-			if (i-- > 0 ) {
-				prevOffset=offsetTime
-				startTime = new Date().getTime();
-				req.get({user:me.uid,password:me.password});
-			}
-		}
-	}});
-	startTime = new Date().getTime();
-	req.get({user:me.uid,password:me.password});
+	MBahladder.init({uid: <?php echo $uid;?>,
+				name: '<?php echo $name ; ?>',
+				password : '<?php echo sha1("Air".$uid); ?>'});
 });
-
-
+window.addEvent('unload', function() {
+	MBahladder.logout();
+	
+});
 	// -->
 </script>
 
@@ -110,14 +84,9 @@ window.addEvent('domready', function() {
 	</tr>
 </tbody>
 </table>
-<dic id="content">
-	<table>
-		<tbody id="listing">
-		</tbody>
-	</table>
+<div id="content">
+	<div id="playit">Click to Play</div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
 </body>
-
 </html>
-

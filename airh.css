@@ -143,7 +143,87 @@ way to fit your requirements.
 	color:white;
 	padding:5px;
 	overflow:auto;
+	width:100%;
+	position:relative;
 }
 
-#content table {background-color:white;color:0;}
+#playit {
+	font-size:large;
+	font-weight:bold;
+	margin:10px;
+	width:200px;
+	margin-left:100px;
+	background-color:red;
+	color:white;
+	padding:5px;
+	border:3px outset;
+	cursor:pointer;
+}
+
+#playit:hover, #make_picks:active {border-style:inset;}
+
+#table {
+	background-color:white;
+	border:1px solid black;
+	width:1118px;
+	height:2362px;
+	position:absolute;
+	left:120px;
+	top:10px;
+}
+#oparea {
+	background: transparent;
+	position:absolute;
+	left:53px;
+	top:53px;
+	width:1012px;
+	height:1075px;
+}
+#myarea {
+	background:transparent;
+	position:absolute;
+	left:53;
+	bottom:53;
+	width:1012px;
+	height:1075px;
+}
+#opmallet {
+	background:url(mallet.gif);
+	position:absolute;
+	left:506px;
+	top:100px;
+	width:106px;
+	height:106px;
+}
+
+#mymallet {
+	background:url(mallet.gif);
+	position:absolute;
+	left:506px;
+	bottom:100px;
+	width:106px;
+	height:106px;
+}
+
+#puck {
+	background:url(puck.gif);
+	position:absolute;
+	left:518px;
+	top:1140px;
+	width:82px;
+	height:82px;
+}
+
+#info {
+	background-color:yellow;
+	color:black;
+	border:1px solid black;
+	width:100pxpx;
+	height:200px;
+	position:absolute;
+	left:10px;
+	top:30px;
+}
+	
+
 

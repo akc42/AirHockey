@@ -1,9 +1,9 @@
 <?php
-if(!(isset($_GET['user']) && isset($_GET['password'])))
+if(!(isset($_GET['pid']) && isset($_GET['pp'])))
 	die('Log - Hacking attempt - wrong parameters');
-$uid = $_GET['user'];
-if ($_GET['password'] != sha1("Key".$uid))
-	die('Log - Hacking attempt got: '.$_GET['password'].' expected: '.sha1("Key".$uid));
+$pid = $_GET['pid'];
+if ($_GET['pp'] != sha1("Air".$uid))
+	die('Log - Hacking attempt got: '.$_GET['pp'].' expected: '.sha1("Air".$pid));
 $toptime = microtime(TRUE)*1000;  //get time as float
 echo '{"servertime":'.$toptime.'}';
 ?>

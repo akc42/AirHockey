@@ -1,3 +1,0 @@
-MBairhock = function() {
-
-}();
