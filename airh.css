@@ -163,66 +163,76 @@ way to fit your requirements.
 #playit:hover, #make_picks:active {border-style:inset;}
 
 #table {
-	background-color:white;
+	background-color:#e7FFFF;
 	border:1px solid black;
-	width:1118px;
-	height:2362px;
-	position:absolute;
-	left:120px;
-	top:10px;
+	width:280px;
+	height:600px;
+	position:relative;
+	margin:10px;
 }
 #oparea {
 	background: transparent;
 	position:absolute;
-	left:53px;
-	top:53px;
+	left:14px;
+	top:14px;
 	width:1012px;
 	height:1075px;
 }
 #myarea {
 	background:transparent;
 	position:absolute;
-	left:53;
-	bottom:53;
-	width:1012px;
-	height:1075px;
+	left:14px;
+	bottom:14px;
+	width:252px;
+	height:272px;
 }
 #opmallet {
 	background:url(mallet.gif);
 	position:absolute;
-	left:506px;
-	top:100px;
-	width:106px;
-	height:106px;
+	left:126px;
+	top:25px;
+	width:28px;
+	height:28px;
 }
 
 #mymallet {
 	background:url(mallet.gif);
 	position:absolute;
-	left:506px;
-	bottom:100px;
-	width:106px;
-	height:106px;
+	left:126px;
+	bottom:25px;
+	width:28px;
+	height:28px;
 }
 
 #puck {
 	background:url(puck.gif);
 	position:absolute;
-	left:518px;
-	top:1140px;
-	width:82px;
-	height:82px;
+	left:130px;
+	top:290px;
+	width:20px;
+	height:20px;
 }
 
 #info {
 	background-color:yellow;
 	color:black;
 	border:1px solid black;
-	width:100pxpx;
+	width:300px;
 	height:200px;
 	position:absolute;
-	left:10px;
-	top:30px;
+	right:100px;
+	top:100px;
+}
+
+#state {
+	background-color:white;
+	margin:5px;
+	border:2px solid black;
+	height:20px;
+}
+#text {
+	background-color:white;
+	padding:2px;
 }
 	
 

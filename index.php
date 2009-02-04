@@ -7,10 +7,10 @@
 // Link to SMF forum as this is only for logged in members
 // Show all errors:
 error_reporting(E_ALL);
-// Path to the chat directory:
+// Path to the air hockety directory:
 
 define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
-define('AIR_HOCKEY_PIPENAME',	AIR_HOCKEY_PATH.'pipes/player');
+define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 
 require_once(AIR_HOCKEY_PATH.'../forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
@@ -21,8 +21,12 @@ if($user_info['is_guest']) {
 $uid = $ID_MEMBER;
 $name = &$user_info['name'];
 
-if(file_exists(AIR_HOCKEY_PIPENAME.$uid)) unlink(AIR_HOCKEY_PIPENAME.$uid);
-
+$old_umask = umask(0007);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."mmsg")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."mmsg",0660);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."mack")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."mack",0660);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."smsg")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."smsg",0660);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."sack")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."sack",0660);
+umask($old_umask);
 //define ('MBA',1);   //defined so we can control access to some of the files.
 //require_once('db.php');
 //dbQuery('REPLACE INTO users (uid,name,role,moderator) VALUES ('.dbMakeSafe($uid).','.
