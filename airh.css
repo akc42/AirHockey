@@ -161,7 +161,9 @@ way to fit your requirements.
 }
 
 #playit:hover, #make_picks:active {border-style:inset;}
-
+#tablesurround {
+	padding:5px;
+}
 #table {
 	background-color:#e7FFFF;
 	border:1px solid black;
@@ -187,7 +189,6 @@ way to fit your requirements.
 	height:272px;
 }
 #opmallet {
-	background:url(mallet.gif);
 	position:absolute;
 	left:126px;
 	top:25px;
@@ -196,16 +197,15 @@ way to fit your requirements.
 }
 
 #mymallet {
-	background:url(mallet.gif);
 	position:absolute;
-	left:126px;
-	bottom:25px;
+	left:112px;
+	top:235px;
 	width:28px;
 	height:28px;
 }
 
+
 #puck {
-	background:url(puck.gif);
 	position:absolute;
 	left:130px;
 	top:290px;
@@ -221,7 +221,7 @@ way to fit your requirements.
 	height:200px;
 	position:absolute;
 	right:100px;
-	top:100px;
+	top:200px;
 }
 
 #state {
