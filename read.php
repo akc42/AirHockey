@@ -17,7 +17,7 @@ fclose($readpipe);
 fwrite($sendpipe,"A");
 fclose($sendpipe);
 if(substr($response,0,1) == "A") {
-	echo '{"ok": true,"time":'.$time.',"data":'.substr($response,1).'}';
+	echo '{"ok": true,"time":'.$time.',"msg":"'.substr($response,1).'"}';
 } else {
 	echo '{"ok": false,"time":'.$time.'}';
 }

@@ -14,7 +14,9 @@ define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30000);  //Milliseconds wait until assume 
 define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have synchronised
 define('AIR_HOCKEY_MODEL_TICK',			33);	//milliseconds between calculating new table layout
 define('AIR_HOCKEY_MALLET_DELAY',		30);   // Ticks between when mallet positions get sent
+define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
 define('AIR_HOCKEY_OFFSET_COUNT',		10);	//how many measurements of time offset do we need to get a good average
+define('AIR_HOCKEY_RESTART_DELAY',		5000);  //milliseconds before restarting game start countdown
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
@@ -44,7 +46,9 @@ window.addEvent('domready', function() {
 			startup:<?php echo AIR_HOCKEY_START_DELAY ; ?>,
 			tick:<?php echo AIR_HOCKEY_MODEL_TICK ;?>,
 			mallet: <?php echo AIR_HOCKEY_MALLET_DELAY ; ?>,
-			count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>
+			myside: <?php echo AIR_HOCKEY_MYSIDE_TIMEOUT ; ?>,
+			count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>,
+			restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>
 		}
 	);
 });
@@ -64,7 +68,7 @@ window.addEvent('unload', function() {
 			<div id="myarea"><img id="mymallet" src="mallet.gif"/></div>
 		</div>
 	</div>
-	<div id="info"><div id="state"></div><p id="text"></p></div>
+	<div id="info"><div id="state"></div><div id="countdown"></div><p id="text"></p></div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
 </body>

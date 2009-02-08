@@ -1,17 +1,127 @@
 MBahplay = function() {
 	var myParams;
 	var myname;
-	var timeOffset;
 	var master;
-	var t;				//object holding various timer values
+	var Comms = function () {
+		var abortReq = new Request.JSON({url:'abort.php',method:'get',link:'chain',onComplete:function(r,e){$('text').set('text',e);}});
+		var sopt ;
+		var ropt ;
+		var sendFailFunc = null;
+		var sendSuccFunc = null;
+		var readFailFunc = null;
+		var readSuccFunc = null;
+		var wToId = null;
+		var wTo = function() {
+			wToId = null;
+			abortReq.get($merge(myParams,{ms:sopt.ms,rw:'w'}));
+		};
+		var sendReq = new Request.JSON({url:'send.php',method:'get',onComplete: function(response,errorstr) {
+			if(wToId) $clear(wToId);   //stop timeout from happening
+			if (response) {
+				if (response.ok) {
+					sendSuccFunc(response.time);
+				} else {
+					sendFailFunc();
+				}
+			} else {
+				$('text').set('text',errorstr);
+			}
+		}});
+		var rToId = null;
+		var rTo = function() {
+			rToId = null;
+			abortReq.get($merge(myParams,ropt,{rw:'r'}));
+		};
+		var readReq = new Request.JSON({url:'read.php',method:'get',onComplete: function(response,errorstr) {
+			if(rToId) $clear(rToId);   //stop timeout from happening
+			if (response) {
+				if (response.ok) {
+					readSuccFunc(response.time,response.msg);
+				} else {
+					readFailFunc();
+				}
+			} else {
+				$('text').set('text',errorstr);
+			}
+		}});
+		return {
+			init: function(m) {
+				sopt = {ms:(m)?'m':'s',msg:''};
+				ropt =  {ms:(m)?'s':'m'};
+			},
+			read: function (success,fail) {
+				readSuccFunc = success;
+				readFailFunc = fail;
+				rToId = rTo.delay(t.timeout);
+				readReq.get(ropt);
+			},
+			write: function (msg,success,fail) {
+				sendSuccFunc = success;
+				sendFailFunc = fail;
+				sopt.msg=msg;
+				wToId = wTo.delay(t.timeout);
+				sendReq.get(sopt);
+			},
+			die: function () {
+				rTo(); //just act like both timeouts happened
+				wTo();
+			}
+		}
+	}();  // End Comms
+	var setState = function (t) {
+		$('state').set('text',t);
+	};
+	var setCounter = function(c) {
+		$('countdown').set('text', (c < 0)?' ':c);
+	}
+	
 	var tablePosition;
+	var opMallet = function() {
+		var el;
+		return {
+			x:560,
+			y:148,
+			dx:0,
+			dy:0,
+			tick : function () {
+				opMallet.x += opMallet.dx;
+				if(opMallet.x < 53) {
+					opMallet.x = 53;
+					opMallet.dx = 0;
+				}
+				if (opMallet.x > 1067) {
+					opMallet.x = 1067;
+					opMallet.dx = 0;
+				}
+				if (opMallet.y < 53) {
+					opMallet.y = 53;
+					opMallet.dy = 0;
+				}
+				if (opMallet.y > 1147) {
+					opMallet.y = 1147;
+					opMallet.dy = 0;
+				}
+				opMallet.y += opMallet.dy;
+				if (opMallet.dx != 0 || opMallet.dy != 0) el.setStyles({'left':opMallet.x/4-14,'top':opMallet.y/4 - 14});
+			},
+			init: function () {
+				el = $('opmallet');
+				el.setStyles({'left':126,'top':25});
+				opMallet.x = 560;
+				opMallet.y = 148;
+				opMallet.dx = 0;
+				opMallet.dy = 0;
+			}
+		};
+	}();
 	var myMallet = function() {
 		var myx;
 		var myy;
 		var el;
-		var held = false;
+		var mminplace = false;
 		var	areaPosition;
 		var held = false;
+		var msCount;
 		return {
 			x:560,
 			y:2252,
@@ -51,26 +161,47 @@ MBahplay = function() {
 					newv = 4*(myy-tablePosition.y);
 					myMallet.dy = newv - myMallet.y;
 					myMallet.y = newv;
-					el.setStyles({'left':myx-areaPosition.x-14,'top':myy-areaPosition.y-14});
+					if (myMallet.dx != 0 || myMallet.dy != 0)el.setStyles({'left':myx-areaPosition.x-14,'top':myy-areaPosition.y-14});
+					if (inSync) {
+						if (--msCount <= 0) {
+							msCount = t.mallet;
+							Comms.write('M:'+myMallet.x+':'+myMallet.y,function(){},function () {
+								setState('Mallet Position Transmission Failed');
+							});
+						}
+					}
 				}
+			},
+			reset: function() {
+				el.removeEvents('mouseover');
 			},
 			init: function () {
 				el = $('mymallet');
+				el.setStyles({'left':112,'top':235});
 				el.addEvent('mouseover',function(e) {
 					e.stop();
 					myx = e.page.x;
 					myy	= e.page.y;
 					held = true;
-					$('tablesurround').addEvent('mousemove',function(e) {
-						myx = e.page.x;
-						myy	= e.page.y;
-					});
+					if(!mminplace) {
+						$('tablesurround').addEvent('mousemove',function(e) {
+							myx = e.page.x;
+							myy	= e.page.y;
+						});
+						mminplace = true;
+					}
 				});
 				areaPosition = $('myarea').getPosition();
+				myMallet.x = 560;
+				myMallet.y = 2252;
+				myMallet.dx = 0;
+				myMallet.dy = 0;
+				msCount = 1;
 			}
 		};
 	}();
 	var puck = function() {
+		var ht;
 		var el;
 		return {
 			x:560,
@@ -106,120 +237,131 @@ MBahplay = function() {
 						puck.dy = 0.99 * puck.dy;
 					}
 				}
-				el.setStyles({'left':puck.x/4-10,'top':puck.y/4-10});
+				if (puck.dx != 0 || puck.dy != 0) el.setStyles({'left':puck.x/4-10,'top':puck.y/4-10});
+				if (puck.y > 1200 ) {
+					//puck is in my half so count down
+					if (ht == 0) {
+						// if not already set up, set up counter;
+						ht = t.myside;
+						setCounter(ht);
+					}
+					if (--secs <= 0) {
+						secs = t.second;
+						setCounter(--ht);
+						if (ht <= 0 ) foul('Puck too long on My Side');
+					}
+				} else {
+					if (ht != 0) {
+						secs = t.second;
+						setCounter(-1);
+						ht = 0;
+					}
+				}
 			},
 			init: function () {
 				el=$('puck');
+				ht=t.myside;
+				secs=t.second;
+				puck.x = 560;
+				puck.y = 1200;
+				puck.dx = 0;
+				puck.dy = 0;
+				el.setStyles({'left':130,'top':290});
 			}
 		}
 	}();
 	
-	var inPlay = false; //The start clock has clicked down
-	var startCountDown = -1;
-	var inMyHalf = 0;
+	var timeOffset;
+	var serverTime;
+	var t;				//object holding various timer values
+
+	var inPlay = false; //Set once it is allowed to hit the puck
+	var inSync = false; //Set once we are in sync with other side (soo we can start sending our mallet position)
+	var startC = 0; //countdown time to start game
+	var firstSec = 0; //used to sync sides by counting server time to start.
 	
-	var setState = function (t) {
-		$('state').set('text',t);
-	};
-	var Comms = function () {
-		var abortReq = new Request.JSON({url:'abort.php',method:'get',link:'chain',onComplete:function(r,e){$('text').set('text',e);}});
-		var sopt ;
-		var ropt ;
-		var sendFailFunc = null;
-		var sendSuccFunc = null;
-		var readFailFunc = null;
-		var readSuccFunc = null;
-		var wToId = null;
-		var wTo = function() {
-			wToId = null;
-			abortReq.get($merge(myParams,{ms:sopt.ms,rw:'w'}));
-		};
-		var sendReq = new Request.JSON({url:'send.php',method:'get',onComplete: function(response,errorstr) {
-			if(wToId) $clear(wToId);   //stop timeout from happening
-			if (response) {
-				if (response.ok) {
-					sendSuccFunc(response.time);
-				} else {
-					sendFailFunc();
-				}
-			} else {
-				$('text').set('text',errorstr);
-			}
-		}});
-		var rToId = null;
-		var rTo = function() {
-			rToId = null;
-			abortReq.get($merge(myParams,ropt,{rw:'r'}));
-		};
-		var readReq = new Request.JSON({url:'read.php',method:'get',onComplete: function(response,errorstr) {
-			if(rToId) $clear(rToId);   //stop timeout from happening
-			if (response) {
-				if (response.ok) {
-					readSuccFunc(response.time,response.data);
-				} else {
-					readFailFunc();
-				}
-			} else {
-				$('text').set('text',errorstr);
-			}
-		}});
-		return {
-			init: function(m) {
-				sopt = {ms:(m)?'m':'s',ch:''};
-				ropt =  {ms:(m)?'s':'m'};
-			},
-			read: function (success,fail) {
-				readSuccFunc = success;
-				readFailFunc = fail;
-				rToId = rTo.delay(t.timeout);
-				readReq.get(ropt);
-			},
-			write: function (msg,success,fail) {
-				sendSuccFunc = success;
-				sendFailFunc = fail;
-				sopt.ch=msg;
-				wToId = wTo.delay(t.timeout);
-				sendReq.get(sopt);
-			},
-			die: function () {
-				rTo(); //just act like both timeouts happened
-				wTo();
-			}
-		}
-	}();  // End Comms
 	var tKid = null;
 	var tick = function() {
+		serverTime += t.tick;
+		opMallet.tick();
 		myMallet.tick();
 		puck.tick();
 		//check for collision
 		var dx = puck.x - myMallet.x;
 		var dy = puck.y - myMallet.y;
-		if ((Math.abs(dx) < 94) || (Math.abs(dy) < 94) ) { //might have hit
+		if ((Math.abs(dx) < 94) && (Math.abs(dy) < 94) ) { //might have hit
 			if( (dx*dx + dy*dy) < 8836) {
 // Collision Occurred
-				dx += myMallet.dx - puck.dx;  //step back to previous tick (in case centres have passed)
-				dy += myMallet.dy - puck.dy;
-				var d = Math.sqrt(dx*dx+dy*dy);
-				var cos_t = dx/d; //cos theta where theta angle of normal to x axis
-				var sin_t = dy/d; //sin theta where theta angle of normal to x axis
+				if (inPlay) {
+					dx += myMallet.dx - puck.dx;  //step back to previous tick (in case centres have passed)
+					dy += myMallet.dy - puck.dy;
+					var d = Math.sqrt(dx*dx+dy*dy);
+					var cos_t = dx/d; //cos theta where theta angle of normal to x axis
+					var sin_t = dy/d; //sin theta where theta angle of normal to x axis
 
-				var mvn = myMallet.dx*cos_t + myMallet.dy * sin_t;  //mallet velocity along normal
-				var pvn = puck.dx*cos_t + puck.dy*sin_t;  //puck velocity normal
-				var pvt = puck.dx*sin_t + puck.dy*cos_t;  //puck velicity tangent
+					var mvn = myMallet.dx*cos_t + myMallet.dy * sin_t;  //mallet velocity along normal
+					var pvn = puck.dx*cos_t + puck.dy*sin_t;  //puck velocity normal
+					var pvt = puck.dx*sin_t + puck.dy*cos_t;  //puck velicity tangent
 
-				var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
-				puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
-				puck.dy = pvn2*sin_t + pvt*cos_t;
-				
+					var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
+					puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
+					puck.dy = pvn2*sin_t + pvt*cos_t;
+					Comms.write('C:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+serverTime,
+	 					function (){},
+	 					function () {
+							setState('Collision Transmission Failed');
+						}
+					);
+				} else {
+					foul('Puck played before time');
+				}
 			}
 		}
+		if (firstSec > 0) {
+			if(serverTime >= firstSec) {
+				firstSec += 1000;
+				if (startC > 0 ) {
+					setCounter(--startC);
+					if(startC <=0) {
+						inPlay = true;
+						firstSec = 0;
+						startC = 0;
+					}
+				} else {
+					startC = t.startup;
+					setCounter(startC);
+				}
+			}
+		}
+		
 	}
+	var restart = function () {
+		$clear(tKid);	//stop model
+		myMallet.reset();
+		inPlay = false;
+		inSync = false;
+		awaitOpponent.delay(t.restart);
+	};
+	var foul = function (msg) {
+		setState(msg);
+		Comms.write('F',function() {}, function() {});
 
+//		restart();  Temp stop whilst testing
+	};
 	var awaitOpponent = function () {
 		setState('Await');
-		tick.periodical(t.tick);
+//temp
+		inPlay = true;
+		inSync = false;
+		opMallet.init();
+		myMallet.init();
+		puck.init();
+		serverTime = timeOffset + new Date().getTime();
+		firstSec = 0;
+		startC = 0;
+		tKid = tick.periodical(t.tick);
 		if (master) {
-			Comms.write('1',startGame,function () {
+			Comms.write('S',startGameS,function () {
 				setState('Fail W');
 			});
 		} else {
@@ -228,11 +370,67 @@ MBahplay = function() {
 			});
 		}
 	};
-	var startGame = function (response) {
-		setState('Start');
-		
-		$('text').set('text',response);
+	var startGameS = function(time) {
+		startGame(time,'S');
 	};
+	
+	var startGame = function (time,msg) {
+		if (msg != 'S') {
+			if (msg != 'R') Comms.write('R',function(){},function(){});
+			awaitOpponent();
+		}
+		setState('Start');
+		inSync = true;
+		firstSec = time + 1000;
+	};
+
+	var EventReceived = function (time,msg) {
+		var splitMsg = msg.split(':');
+		var x,y,dx,dy,ti;
+		switch (splitMsg[0]) {
+			case 'F':
+			case 'R' :
+				awaitOpponent();
+				break;
+			case 'C' :
+				x = splitMsg[3].toInt();
+				y = splitMsg[4].toInt();
+				dx = splitMsg[5].toInt();
+				dy = splitMsg[6].toInt();
+				ti = splitMsg[6].toInt();
+				puck.x = x + dx*(serverTime -ti)/t.tick | 0; //adjust for movement since sent
+				puck.y = y + dy*(serverTime -ti)/t.tick | 0;
+				puck.dx = dx;
+				puck.dy = dy;
+// fall throught	break;
+			case 'M' :
+				x = splitMsg[1].toInt();
+				dx = (x-opMallet.x)/t.mallet | 0 ;
+				y = splitMsg[2].toInt();
+				dy = (y - opMallet.y)/t.mallet | 0;
+				opMallet.x = x;
+				opMallet.y = y;
+				if (dx >= 0) {
+					opMallet.dx = Math.min(20,dx);
+				} else {
+					opMallet.dx = Math.max(-20,dx);
+				}
+				if (dy >= 0) {
+					opMallet.dy = Math.min(20,dy);
+				} else {
+					opMallet.dy = Math.max(-20,dy);
+				}				
+				break;
+			default :
+				setState('Invalid Message');
+				$('text').set('text',msg);
+		}
+		if (inSync) Comms.read(eventReceived,function() { //only put up another read if still in sync
+			setState('Event Fail');
+		});
+		
+	};
+	
 	return {
 		init: function (me,ma,timers) {
 			var timeReq = function() {
@@ -242,12 +440,11 @@ MBahplay = function() {
 			myParams = {pid:me.uid,pp:me.password};
 			myname = me.name;
 			t = timers;
+			t.second = (1000/t.tick)|0;
 			master = ma;
 			Comms.init(ma);
 			setState('Timing');
 			tablePosition = $('table').getPosition();
-			myMallet.init();
-			puck.init();
 			var startTime;
 			var totalOffset = 0;
 			var i = t.count;

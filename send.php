@@ -4,14 +4,14 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
-if(!(isset($_GET['ms'])  && isset($_GET['ch'])))
+if(!(isset($_GET['ms'])  && isset($_GET['msg'])))
 	die('Log - Hacking attempt - wrong parameters');
 define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
 define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['ms'] == 'm')?'mmsg':'smsg'),'r+');
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['ms'] == 'm')?'mack':'sack'),'r');
-fwrite($sendpipe,"A".$_GET['ch']);
+fwrite($sendpipe,"A".$_GET['msg']);
 $time = (int) (microtime(TRUE)*1000);
 fclose($sendpipe);
 $response=fread($readpipe,1);

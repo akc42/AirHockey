@@ -230,8 +230,15 @@ way to fit your requirements.
 	border:2px solid black;
 	height:20px;
 }
-#text {
+#countdown {
 	background-color:white;
+	margin:5px;
+	border:2px solid black;
+	width:1em;
+	height:1em;
+	text-align:center;
+	vertical-align:middle;
+	font-size:xx-large;
 	padding:2px;
 }
 	
