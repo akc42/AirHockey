@@ -3,68 +3,42 @@ MBahplay = function() {
 	var myname;
 	var master;
 	var Comms = function () {
-		var abortReq = new Request.JSON({url:'abort.php',method:'get',link:'chain',onComplete:function(r,e){$('text').set('text',e);}});
+		var abortReq = new Request.JSON({url:'abort.php',method:'get',link:'chain'});
 		var sopt ;
 		var ropt ;
-		var sendFailFunc = null;
-		var sendSuccFunc = null;
-		var readFailFunc = null;
+		var failFunc = null;
+		var sendCompleteFunc = null;
 		var readSuccFunc = null;
-		var wToId = null;
-		var wTo = function() {
-			wToId = null;
-			abortReq.get($merge(myParams,{ms:sopt.ms,rw:'w'}));
-		};
-		var sendReq = new Request.JSON({url:'send.php',method:'get',onComplete: function(response,errorstr) {
-			if(wToId) $clear(wToId);   //stop timeout from happening
-			if (response) {
-				if (response.ok) {
-					sendSuccFunc(response.time);
-				} else {
-					sendFailFunc();
-				}
-			} else {
-				$('text').set('text',errorstr);
-			}
+		var sendReq = new Request.JSON({url:'send.php',method:'get',onComplete: function(response) {
+			if (sendCompleteFunc) sendCompleteFunc(response.time);
 		}});
-		var rToId = null;
-		var rTo = function() {
-			rToId = null;
-			abortReq.get($merge(myParams,ropt,{rw:'r'}));
-		};
 		var readReq = new Request.JSON({url:'read.php',method:'get',onComplete: function(response,errorstr) {
-			if(rToId) $clear(rToId);   //stop timeout from happening
 			if (response) {
 				if (response.ok) {
 					readSuccFunc(response.time,response.msg);
 				} else {
-					readFailFunc();
+					failFunc(response.time);
 				}
-			} else {
-				$('text').set('text',errorstr);
 			}
 		}});
 		return {
-			init: function(m) {
+			init: function(m,fail) {
 				sopt = {ms:(m)?'m':'s',msg:''};
 				ropt =  {ms:(m)?'s':'m'};
+				failFunc = fail;
 			},
-			read: function (success,fail) {
+			read: function (success) {
 				readSuccFunc = success;
-				readFailFunc = fail;
-				rToId = rTo.delay(t.timeout);
 				readReq.get(ropt);
 			},
-			write: function (msg,success,fail) {
-				sendSuccFunc = success;
-				sendFailFunc = fail;
+			write: function (msg,success) {
+				sendCompleteFunc = success;
 				sopt.msg=msg;
-				wToId = wTo.delay(t.timeout);
 				sendReq.get(sopt);
 			},
 			die: function () {
-				rTo(); //just act like both timeouts happened
-				wTo();
+				abortReq.get($merge(myParams,{ms:sopt.ms,rw:'w'}));  //kill off write requests
+				abortReq.get($merge(myParams,ropt,{rw:'r'})); //kill off read requests
 			}
 		}
 	}();  // End Comms
@@ -81,36 +55,14 @@ MBahplay = function() {
 		return {
 			x:560,
 			y:148,
-			dx:0,
-			dy:0,
-			tick : function () {
-				opMallet.x += opMallet.dx;
-				if(opMallet.x < 53) {
-					opMallet.x = 53;
-					opMallet.dx = 0;
-				}
-				if (opMallet.x > 1067) {
-					opMallet.x = 1067;
-					opMallet.dx = 0;
-				}
-				if (opMallet.y < 53) {
-					opMallet.y = 53;
-					opMallet.dy = 0;
-				}
-				if (opMallet.y > 1147) {
-					opMallet.y = 1147;
-					opMallet.dy = 0;
-				}
-				opMallet.y += opMallet.dy;
-				if (opMallet.dx != 0 || opMallet.dy != 0) el.setStyles({'left':opMallet.x/4-14,'top':opMallet.y/4 - 14});
+			update : function () {
+				el.setStyles({'left':opMallet.x/4-14,'top':opMallet.y/4 - 14});
 			},
 			init: function () {
 				el = $('opmallet');
 				el.setStyles({'left':126,'top':25});
 				opMallet.x = 560;
 				opMallet.y = 148;
-				opMallet.dx = 0;
-				opMallet.dy = 0;
 			}
 		};
 	}();
@@ -121,7 +73,6 @@ MBahplay = function() {
 		var mminplace = false;
 		var	areaPosition;
 		var held = false;
-		var msCount;
 		return {
 			x:560,
 			y:2252,
@@ -162,14 +113,6 @@ MBahplay = function() {
 					myMallet.dy = newv - myMallet.y;
 					myMallet.y = newv;
 					if (myMallet.dx != 0 || myMallet.dy != 0)el.setStyles({'left':myx-areaPosition.x-14,'top':myy-areaPosition.y-14});
-					if (inSync) {
-						if (--msCount <= 0) {
-							msCount = t.mallet;
-							Comms.write('M:'+myMallet.x+':'+myMallet.y,function(){},function () {
-								setState('Mallet Position Transmission Failed');
-							});
-						}
-					}
 				}
 			},
 			reset: function() {
@@ -279,19 +222,22 @@ MBahplay = function() {
 	var inSync = false; //Set once we are in sync with other side (soo we can start sending our mallet position)
 	var startC = 0; //countdown time to start game
 	var firstSec = 0; //used to sync sides by counting server time to start.
-	
+	var msCount;
+	var commsTo = 0;  //comms timeout
+
 	var tKid = null;
 	var tick = function() {
+		var collisionOccured = false;
 		serverTime += t.tick;
-		opMallet.tick();
 		myMallet.tick();
 		puck.tick();
 		//check for collision
 		var dx = puck.x - myMallet.x;
 		var dy = puck.y - myMallet.y;
-		if ((Math.abs(dx) < 94) && (Math.abs(dy) < 94) ) { //might have hit
+		if ((Math.abs(dx) < 94) && (Math.abs(dy) < 94) ) { 
+			//might have hit worth doing the more complex calculation
 			if( (dx*dx + dy*dy) < 8836) {
-// Collision Occurred
+				// Collision Occurred
 				if (inPlay) {
 					dx += myMallet.dx - puck.dx;  //step back to previous tick (in case centres have passed)
 					dy += myMallet.dy - puck.dy;
@@ -306,17 +252,22 @@ MBahplay = function() {
 					var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
 					puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
 					puck.dy = pvn2*sin_t + pvt*cos_t;
-					Comms.write('C:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+serverTime,
-	 					function (){},
-	 					function () {
-							setState('Collision Transmission Failed');
-						}
-					);
+					// send model details as they are after the collision
+					Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+serverTime,null);
+					collisionOccured = true;
 				} else {
 					foul('Puck played before time');
 				}
 			}
 		}
+		if (inSync) {
+			if (--msCount <= 0) {
+				msCount = t.mallet;
+				// only send my models details if haven't just done so
+				if(!collisionOccured) Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+serverTime,null);
+			}
+		}
+
 		if (firstSec > 0) {
 			if(serverTime >= firstSec) {
 				firstSec += 1000;
@@ -333,6 +284,7 @@ MBahplay = function() {
 				}
 			}
 		}
+		if (commsTo > 0) if(--commsTo <=0) Comms.die();
 		
 	}
 	var restart = function () {
@@ -344,12 +296,10 @@ MBahplay = function() {
 	};
 	var foul = function (msg) {
 		setState(msg);
-		Comms.write('F',function() {}, function() {});
+		Comms.write('F',restart);
 
-//		restart();  Temp stop whilst testing
 	};
 	var awaitOpponent = function () {
-		setState('Await');
 //temp
 		inPlay = true;
 		inSync = false;
@@ -359,76 +309,63 @@ MBahplay = function() {
 		serverTime = timeOffset + new Date().getTime();
 		firstSec = 0;
 		startC = 0;
+		commsTo = t.opponent;
 		tKid = tick.periodical(t.tick);
 		if (master) {
-			Comms.write('S',startGameS,function () {
-				setState('Fail W');
-			});
+			Comms.write('S',startGame);
 		} else {
-			Comms.read(startGame,function () {
-				setState('Fail R');
-			});
+			Comms.read(startGameS);
 		}
-	};
-	var startGameS = function(time) {
-		startGame(time,'S');
 	};
 	
-	var startGame = function (time,msg) {
-		if (msg != 'S') {
-			if (msg != 'R') Comms.write('R',function(){},function(){});
+	var startGameS = function(time,msg) {
+		if (msg == 'S') {
+			startGame(time);
+		} else {
+			setState('Start error:'+msg);
 			awaitOpponent();
 		}
+	};	
+
+	var startGame = function (time) {
 		setState('Start');
 		inSync = true;
 		firstSec = time + 1000;
+		Comms.read.delay(1,Comms,eventReceived);
 	};
 
-	var EventReceived = function (time,msg) {
+	var eventReceived = function (time,msg) {
 		var splitMsg = msg.split(':');
 		var x,y,dx,dy,ti;
+		commsTo = t.timeout;
 		switch (splitMsg[0]) {
 			case 'F':
 			case 'R' :
 				awaitOpponent();
 				break;
-			case 'C' :
+			case 'M' :
 				x = splitMsg[3].toInt();
-				y = splitMsg[4].toInt();
+				y = 2400 - splitMsg[4].toInt();
 				dx = splitMsg[5].toInt();
-				dy = splitMsg[6].toInt();
-				ti = splitMsg[6].toInt();
+				dy = -splitMsg[6].toInt();
+				ti = splitMsg[7].toInt();
 				puck.x = x + dx*(serverTime -ti)/t.tick | 0; //adjust for movement since sent
 				puck.y = y + dy*(serverTime -ti)/t.tick | 0;
 				puck.dx = dx;
 				puck.dy = dy;
-// fall throught	break;
-			case 'M' :
-				x = splitMsg[1].toInt();
-				dx = (x-opMallet.x)/t.mallet | 0 ;
-				y = splitMsg[2].toInt();
-				dy = (y - opMallet.y)/t.mallet | 0;
-				opMallet.x = x;
-				opMallet.y = y;
-				if (dx >= 0) {
-					opMallet.dx = Math.min(20,dx);
-				} else {
-					opMallet.dx = Math.max(-20,dx);
-				}
-				if (dy >= 0) {
-					opMallet.dy = Math.min(20,dy);
-				} else {
-					opMallet.dy = Math.max(-20,dy);
-				}				
+				opMallet.x = splitMsg[1].toInt();
+				opMallet.y = 2400 - splitMsg[2].toInt(); //its at the opposite end of the table
+				opMallet.update();		//Move it on screen
 				break;
 			default :
-				setState('Invalid Message');
-				$('text').set('text',msg);
+				setState('Invalid Message:'+msg);
 		}
-		if (inSync) Comms.read(eventReceived,function() { //only put up another read if still in sync
-			setState('Event Fail');
-		});
-		
+		if (inSync) Comms.read.delay(1,Comms,eventReceived); //Just ensure the current read request completes before restarting it
+	};
+
+	var commsError = function () {
+		setState('Comms Timout Failure');
+		$clear(tKid);
 	};
 	
 	return {
@@ -440,15 +377,13 @@ MBahplay = function() {
 			myParams = {pid:me.uid,pp:me.password};
 			myname = me.name;
 			t = timers;
-			t.second = (1000/t.tick)|0;
 			master = ma;
-			Comms.init(ma);
-			setState('Timing');
+			Comms.init(ma,commsError);
 			tablePosition = $('table').getPosition();
 			var startTime;
 			var totalOffset = 0;
 			var i = t.count;
-			var req = new Request.JSON({url:'time.php',method:'get',link:'chain',onComplete: function(response,errorstr) {
+			var req = new Request.JSON({url:'time.php',method:'get',onComplete: function(response,errorstr) {
 				if (response ) {
 					var endTime = new Date().getTime();
 					var commsTime = endTime - startTime;
@@ -459,6 +394,7 @@ MBahplay = function() {
 						timeReq.delay(50);  //delay, otherwise of fast link it doesn't have time to exit this routing before re entering
 					} else {
 						timeOffset = totalOffset/t.count;
+						setState('Awaiting Opponent');
 						awaitOpponent();
 					}
 				}

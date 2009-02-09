@@ -4,7 +4,8 @@ if(!(isset($_GET['pid']) && isset($_GET['pp'])))
 $pid = $_GET['pid'];
 if ($_GET['pp'] != sha1("Air".$pid))
 	die('Log - Hacking attempt got: '.$_GET['pp'].' expected: '.sha1("Air".$pid));
-$toptime = microtime(TRUE)*1000;  //get time as float
-echo '{"servertime":'.$toptime.'}';
+list($utime,$time) = explode(" ",microtime());
+$time .= substr($utime,2,3);
+echo '{"servertime":'.$time.'}';
 ?>
 

@@ -28,7 +28,7 @@ if ($uid != $pid)
 	die('Log - Hacking attempt - invalid user id');
 
 $pipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['rw'] == 'r')?(($_GET['ms'] == 'm')?'mmsg':'smsg'):(($_GET['ms'] == 'm')?'mack':'sack')),'r+');
-fwrite($pipe,"X");  //confirm this is an abort
+//fwrite($pipe,"X");  //confirm this is an abort
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe)
 ?>

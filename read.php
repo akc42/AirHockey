@@ -12,7 +12,8 @@ define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['ms'] == 'm')?'mmsg':'smsg'),'r');
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['ms'] == 'm')?'mack':'sack'),'r+');
 $response=fread($readpipe,300); //
-$time = (int) (microtime(TRUE)*1000);
+list($utime,$time) = explode(" ",microtime());
+$time .= substr($utime,2,3);
 fclose($readpipe);
 fwrite($sendpipe,"A");
 fclose($sendpipe);
