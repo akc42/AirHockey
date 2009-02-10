@@ -4,11 +4,11 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
-if(!(isset($_GET['pid'])  && isset($_GET['pp'])&& isset($_GET['rw'])&& isset($_GET['ms'])))
+if(!(isset($_POST['pid'])  && isset($_POST['pp'])&& isset($_POST['rw'])&& isset($_POST['ms'])))
 	die('Log - Hacking attempt - wrong parameters');
-$pid = $_GET['pid']; //extra security for abort so it doesn't get missued
-if ($_GET['pp'] != sha1("Air".$pid))
-	die('Log - Hacking attempt got: '.$_GET['pp'].' expected: '.sha1("Air".$pid));
+$pid = $_POST['pid']; //extra security for abort so it doesn't get missued
+if ($_POST['pp'] != sha1("Air".$pid))
+	die('Log - Hacking attempt got: '.$_POST['pp'].' expected: '.sha1("Air".$pid));
 // Link to SMF forum as this is only for logged in members
 // Show all errors:
 error_reporting(E_ALL);
@@ -27,8 +27,7 @@ $uid = $ID_MEMBER;
 if ($uid != $pid)
 	die('Log - Hacking attempt - invalid user id');
 
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['rw'] == 'r')?(($_GET['ms'] == 'm')?'mmsg':'smsg'):(($_GET['ms'] == 'm')?'mack':'sack')),'r+');
-//fwrite($pipe,"X");  //confirm this is an abort
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_POST['rw'] == 'r')?(($_POST['ms'] == 'm')?'mmsg':'smsg'):(($_POST['ms'] == 'm')?'mack':'sack')),'r+');
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe)
 ?>

@@ -27,6 +27,21 @@ if(!file_exists(AIR_HOCKEY_PIPE_PATH."mack")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH.
 if(!file_exists(AIR_HOCKEY_PIPE_PATH."smsg")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."smsg",0660);
 if(!file_exists(AIR_HOCKEY_PIPE_PATH."sack")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."sack",0660);
 umask($old_umask);
+//make sure there are no extant processes waiting on message any hanging reads will terminate
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."mmsg",'r+');
+usleep(10000);  //give the other side of the pipe a chance to wake up and notice
+fclose($pipe);
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."mack",'r+');
+usleep(10000);  //give the other side of the pipe a chance to wake up and notice
+fclose($pipe);
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."smsg",'r+');
+usleep(10000);  //give the other side of the pipe a chance to wake up and notice
+fclose($pipe);
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."sack",'r+');
+usleep(10000);  //give the other side of the pipe a chance to wake up and notice
+fclose($pipe);
+
+
 //define ('MBA',1);   //defined so we can control access to some of the files.
 //require_once('db.php');
 //dbQuery('REPLACE INTO users (uid,name,role,moderator) VALUES ('.dbMakeSafe($uid).','.

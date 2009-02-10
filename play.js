@@ -3,16 +3,16 @@ MBahplay = function() {
 	var myname;
 	var master;
 	var Comms = function () {
-		var abortReq = new Request.JSON({url:'abort.php',method:'get',link:'chain'});
+		var abortReq = new Request.JSON({url:'abort.php',link:'chain'});
 		var sopt ;
 		var ropt ;
 		var failFunc = null;
 		var sendCompleteFunc = null;
 		var readSuccFunc = null;
-		var sendReq = new Request.JSON({url:'send.php',method:'get',onComplete: function(response) {
+		var sendReq = new Request.JSON({url:'send.php',onComplete: function(response) {
 			if (sendCompleteFunc) sendCompleteFunc(response.time);
 		}});
-		var readReq = new Request.JSON({url:'read.php',method:'get',onComplete: function(response,errorstr) {
+		var readReq = new Request.JSON({url:'read.php',onComplete: function(response,errorstr) {
 			if (response) {
 				if (response.ok) {
 					readSuccFunc(response.time,response.msg);
@@ -29,16 +29,16 @@ MBahplay = function() {
 			},
 			read: function (success) {
 				readSuccFunc = success;
-				readReq.get(ropt);
+				readReq.post(ropt);
 			},
 			write: function (msg,success) {
 				sendCompleteFunc = success;
 				sopt.msg=msg;
-				sendReq.get(sopt);
+				sendReq.post(sopt);
 			},
 			die: function () {
-				abortReq.get($merge(myParams,{ms:sopt.ms,rw:'w'}));  //kill off write requests
-				abortReq.get($merge(myParams,ropt,{rw:'r'})); //kill off read requests
+				abortReq.post($merge(myParams,{ms:sopt.ms,rw:'w'}));  //kill off write requests
+				abortReq.post($merge(myParams,ropt,{rw:'r'})); //kill off read requests
 			}
 		}
 	}();  // End Comms
@@ -251,34 +251,37 @@ MBahplay = function() {
 			//might have hit worth doing the more complex calculation
 			if( (dx*dx + dy*dy) < 8836) {
 				// Collision Occurred
-				if (inPlay) {
-					dx += myMallet.dx - puck.dx;  //step back to previous tick (in case centres have passed)
-					dy += myMallet.dy - puck.dy;
-					var d = Math.sqrt(dx*dx+dy*dy);
-					var cos_t = dx/d; //cos theta where theta angle of normal to x axis
-					var sin_t = dy/d; //sin theta where theta angle of normal to x axis
-
-					var mvn = myMallet.dx*cos_t + myMallet.dy * sin_t;  //mallet velocity along normal
-					var pvn = puck.dx*cos_t + puck.dy*sin_t;  //puck velocity normal
-					var pvt = puck.dx*sin_t + puck.dy*cos_t;  //puck velicity tangent
-
-					var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
-					puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
-					puck.dy = pvn2*sin_t + pvt*cos_t;
-					// send model details as they are after the collision
-					Comms.write('C:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
-							+':'+(new Date().getTime() + timeOffset),null);
-					collisionOccured = true;
-				} else {
-					foul('Puck played before time');
+				var d2 = Math.sqrt(dx*dx+dy*dy); //keep earlier distance
+				dx += myMallet.dx - puck.dx;  //step back to previous tick (in case centres have passed)
+				dy += myMallet.dy - puck.dy;
+				d = Math.sqrt(dx*dx+dy*dy);
+				var cos_t = dx/d; //cos theta where theta angle of normal to x axis
+				var sin_t = dy/d; //sin theta where theta angle of normal to x axis
+				if (d2 < 94) {
+					d2 = 2*(94-d2);
+					puck.x += d2*cos_t;
+					puck.y += d2*sin_t;
 				}
+				var mvn = myMallet.dx*cos_t + myMallet.dy * sin_t;  //mallet velocity along normal
+				var pvn = puck.dx*cos_t + puck.dy*sin_t;  //puck velocity normal
+				var pvt = puck.dx*sin_t + puck.dy*cos_t;  //puck velicity tangent
+
+				var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
+				puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
+				puck.dy = pvn2*sin_t + pvt*cos_t;
+				// send model details as they are after the collision
+				collisionOccured = true;
+				if (!inPlay) foul('Puck played before time');
 			}
 		}
 		if (inSync) {
 			if (--msCount <= 0) {
 				msCount = t.mallet;
 				// only send my models details if haven't just done so
-				if(!collisionOccured) Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
+				Comms.write(((collisionOccured)?'C':'M')+':'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
+						+':'+(new Date().getTime() + timeOffset),null);
+			} else {
+				if(collisionOccured) Comms.write('C:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
 						+':'+(new Date().getTime() + timeOffset),null);
 			}
 		}
@@ -311,12 +314,11 @@ MBahplay = function() {
 	};
 	var foul = function (msg) {
 		setState(msg);
-		Comms.write('F',restart);
+//		Comms.write('F',restart);
 
 	};
 	var awaitOpponent = function () {
-//temp
-		inPlay = true;
+
 		inSync = false;
 		opMallet.init();
 		myMallet.init();
@@ -336,7 +338,6 @@ MBahplay = function() {
 		if (msg == 'S') {
 			startGame(time);
 		} else {
-			setState('Start error:'+msg);
 			awaitOpponent();
 		}
 	};	
@@ -404,18 +405,19 @@ MBahplay = function() {
 		init: function (me,ma,timers) {
 			var timeReq = function() {
 				startTime = new Date().getTime();
-				req.get($merge(myParams,{r:$random(1,500)}));; //ensure we actually do the request, so its not using cached result
+				req.post(myParams);; //ensure we actually do the request, so its not using cached result
 			};	
 			myParams = {pid:me.uid,pp:me.password};
 			myname = me.name;
 			t = timers;
+			t.second = (1000/t.tick) | 0
 			master = ma;
 			Comms.init(ma,commsError);
 			tablePosition = $('table').getPosition();
 			var startTime;
 			var totalOffset = 0;
 			var i = t.count;
-			var req = new Request.JSON({url:'time.php',method:'get',onComplete: function(response,errorstr) {
+			var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
 				if (response ) {
 					var endTime = new Date().getTime();
 					var commsTime = endTime - startTime;

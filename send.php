@@ -4,22 +4,23 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
-if(!(isset($_GET['ms'])  && isset($_GET['msg'])))
+if(!(isset($_POST['ms'])  && isset($_POST['msg'])))
 	die('Log - Hacking attempt - wrong parameters');
 define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
 define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['ms'] == 'm')?'mmsg':'smsg'),'r+');
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_GET['ms'] == 'm')?'mack':'sack'),'r');
-fwrite($sendpipe,"A".$_GET['msg']);
+$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_POST['ms'] == 'm')?'mmsg':'smsg'),'r+');
+$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_POST['ms'] == 'm')?'mack':'sack'),'r');
+fwrite($sendpipe,"$".$_POST['msg']);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
 fclose($sendpipe);
-$response=fread($readpipe,1);
+$response=fread($readpipe,10);
 fclose($readpipe);
-if($response == "A") {
+$response=strrchr($response,"$");
+if($response == "$") {
 	echo '{"ok": true,"time":'.$time.'}';
 } else {
-	echo '{"ok": false,"time":'.$time.'}';
+	echo '{"ok": false,"time":'.$time.',"status":"'.$response.'"}';
 }
 ?>

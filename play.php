@@ -12,7 +12,7 @@ if ($_GET['pp'] != sha1("Air".$pid))
 
 define('AIR_HOCKEY_MODEL_TICK',			33);	//milliseconds between calculating new table layout
 define('AIR_HOCKEY_OPPONENT_TIMEOUT',	909);  //Ticks to wait until assume opponent has not come (approx 30 secs)
-define('AIR_HOCKEY_MODEL_TIMEOUT', 		61);  //Ticks to wait until assume comms running the model have died (approx 2 secs)
+define('AIR_HOCKEY_MODEL_TIMEOUT', 		100);  //Ticks to wait until assume comms running the model have died (approx 2 secs)
 define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have synchronised
 define('AIR_HOCKEY_MALLET_DELAY',		30);   // Ticks between when mallet positions get sent
 define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
