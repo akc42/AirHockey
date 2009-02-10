@@ -356,7 +356,7 @@ MBahplay = function() {
 				dy = dy*pw;
 				x += dx*aj; //adjust for movement since sent
 				y += dy*aj;
-				if (!(y>1200 && puck.y >1200 && splitMsg[0] = 'M')) {
+				if (!(y>1200 && puck.y >1200 && splitMsg[0] == 'M')) {
 					// both don't think its at my end
 					puck.x=x;
 					puck.y=y;
