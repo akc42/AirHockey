@@ -351,11 +351,17 @@ MBahplay = function() {
 				mt = new Date().getTime() + timeOffset
 				aj = (mt -ti)/t.tick | 0;
 				pw = Math.pow(0.95,aj);
-				puck.dx = dx*pw;
-				puck.dy = dy*pw;
-				puck.x = x + puck.dx*aj; //adjust for movement since sent
-				puck.y = y + puck.dy*aj;
-				
+				dx = dx*pw;
+				dy = dy*pw;
+				x += dx*aj; //adjust for movement since sent
+				y += dy*aj;
+				if (!(y>1200 && puck.y >1200)) {
+					// both don't think its at my end
+					puck.x=x;
+					puck.y=y;
+					puck.dx=dx;
+					puck.dy=dy;
+				}
 				opMallet.x = splitMsg[1].toInt();
 				opMallet.y = 2400 - splitMsg[2].toInt(); //its at the opposite end of the table
 				opMallet.update();		//Move it on screen
