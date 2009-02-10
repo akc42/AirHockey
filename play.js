@@ -342,7 +342,7 @@ MBahplay = function() {
 			case 'R' :
 				awaitOpponent();
 				break;
-			case 'C'
+			case 'C' :
 			case 'M' :
 				y = 2400 - splitMsg[4].toInt();
 				x = splitMsg[3].toInt();
