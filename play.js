@@ -335,7 +335,7 @@ MBahplay = function() {
 
 	var eventReceived = function (time,msg) {
 		var splitMsg = msg.split(':');
-		var x,y,dx,dy,ti,aj,pw;
+		var x,y,dx,dy,ti,aj,pw,mt;
 		commsTo = t.timeout;
 		switch (splitMsg[0]) {
 			case 'F':
@@ -348,7 +348,8 @@ MBahplay = function() {
 				dx = splitMsg[5].toInt();
 				dy = -splitMsg[6].toInt();
 				ti = splitMsg[7].toInt();
-				aj = (new Date().getTime() + timeOffset -ti)/t.tick | 0;
+				mt = new Date().getTime() + timeOffset
+				aj = (mt -ti)/t.tick | 0;
 				pw = Math.pow(0.95,aj);
 				puck.dx = dx*pw;
 				puck.dy = dy*pw;
