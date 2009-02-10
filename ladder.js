@@ -6,17 +6,16 @@ MBahladder = function() {
 			
 			//Temp for testing
 			if (me.uid == 4) {
-				opponent.uid = 165;
-				opponent.name = 'Confused';
-				controlType = 'M';  //I am master
+				opponent.name = 'Joe';
 			} else {
-				opponent.uid = 4;
 				opponent.name = 'Alan';
-				controlType = 'S';  //I am slave
 			}
-			var newURL = 'play.php?pid='+me.uid+'&pn='+me.name+'&pp='+me.password+'&oid='+opponent.uid+'&on='+opponent.name+'&ct='+controlType;
-			$('playit').addEvent('click',function(e) {
-				window.location.assign(newURL); //leaves a back button to get out
+			var newURL = 'play.php?pid='+me.uid+'&pn='+me.name+'&pp='+me.password+'&on='+opponent.name+'&ct=';
+			$('master').addEvent('click',function(e) {
+				window.location.assign(newURL+'M'); //leaves a back button to get out
+			});
+			$('slave').addEvent('click',function(e) {
+				window.location.assign(newURL+'S'); //leaves a back button to get out
 			});
 		},
 		logout: function () {

@@ -215,7 +215,6 @@ MBahplay = function() {
 	}();
 	
 	var timeOffset;
-	var serverTime;
 	var t;				//object holding various timer values
 
 	var inPlay = false; //Set once it is allowed to hit the puck
@@ -228,7 +227,6 @@ MBahplay = function() {
 	var tKid = null;
 	var tick = function() {
 		var collisionOccured = false;
-		serverTime += t.tick;
 		myMallet.tick();
 		puck.tick();
 		//check for collision
@@ -253,7 +251,8 @@ MBahplay = function() {
 					puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
 					puck.dy = pvn2*sin_t + pvt*cos_t;
 					// send model details as they are after the collision
-					Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+serverTime,null);
+					Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
+							+':'+(new Date().getTime() + timeOffset),null);
 					collisionOccured = true;
 				} else {
 					foul('Puck played before time');
@@ -264,12 +263,13 @@ MBahplay = function() {
 			if (--msCount <= 0) {
 				msCount = t.mallet;
 				// only send my models details if haven't just done so
-				if(!collisionOccured) Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+serverTime,null);
+				if(!collisionOccured) Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
+						+':'+(new Date().getTime() + timeOffset),null);
 			}
 		}
 
 		if (firstSec > 0) {
-			if(serverTime >= firstSec) {
+			if((new Date().getTime() + timeOffset) >= firstSec) {
 				firstSec += 1000;
 				if (startC > 0 ) {
 					setCounter(--startC);
@@ -306,7 +306,6 @@ MBahplay = function() {
 		opMallet.init();
 		myMallet.init();
 		puck.init();
-		serverTime = timeOffset + new Date().getTime();
 		firstSec = 0;
 		startC = 0;
 		commsTo = t.opponent;
@@ -336,7 +335,7 @@ MBahplay = function() {
 
 	var eventReceived = function (time,msg) {
 		var splitMsg = msg.split(':');
-		var x,y,dx,dy,ti;
+		var x,y,dx,dy,ti,aj,pw;
 		commsTo = t.timeout;
 		switch (splitMsg[0]) {
 			case 'F':
@@ -344,15 +343,18 @@ MBahplay = function() {
 				awaitOpponent();
 				break;
 			case 'M' :
-				x = splitMsg[3].toInt();
 				y = 2400 - splitMsg[4].toInt();
+				x = splitMsg[3].toInt();
 				dx = splitMsg[5].toInt();
 				dy = -splitMsg[6].toInt();
 				ti = splitMsg[7].toInt();
-				puck.x = x + dx*(serverTime -ti)/t.tick | 0; //adjust for movement since sent
-				puck.y = y + dy*(serverTime -ti)/t.tick | 0;
-				puck.dx = dx;
-				puck.dy = dy;
+				aj = (new Date().getTime() + timeOffset -ti)/t.tick | 0;
+				pw = Math.pow(0.95,aj);
+				puck.dx = dx*pw;
+				puck.dy = dy*pw;
+				puck.x = x + puck.dx*aj; //adjust for movement since sent
+				puck.y = y + puck.dy*aj;
+				
 				opMallet.x = splitMsg[1].toInt();
 				opMallet.y = 2400 - splitMsg[2].toInt(); //its at the opposite end of the table
 				opMallet.update();		//Move it on screen
@@ -390,7 +392,7 @@ MBahplay = function() {
 					var midTime = parseInt(startTime+ commsTime/2);
 					var offsetTime = response.servertime - midTime;
 					totalOffset += offsetTime;
-					if (i-- > 0 ) {
+					if (--i > 0 ) {
 						timeReq.delay(50);  //delay, otherwise of fast link it doesn't have time to exit this routing before re entering
 					} else {
 						timeOffset = totalOffset/t.count;

@@ -147,11 +147,10 @@ way to fit your requirements.
 	position:relative;
 }
 
-#playit {
+#master, #slave {
 	font-size:large;
 	font-weight:bold;
 	margin:10px;
-	width:200px;
 	margin-left:100px;
 	background-color:red;
 	color:white;
@@ -160,7 +159,8 @@ way to fit your requirements.
 	cursor:pointer;
 }
 
-#playit:hover, #make_picks:active {border-style:inset;}
+#master:hover, #master:active. #slave:hover,#slave:active {border-style:inset;}
+
 #tablesurround {
 	padding:5px;
 }

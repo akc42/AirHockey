@@ -89,7 +89,7 @@ window.addEvent('unload', function() {
 </tbody>
 </table>
 <div id="content">
-	<div id="playit">Click to Play</div>
+	<div><span id="master">Click to Play Master</span><span id="slave">Click to Play Slave</span></div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
 </body>

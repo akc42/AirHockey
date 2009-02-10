@@ -4,7 +4,7 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
-if(!(isset($_GET['pid']) && isset($_GET['pn'])  && isset($_GET['pp']) && isset($_GET['oid']) && isset($_GET['on']) && isset($_GET['ct'])))
+if(!(isset($_GET['pid']) && isset($_GET['pn'])  && isset($_GET['pp']) && isset($_GET['on']) && isset($_GET['ct'])))
 	die('Log - Hacking attempt - wrong parameters');
 $pid = $_GET['pid'];
 if ($_GET['pp'] != sha1("Air".$pid))
