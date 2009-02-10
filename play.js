@@ -371,7 +371,7 @@ MBahplay = function() {
 				
 				if (splitMsg[0] == 'M') {
 					// lets work out a percentage of contribution from each of us
-					hm=(puck.y+p.y)/2400;
+					hm=(puck.y+p.y)/4800;
 					ho=1-hm;
 					
 					puck.x=hm*puck.x+ho*p.x;
