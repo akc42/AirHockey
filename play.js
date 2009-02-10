@@ -251,7 +251,7 @@ MBahplay = function() {
 					puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
 					puck.dy = pvn2*sin_t + pvt*cos_t;
 					// send model details as they are after the collision
-					Comms.write('M:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
+					Comms.write('C:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
 							+':'+(new Date().getTime() + timeOffset),null);
 					collisionOccured = true;
 				} else {
@@ -342,6 +342,7 @@ MBahplay = function() {
 			case 'R' :
 				awaitOpponent();
 				break;
+			case 'C'
 			case 'M' :
 				y = 2400 - splitMsg[4].toInt();
 				x = splitMsg[3].toInt();
@@ -355,7 +356,7 @@ MBahplay = function() {
 				dy = dy*pw;
 				x += dx*aj; //adjust for movement since sent
 				y += dy*aj;
-				if (!(y>1200 && puck.y >1200)) {
+				if (!(y>1200 && puck.y >1200 && splitMsg[0] = 'M')) {
 					// both don't think its at my end
 					puck.x=x;
 					puck.y=y;
