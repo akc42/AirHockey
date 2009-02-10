@@ -151,35 +151,50 @@ MBahplay = function() {
 			y:1200,
 			dx:0,
 			dy:0,
+			calculate: function (p) {
+				var c = false;
+				p.x = p.x + p.dx;
+				p.y = p.y +p.dy;
+				do {
+					if (p.x < 41 ) {
+						p.x = 82 - p.x;
+						p.dx = -(p.dx * 0.96);
+						c = true;
+					} else {
+						if (p.x > 1079) {
+							p.x= 2158 - p.x;
+							p.dx = -(p.dx * 0.96);
+							c=true;
+						} else {
+							c=false;
+						}
+					}
+				} while (c);
+				p.dx = 0.99 * p.dx;
+				do {
+					if (p.y < 41 ) {
+						p.y = 82 - p.y;
+						p.dy = -(p.dy * 0.96);
+						c=true;
+					} else {
+						if (p.y > 2359) {
+							p.y= 4718 - p.y;
+							p.dy = -(p.dy * 0.96);
+							c=true;
+						} else {
+							c=false;
+						}
+					}
+				} while (c);
+				p.dy = 0.99 * p.dy;
+				return p;
+			},
 			tick: function () {
-				puck.x = puck.x + puck.dx;
-				puck.y = puck.y +puck.dy;
-				if (puck.x < 41 ) {
-					puck.x = 82 - puck.x;
-					puck.dx = -(puck.dx * 0.95);
-					c = true;
-				} else {
-					if (puck.x > 1079) {
-						puck.x= 2158 - puck.x;
-						puck.dx = -(puck.dx * 0.95);
-						c = true;
-					} else {
-						puck.dx = 0.99 * puck.dx;
-					}
-				}
-				if (puck.y < 41 ) {
-					puck.y = 82 - puck.y;
-					puck.dy = -(puck.dy * 0.95);
-					c = true;
-				} else {
-					if (puck.y > 2359) {
-						puck.y= 4718 - puck.y;
-						puck.dy = -(puck.dy * 0.95);
-						c = true;
-					} else {
-						puck.dy = 0.99 * puck.dy;
-					}
-				}
+				var p = puck.calculate(puck);
+				puck.x = p.x;
+				puck.y = p.y;
+				puck.dx = p.dx;
+				puck.dy = p.dy;
 				if (puck.dx != 0 || puck.dy != 0) el.setStyles({'left':puck.x/4-10,'top':puck.y/4-10});
 				if (puck.y > 1200 ) {
 					//puck is in my half so count down
@@ -335,7 +350,8 @@ MBahplay = function() {
 
 	var eventReceived = function (time,msg) {
 		var splitMsg = msg.split(':');
-		var x,y,dx,dy,ti,aj,pw,mt;
+		var ti,aj,mt;
+		var ho,hm;
 		commsTo = t.timeout;
 		switch (splitMsg[0]) {
 			case 'F':
@@ -344,24 +360,30 @@ MBahplay = function() {
 				break;
 			case 'C' :
 			case 'M' :
-				y = 2400 - splitMsg[4].toInt();
-				x = splitMsg[3].toInt();
-				dx = splitMsg[5].toInt();
-				dy = -splitMsg[6].toInt();
+				var p = {x:splitMsg[3].toInt(),y:2400 - splitMsg[4].toInt(),dx:splitMsg[5].toInt(),dy:-splitMsg[6].toInt()};
 				ti = splitMsg[7].toInt();
 				mt = new Date().getTime() + timeOffset
 				aj = (mt -ti)/t.tick | 0;
-				pw = Math.pow(0.95,aj);
-				dx = dx*pw;
-				dy = dy*pw;
-				x += dx*aj; //adjust for movement since sent
-				y += dy*aj;
-				if (!(y>1200 && puck.y >1200 && splitMsg[0] == 'M')) {
-					// both don't think its at my end
-					puck.x=x;
-					puck.y=y;
-					puck.dx=dx;
-					puck.dy=dy;
+				//calculate where I think the puck should be based on the time
+				for( i=0;i<aj;i++) {
+					p=puck.calculate(p);
+				}
+				
+				if (splitMsg[0] == 'M') {
+					// lets work out a percentage of contribution from each of us
+					hm=(puck.y+p.y)/2400;
+					ho=1-hm;
+					
+					puck.x=hm*puck.x+ho*p.x;
+					puck.y=hm*puck.y+ho*p.y;
+					puck.dx=hm*puck.dx+ho*p.dx;
+					puck.dy=hm*puck.dy+ho*p.dy;
+				} else {
+					//collisions we have to believe him because it is major change
+					puck.x = p.x;
+					puck.y = p.y;
+					puck.dx = p.dx;
+					puck.dy = p.dy;
 				}
 				opMallet.x = splitMsg[1].toInt();
 				opMallet.y = 2400 - splitMsg[2].toInt(); //its at the opposite end of the table
