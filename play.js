@@ -160,11 +160,13 @@ MBahplay = function() {
 						p.x = 82 - p.x;
 						p.dx = -(p.dx * 0.96);
 						c = true;
+						soundManager.play('table');
 					} else {
 						if (p.x > 1079) {
 							p.x= 2158 - p.x;
 							p.dx = -(p.dx * 0.96);
 							c=true;
+							soundManager.play('table');
 						} else {
 							c=false;
 						}
@@ -176,11 +178,13 @@ MBahplay = function() {
 						p.y = 82 - p.y;
 						p.dy = -(p.dy * 0.96);
 						c=true;
+						soundManager.play('table');
 					} else {
 						if (p.y > 2359) {
 							p.y= 4718 - p.y;
 							p.dy = -(p.dy * 0.96);
 							c=true;
+							soundManager.play('table');
 						} else {
 							c=false;
 						}
@@ -250,6 +254,7 @@ MBahplay = function() {
 		if ((Math.abs(dx) < 94) && (Math.abs(dy) < 94) ) { 
 			//might have hit worth doing the more complex calculation
 			if( (dx*dx + dy*dy) < 8836) {
+				soundManager.play('mallet');
 				// Collision Occurred
 				var d2 = Math.sqrt(dx*dx+dy*dy); //keep earlier distance
 				dx += myMallet.dx - puck.dx;  //step back to previous tick (in case centres have passed)

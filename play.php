@@ -29,6 +29,7 @@ define('AIR_HOCKEY_RESTART_DELAY',		5000);  //milliseconds before restarting gam
 		<link rel="stylesheet" type="text/css" href="airh-ie.css"/>
 	<![endif]-->
 	<script src="/static/scripts/mootools-1.2-core.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="/static/scripts/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>
@@ -58,6 +59,24 @@ window.addEvent('unload', function() {
 	MBahplay.logout();
 	
 });
+var soundReady = false;
+soundManager.url = '/static/scripts/';
+soundManager.onload = function() {
+	soundManager.createSound({
+		id : 'mallet',
+		url : 'mallet.mp3',
+		autoLoad : true ,
+		autoPlay : false 
+	});
+	soundManager.createSound({
+		id : 'table',
+		url : 'table.mp3',
+		autoLoad : true ,
+		autoPlay : false 
+	});
+
+	soundReady=true;
+};
 
 	// -->
 </script>
