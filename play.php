@@ -74,6 +74,18 @@ soundManager.onload = function() {
 		autoLoad : true ,
 		autoPlay : false 
 	});
+	soundManager.createSound({
+		id : 'count',
+		url : 'count.mp3',
+		autoLoad : true ,
+		autoPlay : false 
+	});
+	soundManager.createSound({
+		id : 'start',
+		url : 'start.mp3',
+		autoLoad : true ,
+		autoPlay : false 
+	});
 
 	soundReady=true;
 };
@@ -82,12 +94,14 @@ soundManager.onload = function() {
 </script>
 <a href="index.php">Return to Index Page</a>
 <div id="content">
-	<div id="tablesurround">			
+	<div id="tablesurround">
+		<div id="opgoal"></div>			
 		<div id="table">
 			<img id="puck" src="puck.gif"/>
 			<img id="opmallet" src="mallet.gif"/>
 			<div id="myarea"><img id="mymallet" src="mallet.gif"/></div>
 		</div>
+		<div id="mygoal"></div>	
 	</div>
 	<div id="info"><div id="state"></div><div id="countdown"></div><p id="text"></p></div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>

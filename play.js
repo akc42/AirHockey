@@ -300,6 +300,9 @@ MBahplay = function() {
 						inPlay = true;
 						firstSec = 0;
 						startC = 0;
+						soundManager.play('start');
+					} else {
+						soundManager.play('count');
 					}
 				} else {
 					startC = t.startup;
@@ -351,6 +354,7 @@ MBahplay = function() {
 		setState('Start');
 		inSync = true;
 		firstSec = time + 1000;
+		soundManager.play('count');
 		Comms.read.delay(1,Comms,eventReceived);
 	};
 
@@ -365,6 +369,7 @@ MBahplay = function() {
 				awaitOpponent();
 				break;
 			case 'C' :
+				soundManager.play('mallet');
 			case 'M' :
 				var p = {x:splitMsg[3].toInt(),y:2400 - splitMsg[4].toInt(),dx:splitMsg[5].toInt(),dy:-splitMsg[6].toInt()};
 				ti = splitMsg[7].toInt();
