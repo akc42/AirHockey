@@ -181,10 +181,15 @@ MBahplay = function() {
 						soundManager.play('table');
 					} else {
 						if (p.y > 2359) {
-							p.y= 4718 - p.y;
-							p.dy = -(p.dy * 0.96);
-							c=true;
-							soundManager.play('table');
+							if(p.x <= 380 || p.x >= 740) {
+								p.y= 4718 - p.y;
+								p.dy = -(p.dy * 0.96);
+								c=true;
+								soundManager.play('table');
+							} else {
+								c=false;
+								//soundManager.play('goal');
+								//goalScored();
 						} else {
 							c=false;
 						}
@@ -408,7 +413,7 @@ MBahplay = function() {
 
 	var commsError = function () {
 		setState('Comms Timout Failure');
-		$clear(tKid);
+//		$clear(tKid);
 	};
 	
 	return {

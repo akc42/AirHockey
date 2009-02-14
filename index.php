@@ -22,30 +22,20 @@ $uid = $ID_MEMBER;
 $name = &$user_info['name'];
 
 $old_umask = umask(0007);
-if(!file_exists(AIR_HOCKEY_PIPE_PATH."mmsg")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."mmsg",0660);
-if(!file_exists(AIR_HOCKEY_PIPE_PATH."mack")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."mack",0660);
-if(!file_exists(AIR_HOCKEY_PIPE_PATH."smsg")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."smsg",0660);
-if(!file_exists(AIR_HOCKEY_PIPE_PATH."sack")) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."sack",0660);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."msg".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."msg".$uid,0660);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."ack".$uid,0660);
 umask($old_umask);
 //make sure there are no extant processes waiting on message any hanging reads will terminate
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."mmsg",'r+');
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."msg".$uid,'r+');
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."mack",'r+');
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+');
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."smsg",'r+');
-usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-fclose($pipe);
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."sack",'r+');
-usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-fclose($pipe);
-
-
-//define ('MBA',1);   //defined so we can control access to some of the files.
+define ('AIRH',1);   //defined so we can control access to some of the files.
 //require_once('db.php');
-//dbQuery('REPLACE INTO users (uid,name,role,moderator) VALUES ('.dbMakeSafe($uid).','.
-//				dbMakeSafe($name).','.dbMakeSafe($role).','.dbMakeSafe($mod).') ; ') ;
+
+
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
@@ -104,7 +94,60 @@ window.addEvent('unload', function() {
 </tbody>
 </table>
 <div id="content">
-	<div><span id="master">Click to Play Master</span><span id="slave">Click to Play Slave</span></div>
+	<div id="matchlist">
+		<div id="matchlistheader">Recent and Current Matches</div>
+		<div class="match">
+			<div class="eventtitle">The Melinda Trophy</div>
+			<div class="side">
+				<div class="user">Less Confused Today</div>
+				<div class="games">
+					<div class="game">7</div>
+					<div class="game">6</div>
+					<div class="game">0</div>
+				</div>
+			</div>
+			<div class="side">
+				<div class="user">Alan</div>
+				<div class="games">
+					<div class="game">5</div>
+					<div class="game">7</div>
+					<div class="game">2</div>
+				</div>
+			</div>
+			<div class="duration">1:15</div>
+		</div>
+		<div class="match">
+			<div class="eventtitle">The Melinda Trophy</div>
+			<div class="side">
+				<div class="user">Less Confused Today</div>
+				<div class="games">
+					<div class="game">7</div>
+					<div class="game">6</div>
+					<div class="game">3</div>
+					<div class="game">2</div>
+					<div class="game">7</div>
+					<div class="game">7</div>
+					<div class="game">6</div>
+				</div>
+			</div>
+			<div class="side">
+				<div class="user">Alan</div>
+				<div class="games">
+					<div class="game">5</div>
+					<div class="game">7</div>
+					<div class="game">7</div>
+					<div class="game">7</div>
+					<div class="game">6</div>
+					<div class="game">3</div>
+					<div class="game">7</div>
+				</div>
+			</div>
+			<div class="endmatch">08:20 pm 16-Mar-2009</div>
+		</div>
+	</div>
+	<div id="online"></div>
+	<div id="ladder"></div>
+	<div style="clear:both"></div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
 </body>

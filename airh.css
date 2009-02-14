@@ -147,6 +147,102 @@ way to fit your requirements.
 	position:relative;
 }
 
+#matchlist {
+	float:left;
+	width:458px;
+	padding:0;
+	margin:10px;
+	background-color:white;
+	color:black;
+	border:2px solid black;
+}
+#matchlistheader {
+	width:450px;
+	height:18px;
+	padding:2px 4px;
+	font-size:11px;
+	font-weight:bold;
+	background-color:black;
+	color:white;
+	text-align:center;
+}
+.match {
+	width:456px;
+	padding:0;
+	margin:0;
+	border:1px solid black;
+	background-color:#FFFF00
+}
+.side {
+	width:456px;
+	height:32px;
+	padding:0;
+	margin:4px 0;
+}
+.user {
+	width:180px;
+	float:left;
+	height:20px;
+	padding:4px;
+	margin:0 3px;
+	border:1px solid black;
+	font-size:12px;
+	font-weight:bold;
+	background-color:white;
+}
+.games {
+	width:252px;
+	height:32px;
+	padding:0px 3px;
+	margin-left:198px;
+}
+.game {
+	float:left;
+	width:24px;
+	height:24px;
+	padding:2px;
+	margin:0 3px;
+	border:1px solid black;
+	font-size:20px;
+	text-align:center;
+	background-color:white;
+}
+
+
+.duration {
+	width:100px;
+	margin-left:350px;
+}
+.duration:before {
+	content:"Duration: ";
+	font-weight:bold;
+}
+
+.endmatch {
+	text-align:center;
+}
+.endmatch:before {
+	content:"Match finished at: ";
+	font-weight:bold;
+}
+
+#online {
+	float:left;
+	width:250px;
+	padding:0;
+	margin:10px;
+	background-color:white;
+	border:2px solid black;
+}
+#ladder {
+	float:left;
+	width:230px;
+	padding:0;
+	margin:10px;
+	background-color:white;
+	border:2px solid black;
+}
+
 #master, #slave {
 	font-size:large;
 	font-weight:bold;
@@ -162,7 +258,15 @@ way to fit your requirements.
 #master:hover, #master:active. #slave:hover,#slave:active {border-style:inset;}
 
 #tablesurround {
-	padding:5px;
+	padding:5px 10px;
+	background-color:#99FF33;
+	width:282px;
+}
+#opgoal, #mygoal {
+	background-color:#FF0000;
+	width:90px;
+	height:10px;
+	margin-left:96px;
 }
 #table {
 	background-color:#e7FFFF;
@@ -170,15 +274,6 @@ way to fit your requirements.
 	width:280px;
 	height:600px;
 	position:relative;
-	margin:10px;
-}
-#oparea {
-	background: transparent;
-	position:absolute;
-	left:14px;
-	top:14px;
-	width:1012px;
-	height:1075px;
 }
 #myarea {
 	background:transparent;
@@ -186,7 +281,7 @@ way to fit your requirements.
 	left:14px;
 	bottom:14px;
 	width:252px;
-	height:272px;
+	height:300px;
 }
 #opmallet {
 	position:absolute;
