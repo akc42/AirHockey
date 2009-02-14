@@ -94,6 +94,7 @@ window.addEvent('unload', function() {
 </tbody>
 </table>
 <div id="content">
+	<a href="/forum"><img src="/static/images/exit-f.gif" /></a>
 	<div id="matchlist">
 		<div id="matchlistheader">Recent and Current Matches</div>
 		<div class="match">
@@ -107,7 +108,7 @@ window.addEvent('unload', function() {
 				</div>
 			</div>
 			<div class="side">
-				<div class="user">Alan</div>
+				<div class="user">Vickster</div>
 				<div class="games">
 					<div class="game">5</div>
 					<div class="game">7</div>
@@ -145,8 +146,24 @@ window.addEvent('unload', function() {
 			<div class="endmatch">08:20 pm 16-Mar-2009</div>
 		</div>
 	</div>
-	<div id="online"></div>
-	<div id="ladder"></div>
+	<div id="online">
+		<div id="meOnline">
+			<div id="meHeader">Alan</div>
+			<div id="meOption">
+				<input type="radio" name="playertype" value="P"/>Practice<br/>
+				<input type="radio" name="playertype" value="S" checked="checked"/>Spectator<br/>
+				<input type="radio" name="playertype" value="A"/>Play Anyone<br/>
+				<input type="radio" name="playertype" value="I"/>By Invite Only</div>
+		</div>
+		<div id="onlineListHeader">Others Online</div>
+		<div class="onlineUser"><div class="ouser">Oldschool80s</div><div class="inviteFrom">F</div></div>
+		<div class="onlineUser"><div class="ouser">Rhonda</div><div class="inviteFrom">F</div></div>
+		<div class="onlineUser"><div class="ouser">GHopper</div><div class="inviteTo">T</div></div>
+		<div class="onlineUser"><div class="ouser">Gemini2</div></div>
+		<div class="onlineUser"><div class="ouser">MCaro05</div><div class="free">A</div></div>
+		<div class="onlineUser"><div class="ouser">Vickster</div><div class="inmatch">M</div></div>
+		<div class="onlineUser"><div class="ouser">Less Confused Today</div><div class="inmatch">M</div></div>
+	</div>
 	<div style="clear:both"></div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
