@@ -8,17 +8,16 @@ define('AIR_HOCKEY_MATCH_REMOVE', 100000); //Approx two months after match we re
 
 $offline=time() - 60*AIR_HOCKEY_OFFLINE_USER;  //calculate when the last poll should have been
 $abandon = time() - 60*AIR_HOCKEY_MATCH_ABANDON;
-$remove = time() = 60*AIR_HOCKEY_MATCH_REMOVE;
+$remove = time() - 60*AIR_HOCKEY_MATCH_REMOVE;
 
 dbQuery('BEGIN;');
-$result = dbQuery('SELECT hid,aid, start_time, end_time, last_activity FROM match WHERE last_activity < '.dbMakeSafe($abandon).' AND end_time IS NULL ;');
+$result = dbQuery('SELECT mid,hid,aid, start_time, end_time, last_activity FROM match WHERE last_activity < '.dbMakeSafe($abandon).' AND end_time IS NULL ;');
 while ($row = dbFetch($result)) {
-	dbQuery('UPDATE user SET online_type = '.OFFLINE.' WHERE online_type = '.MATCH
-			.' AND (uid = '.dbMakeSafe($row['hid']).' OR uid = '.dbMakeSafe($row['aid']).') ;');
-	dbQuery('DELETE FROM match WHERE hid = '.dbMakeSafe($row['hid'])
-			.' AND aid = '.dbMakeSafe($row['aid']).' AND start_time = '.dbMakeSafe($row['start_time']).';');
+	dbQuery('UPDATE player SET state = '.OFFLINE.' WHERE state = '.MATCH
+			.' AND (pid = '.dbMakeSafe($row['hid']).' OR pid = '.dbMakeSafe($row['aid']).') ;');
+	dbQuery('DELETE FROM match WHERE mid = '.dbMakeSafe($row['mid']).';');
 }
-dbQuery('UPDATE user SET online_type = '.OFFLINE.' WHERE last_poll < '.dbMakeSafe($offline).' AND online_type BETWEEN 1 AND 3 ;');
-dbQuery('DELETE FROM match WHERE start_time < '.dbMakeSafe($remove).' AND event IS NULL;');
+dbQuery('UPDATE player SET state = '.OFFLINE.' WHERE last_poll < '.dbMakeSafe($offline).' AND state BETWEEN 1 AND 3 ;');
+dbQuery('DELETE FROM match WHERE start_time < '.dbMakeSafe($remove).' AND eid IS NULL;');
 dbQuery('COMMIT;');
 ?>

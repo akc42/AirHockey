@@ -22,7 +22,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: match; Type: TABLE; Schema: public; Owner: alan; Tablespace: 
+-- Name: match; Type: TABLE; Schema: public; Owner: melindas_air; Tablespace: 
 --
 
 CREATE TABLE match (
@@ -31,146 +31,191 @@ CREATE TABLE match (
     hscore integer[],
     ascore integer[],
     start_time bigint DEFAULT date_part('epoch'::text, now()) NOT NULL,
-    end_time bigint
+    end_time bigint,
+    last_activity bigint DEFAULT date_part('epoch'::text, now()),
+    mid integer NOT NULL,
+    eid bigint
 );
 
 
-ALTER TABLE public.match OWNER TO alan;
+ALTER TABLE public.match OWNER TO melindas_air;
 
 --
--- Name: TABLE match; Type: COMMENT; Schema: public; Owner: alan
+-- Name: TABLE match; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
 COMMENT ON TABLE match IS 'match';
 
 
 --
--- Name: user; Type: TABLE; Schema: public; Owner: alan; Tablespace: 
+-- Name: COLUMN match.last_activity; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-CREATE TABLE "user" (
-    uid integer NOT NULL,
+COMMENT ON COLUMN match.last_activity IS 'The time is recorded when ever activity occurs in the match';
+
+
+--
+-- Name: COLUMN match.eid; Type: COMMENT; Schema: public; Owner: melindas_air
+--
+
+COMMENT ON COLUMN match.eid IS 'Event ID, if null then a friendly match';
+
+
+--
+-- Name: player; Type: TABLE; Schema: public; Owner: melindas_air; Tablespace: 
+--
+
+CREATE TABLE player (
+    pid integer NOT NULL,
     name character varying NOT NULL,
     mu real DEFAULT 50 NOT NULL,
     sigma real DEFAULT 16.6666666667 NOT NULL,
     last_match bigint DEFAULT date_part('epoch'::text, now()) NOT NULL,
-    online_type character(1) DEFAULT 'O'::bpchar NOT NULL,
     iid integer,
     last_poll bigint DEFAULT date_part('epoch'::text, now()) NOT NULL,
-    invite_accepted boolean DEFAULT false
+    state smallint DEFAULT 0 NOT NULL,
+    last_state bigint DEFAULT date_part('epoch'::text, now())
 );
 
 
-ALTER TABLE public."user" OWNER TO alan;
+ALTER TABLE public.player OWNER TO melindas_air;
 
 --
--- Name: TABLE "user"; Type: COMMENT; Schema: public; Owner: alan
+-- Name: TABLE player; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-COMMENT ON TABLE "user" IS 'Register Users';
-
-
---
--- Name: COLUMN "user".uid; Type: COMMENT; Schema: public; Owner: alan
---
-
-COMMENT ON COLUMN "user".uid IS 'user id from forum';
+COMMENT ON TABLE player IS 'Users who may play';
 
 
 --
--- Name: COLUMN "user".name; Type: COMMENT; Schema: public; Owner: alan
+-- Name: COLUMN player.pid; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-COMMENT ON COLUMN "user".name IS 'display name from forum';
-
-
---
--- Name: COLUMN "user".mu; Type: COMMENT; Schema: public; Owner: alan
---
-
-COMMENT ON COLUMN "user".mu IS 'scoring';
+COMMENT ON COLUMN player.pid IS 'user id from forum';
 
 
 --
--- Name: COLUMN "user".sigma; Type: COMMENT; Schema: public; Owner: alan
+-- Name: COLUMN player.name; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-COMMENT ON COLUMN "user".sigma IS 'scoring';
-
-
---
--- Name: COLUMN "user".last_match; Type: COMMENT; Schema: public; Owner: alan
---
-
-COMMENT ON COLUMN "user".last_match IS 'time (in seconds from 1970) of last match';
+COMMENT ON COLUMN player.name IS 'display name from forum';
 
 
 --
--- Name: COLUMN "user".online_type; Type: COMMENT; Schema: public; Owner: alan
+-- Name: COLUMN player.mu; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-COMMENT ON COLUMN "user".online_type IS 'O=opfflne, S=spectator, A=available, P=practicing, I=invite only, M=match';
-
-
---
--- Name: COLUMN "user".iid; Type: COMMENT; Schema: public; Owner: alan
---
-
-COMMENT ON COLUMN "user".iid IS 'if not null uid of person being invited';
+COMMENT ON COLUMN player.mu IS 'scoring';
 
 
 --
--- Name: COLUMN "user".invite_accepted; Type: COMMENT; Schema: public; Owner: alan
+-- Name: COLUMN player.sigma; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-COMMENT ON COLUMN "user".invite_accepted IS 'Set true if either invite accepted or anyone match set up';
-
-
---
--- Name: match_pkey; Type: CONSTRAINT; Schema: public; Owner: alan; Tablespace: 
---
-
-ALTER TABLE ONLY match
-    ADD CONSTRAINT match_pkey PRIMARY KEY (hid, aid, start_time);
+COMMENT ON COLUMN player.sigma IS 'scoring';
 
 
 --
--- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: alan; Tablespace: 
+-- Name: COLUMN player.last_match; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-ALTER TABLE ONLY "user"
-    ADD CONSTRAINT user_pkey PRIMARY KEY (uid);
-
-
---
--- Name: index_invite; Type: INDEX; Schema: public; Owner: alan; Tablespace: 
---
-
-CREATE INDEX index_invite ON "user" USING btree (iid);
+COMMENT ON COLUMN player.last_match IS 'time (in seconds from 1970) of last match';
 
 
 --
--- Name: match_aid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alan
+-- Name: COLUMN player.iid; Type: COMMENT; Schema: public; Owner: melindas_air
 --
 
-ALTER TABLE ONLY match
-    ADD CONSTRAINT match_aid_fkey FOREIGN KEY (aid) REFERENCES "user"(uid) ON UPDATE CASCADE ON DELETE CASCADE;
+COMMENT ON COLUMN player.iid IS 'if not null uid of person being invited';
 
 
 --
--- Name: match_hid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alan
+-- Name: COLUMN player.state; Type: COMMENT; Schema: public; Owner: melindas_air
+--
+
+COMMENT ON COLUMN player.state IS '0= offline, 1=spectator, 2 = play anyone, 3 = invite only, 4 = invite accepted, 5 = in match, 6 = in practice';
+
+
+--
+-- Name: COLUMN player.last_state; Type: COMMENT; Schema: public; Owner: melindas_air
+--
+
+COMMENT ON COLUMN player.last_state IS 'Time of last state change';
+
+
+--
+-- Name: match_mid_seq; Type: SEQUENCE; Schema: public; Owner: melindas_air
+--
+
+CREATE SEQUENCE match_mid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.match_mid_seq OWNER TO melindas_air;
+
+--
+-- Name: match_mid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: melindas_air
+--
+
+ALTER SEQUENCE match_mid_seq OWNED BY match.mid;
+
+
+--
+-- Name: mid; Type: DEFAULT; Schema: public; Owner: melindas_air
+--
+
+ALTER TABLE match ALTER COLUMN mid SET DEFAULT nextval('match_mid_seq'::regclass);
+
+
+--
+-- Name: match_pkey; Type: CONSTRAINT; Schema: public; Owner: melindas_air; Tablespace: 
 --
 
 ALTER TABLE ONLY match
-    ADD CONSTRAINT match_hid_fkey FOREIGN KEY (hid) REFERENCES "user"(uid) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT match_pkey PRIMARY KEY (mid);
 
 
 --
--- Name: user_iid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: alan
+-- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: melindas_air; Tablespace: 
 --
 
-ALTER TABLE ONLY "user"
-    ADD CONSTRAINT user_iid_fkey FOREIGN KEY (iid) REFERENCES "user"(uid) ON UPDATE SET NULL ON DELETE SET NULL;
+ALTER TABLE ONLY player
+    ADD CONSTRAINT user_pkey PRIMARY KEY (pid);
+
+
+--
+-- Name: index_invite; Type: INDEX; Schema: public; Owner: melindas_air; Tablespace: 
+--
+
+CREATE INDEX index_invite ON player USING btree (iid);
+
+
+--
+-- Name: match_aid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: melindas_air
+--
+
+ALTER TABLE ONLY match
+    ADD CONSTRAINT match_aid_fkey FOREIGN KEY (aid) REFERENCES player(pid) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: match_hid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: melindas_air
+--
+
+ALTER TABLE ONLY match
+    ADD CONSTRAINT match_hid_fkey FOREIGN KEY (hid) REFERENCES player(pid) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: user_iid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: melindas_air
+--
+
+ALTER TABLE ONLY player
+    ADD CONSTRAINT user_iid_fkey FOREIGN KEY (iid) REFERENCES player(pid) ON UPDATE SET NULL ON DELETE SET NULL;
 
 
 --

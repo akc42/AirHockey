@@ -37,18 +37,20 @@ require_once('db.php');
 
 // Set up a user record with type = spectator
 dbQuery('BEGIN;');
-$result=dbQuery('SELECT * FROM user WHERE uid = '.dbMakeSafe($uid).';');
+$result=dbQuery('SELECT * FROM player WHERE pid = '.dbMakeSafe($uid).';');
 if(dbNumRows($result) > 0) {
-	dbQuery('UPDATE participant SET last_poll = DEFAULT, name = '
-			.dbPostSafe($name).', online_type = '.SPECTATOR.' WHERE uid = '.dbMakeSafe($uid).';');
+	dbQuery('UPDATE player SET last_poll = DEFAULT, name = '
+			.dbPostSafe($name).', state = '.SPECTATOR.', last_state = DEFAULT WHERE pid = '.dbMakeSafe($uid).';');
 } else {
-	dbQuery('INSERT INTO user (uid,name,last_poll, online_type, mu, sigma) VALUES ('
-			.dbMakeSafe($uid).','.dbPostSafe($name).', DEFAULT,'.SPECTATOR.', DEFAULT,DEFAULT);');
+	dbQuery('INSERT INTO player (pid,name,last_poll, state, last_state, mu, sigma) VALUES ('
+			.dbMakeSafe($uid).','.dbPostSafe($name).', DEFAULT,'.SPECTATOR.',DEFAULT, DEFAULT,DEFAULT);');
 }
 dbQuery('COMMIT;');
 
 //Timeout users who are supposed to be on line, but haven't contacted for a while
 require('timeout.php');
+
+$time = time();
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
@@ -79,7 +81,7 @@ pageTracker._trackPageview();
 window.addEvent('domready', function() {
 	MBahladder.init({uid: <?php echo $uid;?>,
 				name: '<?php echo $name ; ?>',
-				password : '<?php echo sha1("Air".$uid); ?>'});
+				password : '<?php echo sha1("Air".$uid); ?>'},<?php echo $time ?>); 
 });
 window.addEvent('unload', function() {
 	MBahladder.logout();
@@ -113,49 +115,57 @@ window.addEvent('unload', function() {
 		<div id="matchlistheader">Recent and Current Matches</div>
 		<div class="match">
 			<div class="eventtitle">The Melinda Trophy</div>
-			<div class="side">
+			<div class="players">
 				<div class="user">Less Confused Today</div>
-				<div class="games">
-					<div class="game">7</div>
-					<div class="game">6</div>
-					<div class="game">0</div>
-				</div>
-			</div>
-			<div class="side">
 				<div class="user">Vickster</div>
-				<div class="games">
-					<div class="game">5</div>
-					<div class="game">7</div>
-					<div class="game">2</div>
-				</div>
+			</div>
+			<div class="game">
+				<div class="score">7</div>
+				<div class="score">5</div>
+			</div>
+			<div class="game">
+				<div class="score">6</div>
+				<div class="score">7</div>
+			</div>
+			<div class="game">
+				<div class="score">0</div>
+				<div class="score">2</div>
 			</div>
 			<div class="duration">1:15</div>
 		</div>
 		<div class="match">
 			<div class="eventtitle">The Melinda Trophy</div>
-			<div class="side">
+			<div class="players">
 				<div class="user">Less Confused Today</div>
-				<div class="games">
-					<div class="game">7</div>
-					<div class="game">6</div>
-					<div class="game">3</div>
-					<div class="game">2</div>
-					<div class="game">7</div>
-					<div class="game">7</div>
-					<div class="game">6</div>
-				</div>
-			</div>
-			<div class="side">
 				<div class="user">Alan</div>
-				<div class="games">
-					<div class="game">5</div>
-					<div class="game">7</div>
-					<div class="game">7</div>
-					<div class="game">7</div>
-					<div class="game">6</div>
-					<div class="game">3</div>
-					<div class="game">7</div>
-				</div>
+			</div>
+			<div class="game">
+				<div class="score">7</div>
+				<div class="score">5</div>
+			</div>
+			<div class="game">
+				<div class="score">6</div>
+				<div class="score">7</div>
+			</div>
+			<div class="game">
+				<div class="score">3</div>
+				<div class="score">7</div>
+			</div>
+			<div class="game">
+				<div class="score">2</div>
+				<div class="score">7</div>
+			</div>
+			<div class="game">
+				<div class="score">7</div>
+				<div class="score">6</div>
+			</div>
+			<div class="game">
+				<div class="score">7</div>
+				<div class="score">3</div>
+			</div>
+			<div class="game">
+				<div class="score">6</div>
+				<div class="score">7</div>
 			</div>
 			<div class="endmatch">08:20 pm 16-Mar-2009</div>
 		</div>
@@ -170,7 +180,7 @@ window.addEvent('unload', function() {
 				<input type="radio" name="playertype" value="I"/>By Invite Only</div>
 		</div>
 		<div id="onlineListHeader">Others Online</div>
-		<div class="onlineUser"><div class="ouser">Oldschool80s</div><div class="inviteFrom">F</div></div>
+		<div class="onlineUser"><div class="ouser">Oldschool80s</div><div class="byInvite">I</div></div>
 		<div class="onlineUser"><div class="ouser">Rhonda</div><div class="inviteFrom">F</div></div>
 		<div class="onlineUser"><div class="ouser">GHopper</div><div class="inviteTo">T</div></div>
 		<div class="onlineUser"><div class="ouser">Gemini2</div></div>
