@@ -33,8 +33,22 @@ $pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+');
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
 define ('AIRH',1);   //defined so we can control access to some of the files.
-//require_once('db.php');
+require_once('db.php');
 
+// Set up a user record with type = spectator
+dbQuery('BEGIN;');
+$result=dbQuery('SELECT * FROM user WHERE uid = '.dbMakeSafe($uid).';');
+if(dbNumRows($result) > 0) {
+	dbQuery('UPDATE participant SET last_poll = DEFAULT, name = '
+			.dbPostSafe($name).', online_type = '.SPECTATOR.' WHERE uid = '.dbMakeSafe($uid).';');
+} else {
+	dbQuery('INSERT INTO user (uid,name,last_poll, online_type, mu, sigma) VALUES ('
+			.dbMakeSafe($uid).','.dbPostSafe($name).', DEFAULT,'.SPECTATOR.', DEFAULT,DEFAULT);');
+}
+dbQuery('COMMIT;');
+
+//Timeout users who are supposed to be on line, but haven't contacted for a while
+require('timeout.php');
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
