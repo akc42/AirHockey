@@ -57,7 +57,7 @@ define('PRACTICE',				6); // practicing alone
 	function dbNumRows($result) {
 		return pg_num_rows($result);
 	}
-	function dbFetchRow($result) {
+	function dbFetch($result) {
 		return pg_fetch_assoc($result);
 	}
 	function dbFree($result){
@@ -65,8 +65,5 @@ define('PRACTICE',				6); // practicing alone
 	}
 	function dbRestartQuery($result) {
 		pg_result_seek($result,0);
-	}
-	function dbFetch($result) {
-		return pg_fetch_all($result);
 	}
 ?>

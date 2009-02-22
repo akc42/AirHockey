@@ -1,24 +1,55 @@
 MBahladder = function() {
-	opponent = {};
-	var controlType;
-	return {
-		init: function (me) {
-			
-			//Temp for testing
-			if (me.uid == 4) {
-				opponent.name = 'Joe';
-			} else {
-				opponent.name = 'Alan';
+	var requestresponse = function(response,errorstr) {
+		if(response) {
+			if(response.t) {
+				ropt.t = response.t; //set for next poll
+				if (response.matches) {
+					var x = false;
+				}
+				if (response.users) {
+					var y = false;
+				} else {
+					var z = false;
+				}
 			}
-			var newURL = 'play.php?pid='+me.uid+'&pn='+me.name+'&pp='+me.password+'&on='+opponent.name+'&ct=';
-			$('master').addEvent('click',function(e) {
-				window.location.assign(newURL+'M'); //leaves a back button to get out
+		} else {
+			var el = new Element('div',{'html':errorstr});
+			el.inject($('copyright'),'before');
+		}
+	};
+	var ropt;
+	var stateReq = new Request.JSON({url:'request.php',link:'cancel',onComplete:requestresponse});
+	var pollReq = new Request.JSON({url:'request.php',link:'cancel',onComplete:requestresponse});
+	var pollerID;
+	var poll = function() {
+		pollReq.post(ropt);
+	};
+	return {
+		init: function (param,initialstate,polldelay) {
+			ropt = param;  //save request options
+			var radio = $$('.pt');
+			//ensure intially the "Spectator" radio function is the only one checked
+			radio.each(function(item) {
+				if (item.value == initialstate) {
+					item.checked = true;
+				} else {
+					item.checked = false;
+				}
 			});
-			$('slave').addEvent('click',function(e) {
-				window.location.assign(newURL+'S'); //leaves a back button to get out
+			radio.addEvent('change',function(e) {
+				e.stop();
+				if(this.checked) {
+					//only do something if now checked
+					stateReq.post($merge(ropt,{state: this.value}));
+				} else {
+					var y = false; //just in case
+				}
 			});
+			pollerID = poll.periodical(polldelay);
 		},
-		logout: function () {
+		logout: function (statecode) {
+			$clear(pollerID); //stop poller
+			stateReq.post($merge(ropt,{state:statecode}));
 		}
 	}
 }();

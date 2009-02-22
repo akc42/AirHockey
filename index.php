@@ -11,6 +11,8 @@ error_reporting(E_ALL);
 
 define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
 define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
+define('AIR_HOCKEY_MAX_MATCHLIST_SIZE',		10);
+define('AIR_HOCKEY_POLL',				10000);  //milliseconds delay between polls for new info
 
 require_once(AIR_HOCKEY_PATH.'../forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
@@ -34,23 +36,23 @@ usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
 define ('AIRH',1);   //defined so we can control access to some of the files.
 require_once('db.php');
+$time = time();
 
 // Set up a user record with type = spectator
 dbQuery('BEGIN;');
 $result=dbQuery('SELECT * FROM player WHERE pid = '.dbMakeSafe($uid).';');
 if(dbNumRows($result) > 0) {
-	dbQuery('UPDATE player SET last_poll = DEFAULT, name = '
-			.dbPostSafe($name).', state = '.SPECTATOR.', last_state = DEFAULT WHERE pid = '.dbMakeSafe($uid).';');
+	dbQuery('UPDATE player SET last_poll = '.dbPostSafe($time).' , name = '
+			.dbPostSafe($name).', state = '.SPECTATOR.', last_state = '.dbPostSafe($time).' WHERE pid = '.dbMakeSafe($uid).';');
 } else {
 	dbQuery('INSERT INTO player (pid,name,last_poll, state, last_state, mu, sigma) VALUES ('
-			.dbMakeSafe($uid).','.dbPostSafe($name).', DEFAULT,'.SPECTATOR.',DEFAULT, DEFAULT,DEFAULT);');
+			.dbMakeSafe($uid).','.dbPostSafe($name).', '.dbPostSafe($time).','.SPECTATOR.','.dbPostSafe($time).', DEFAULT,DEFAULT);');
 }
 dbQuery('COMMIT;');
-
+dbFree($result);
 //Timeout users who are supposed to be on line, but haven't contacted for a while
 require('timeout.php');
 
-$time = time();
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
@@ -79,12 +81,11 @@ pageTracker._trackPageview();
 <script type="text/javascript">
 	<!--
 window.addEvent('domready', function() {
-	MBahladder.init({uid: <?php echo $uid;?>,
-				name: '<?php echo $name ; ?>',
-				password : '<?php echo sha1("Air".$uid); ?>'},<?php echo $time ?>); 
+	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ?>},
+		<?php echo SPECTATOR; ?>,<?php echo AIR_HOCKEY_POLL; ?>);
 });
 window.addEvent('unload', function() {
-	MBahladder.logout();
+	MBahladder.logout(<?php echo OFFLINE; ?>);
 	
 });
 	// -->
@@ -113,81 +114,106 @@ window.addEvent('unload', function() {
 	<a href="/forum"><img src="/static/images/exit-f.gif" /></a>
 	<div id="matchlist">
 		<div id="matchlistheader">Recent and Current Matches</div>
-		<div class="match">
-			<div class="eventtitle">The Melinda Trophy</div>
-			<div class="players">
-				<div class="user">Less Confused Today</div>
-				<div class="user">Vickster</div>
+<?php
+$nomatches = 0;
+$result = dbQuery('SELECT * FROM full_match WHERE end_time IS NULL ORDER BY start_time DESC;');
+while ($row=dbFetch($result)) {
+	$nomatches++;
+?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
+<?php
+	if (!isnull($row['eid'])) {
+?>			<div class="eventtitle"><?php echo $row['title'] ; ?></div>
+<?php
+	}
+?>			<div class="players">
+				<div class="user"><?php echo $row['hname'] ; ?></div>
+				<div class="user"><?php echo $row['aname'] ; ?></div>
 			</div>
-			<div class="game">
-				<div class="score">7</div>
-				<div class="score">5</div>
+<?php
+	for ($i=1;$i <= 7;$i++) {
+		if (!isnull($row['h'.$i])) {
+?>			<div class="game">
+				<div class="score"><?php echo $row['h'.$i] ; ?></div>
+				<div class="score"><?php echo $row['a'.$i] ; ?></div>
 			</div>
-			<div class="game">
-				<div class="score">6</div>
-				<div class="score">7</div>
-			</div>
-			<div class="game">
-				<div class="score">0</div>
-				<div class="score">2</div>
-			</div>
-			<div class="duration">1:15</div>
+<?php
+		}
+	}
+?>			<div class="duration"><?php echo $row['start_time'] ; ?></div>
 		</div>
-		<div class="match">
-			<div class="eventtitle">The Melinda Trophy</div>
-			<div class="players">
-				<div class="user">Less Confused Today</div>
-				<div class="user">Alan</div>
+<?php
+}
+dbFree($result);
+
+if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
+	$result = dbQuery('SELECT * FROM full_match WHERE end_time IS NOT NULL ORDER BY start_time DESC LIMIT '
+							.dbMakeSafe(AIR_HOCKEY_MAX_MATCHLIST_SIZE - $nomatches).';');
+	while ($row=dbFetch($result)) {
+		$nomatches++;
+?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
+<?php
+		if (!isnull($row['eid'])) {
+?>			<div class="eventtitle"><?php echo $row['title'] ; ?></div>
+<?php
+		}
+?>			<div class="players">
+				<div class="user"><?php echo $row['hname'] ; ?></div>
+				<div class="user"><?php echo $row['aname'] ; ?></div>
 			</div>
-			<div class="game">
-				<div class="score">7</div>
-				<div class="score">5</div>
+<?php
+		for ($i=1;$i <= 7;$i++) {
+			if (!isnull($row['h'.$i])) {
+?>			<div class="game">
+				<div class="score"><?php echo $row['h'.$i] ; ?></div>
+				<div class="score"><?php echo $row['a'.$i] ; ?></div>
 			</div>
-			<div class="game">
-				<div class="score">6</div>
-				<div class="score">7</div>
-			</div>
-			<div class="game">
-				<div class="score">3</div>
-				<div class="score">7</div>
-			</div>
-			<div class="game">
-				<div class="score">2</div>
-				<div class="score">7</div>
-			</div>
-			<div class="game">
-				<div class="score">7</div>
-				<div class="score">6</div>
-			</div>
-			<div class="game">
-				<div class="score">7</div>
-				<div class="score">3</div>
-			</div>
-			<div class="game">
-				<div class="score">6</div>
-				<div class="score">7</div>
-			</div>
-			<div class="endmatch">08:20 pm 16-Mar-2009</div>
+<?php
+			}
+		}
+?>			<div class="endmatch"><?php echo $row['end_time'] ; ?></div>
 		</div>
-	</div>
+<?php
+	}
+	dbFree($result);
+}
+?>	</div>
+		
 	<div id="online">
 		<div id="meOnline">
-			<div id="meHeader">Alan</div>
+			<div id="meHeader"><?php echo $name ; ?></div>
 			<div id="meOption">
-				<input type="radio" name="playertype" value="P"/>Practice<br/>
-				<input type="radio" name="playertype" value="S" checked="checked"/>Spectator<br/>
-				<input type="radio" name="playertype" value="A"/>Play Anyone<br/>
-				<input type="radio" name="playertype" value="I"/>By Invite Only</div>
+				<input type="radio" class="pt" name="playertype" value="<?php echo PRACTICE; ?>"/>Practice<br/>
+				<input type="radio" class="pt" name="playertype" value="<?php echo SPECTATOR; ?>" />Spectator<br/>
+				<input type="radio" class="pt" name="playertype" value="<?php echo ANYONE; ?>"/>Play Anyone<br/>
+				<input type="radio" class="pt" name="playertype" value="<?php echo INVITE; ?>"/>By Invite Only</div>
 		</div>
 		<div id="onlineListHeader">Others Online</div>
-		<div class="onlineUser"><div class="ouser">Oldschool80s</div><div class="byInvite">I</div></div>
-		<div class="onlineUser"><div class="ouser">Rhonda</div><div class="inviteFrom">F</div></div>
-		<div class="onlineUser"><div class="ouser">GHopper</div><div class="inviteTo">T</div></div>
-		<div class="onlineUser"><div class="ouser">Gemini2</div></div>
-		<div class="onlineUser"><div class="ouser">MCaro05</div><div class="free">A</div></div>
-		<div class="onlineUser"><div class="ouser">Vickster</div><div class="inmatch">M</div></div>
-		<div class="onlineUser"><div class="ouser">Less Confused Today</div><div class="inmatch">M</div></div>
-	</div>
+<?php
+//$result=dbQuery('SELECT * FROM player WHERE state != 0 AND pid != '.dbMakeSafe($uid).' ORDER BY last_state DESC;');
+$result=dbQuery('SELECT * FROM player WHERE state != 0 ORDER BY last_state DESC;');
+while($row=dbFetch($result)) {
+?>		<div class="onlineUser"><div class="ouser"><?php echo $row['name'] ; ?></div><?php
+	$state = $row['state'];
+	if($state == ACCEPTED || $state == MATCH || $state == PRACTICE) {
+?><div class="inmatch"><?php echo (($state == PRACTICE)?"P":"M") ; ?></div><?php
+	} else {
+		if ($state == ANYONE) {
+?><div class="free">A</div><?php
+		} else {
+			if ($state == INVITE) {
+				if (!isnull($row['iid']) && $row['iid'] == $uid) {
+?><div class="inviteTo">T</div><?php
+				} else {
+?><div class="byInvite">I</div><?php
+				}
+			}
+		}
+	}
+?></div>
+<?php
+}
+dbFree($result);
+?>	</div>
 	<div style="clear:both"></div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>

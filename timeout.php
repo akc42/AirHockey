@@ -9,15 +9,17 @@ define('AIR_HOCKEY_MATCH_REMOVE', 100000); //Approx two months after match we re
 $offline=time() - 60*AIR_HOCKEY_OFFLINE_USER;  //calculate when the last poll should have been
 $abandon = time() - 60*AIR_HOCKEY_MATCH_ABANDON;
 $remove = time() - 60*AIR_HOCKEY_MATCH_REMOVE;
-
 dbQuery('BEGIN;');
 $result = dbQuery('SELECT mid,hid,aid, start_time, end_time, last_activity FROM match WHERE last_activity < '.dbMakeSafe($abandon).' AND end_time IS NULL ;');
 while ($row = dbFetch($result)) {
+	$sql = 'UPDATE player SET state = '.OFFLINE.' WHERE state = '.MATCH
+			.' AND (pid = '.dbMakeSafe($row['hid']).' OR pid = '.dbMakeSafe($row['aid']).') ;';
+	echo $sql;
 	dbQuery('UPDATE player SET state = '.OFFLINE.' WHERE state = '.MATCH
 			.' AND (pid = '.dbMakeSafe($row['hid']).' OR pid = '.dbMakeSafe($row['aid']).') ;');
 	dbQuery('DELETE FROM match WHERE mid = '.dbMakeSafe($row['mid']).';');
 }
-dbQuery('UPDATE player SET state = '.OFFLINE.' WHERE last_poll < '.dbMakeSafe($offline).' AND state BETWEEN 1 AND 3 ;');
+dbQuery('UPDATE player SET state = '.OFFLINE.' WHERE last_poll < '.dbMakeSafe($offline).' AND state BETWEEN '.SPECTATOR.' AND '.INVITE.' ;');
 dbQuery('DELETE FROM match WHERE start_time < '.dbMakeSafe($remove).' AND eid IS NULL;');
 dbQuery('COMMIT;');
 ?>
