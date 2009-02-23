@@ -189,10 +189,9 @@ if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
 		</div>
 		<div id="onlineListHeader">Others Online</div>
 <?php
-//$result=dbQuery('SELECT * FROM player WHERE state != 0 AND pid != '.dbMakeSafe($uid).' ORDER BY last_state DESC;');
-$result=dbQuery('SELECT * FROM player WHERE state != 0 ORDER BY last_state DESC;');
+$result=dbQuery('SELECT * FROM player WHERE state != 0 AND pid != '.dbMakeSafe($uid).' ORDER BY last_state DESC;');
 while($row=dbFetch($result)) {
-?>		<div class="onlineUser"><div class="ouser"><?php echo $row['name'] ; ?></div><?php
+?>		<div id="<?php echo 'U'.$row['pid']; ?>" class="onlineUser"><div class="ouser"><?php echo $row['name'] ; ?></div><?php
 	$state = $row['state'];
 	if($state == ACCEPTED || $state == MATCH || $state == PRACTICE) {
 ?><div class="inmatch"><?php echo (($state == PRACTICE)?"P":"M") ; ?></div><?php
@@ -206,6 +205,8 @@ while($row=dbFetch($result)) {
 				} else {
 ?><div class="byInvite">I</div><?php
 				}
+			} else {
+?><div>&nbsp;</div><?php
 			}
 		}
 	}

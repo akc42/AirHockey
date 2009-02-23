@@ -45,8 +45,14 @@ if(!($user=dbFetch($result))) {
 }
 dbFree($result);
 
+$state = $user['state'];
+if($state == OFFLINE || $state == MATCH || $state == PRACTICE) {
+	$state = SPECTATOR ;
+	$user['last_state'] = $now;
+}
+
 // First check if supposed to be joining a match
-if($user['state'] == ACCEPTED) {
+if($state == ACCEPTED) {
 	//If I was going offline, or expecting to practice, I can't join match and must tell other end to abandon
 	if(isset($_POST['state']) && ($_POST['state'] == OFFLINE || $_POST['state'] == PRACTICE)) {
 		//Other end will be sitting reading my msg pipe
@@ -57,10 +63,10 @@ if($user['state'] == ACCEPTED) {
 		fclose($sendpipe);
 		$response=fread($readpipe,10);
 		fclose($readpipe); //
-		$user['state'] = $_POST['state'];
-		echo '{"State":"'.$user['state'].'"}';
+		$state = $_POST['state'];
+		echo '{"State":"'.$state.'"}';
 	} else {
-		$user['state'] = MATCH ; //we will now be in a match
+		$state = MATCH ; //we will now be in a match
 		echo '{"State":'.MATCH.',"mid":'.$user['iid'].'}';
 	}
 	$user['last_state'] = $now;
@@ -79,12 +85,14 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 				$mid = $m['mid'];
 				dbFree($r);
 				dbQuery('UPDATE player SET state = '.ACCEPTED.', iid = '.dbPostSage($mid).' WHERE pid = '.dbMakeSafe($row['pid']).';');
-				$user['state'] = MATCH ;
+				$state = MATCH ;
 				echo '{"State":'.MATCH.',"mid":'.$mid.'}';
+			} else {
+				$state = ANYONE ;
 			}
 			dbFree($result);
 		} else {
-			$user['state'] = $_POST['state'];
+			$state = $_POST['state'];
 		}
 		$user['last_state'] = $now;
 	} else {
@@ -116,7 +124,7 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 						$mid = $m['mid'];
 						dbFree($r);
 						dbQuery('UPDATE player SET state = "R", iid = '.dbPostSafe($mid).', last_state = '.dbPostSafe($now).' WHERE pid = '.dbMakeSafe($oid).';');
-						$user['state'] = MATCH ;
+						$state = MATCH ;
 						echo '{"State":'.MATCH.',"mid":'.$mid.'}';
 					}
 				}
@@ -126,15 +134,19 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 
 }
 
-dbQuery('UPDATE player SET state = '.dbPostSafe($user['state']).', last_state = '.dbPostSafe($user['last_state'])
+dbQuery('UPDATE player SET state = '.dbPostSafe($state).', last_state = '.dbPostSafe($user['last_state'])
 		.', iid = '.dbPostSafe($user['iid']).', last_poll = '.dbPostSafe($now).' WHERE pid = '.dbMakeSafe($uid).';');
 dbQuery('COMMIT;');
-if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] == INVITE ) {
+
+//Timeout users who are supposed to be on line, but haven't contacted for a while and old matches.
+require('timeout.php');
+
+if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 
 	$matches = false;
 
 	echo '{';
-
+	if ($state != $user['state']) echo '"state":'.$state.',';
 	$result = dbQuery('SELECT * FROM full_match WHERE last_activity >= '.$last.' ORDER BY start_time DESC;');
 	if(dbNumRows($result) != 0) {
 		echo '"matches":[' ;
@@ -145,28 +157,32 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 				$matches = true;
 			}
 			echo '{"mid":'.$row['mid'] ;
-			if (!isnull($row['eid'])) echo ',"event":"'.$row['title'].'"';
-			echo ',"hname":"'.$row['hname'].'","aname":"'.$row['aname'].'"';
-			echo ',"stime":'.$row['start_time'] ;
-			if (!isnull($row['end_time'])) echo ',"etime":'.$row['end_time'];
-			if (!isnull($row['h1'])) {
-				echo ',"games" ;[['.$row['h1'].','.$row['a1'].']';
-				for ($i=2;$i<=7;$i++) {
-					if(!isnull($row['h'.i])) {
-						echo ',['.$row['h'.i].','.$row['a'.i].']';
-					} else {
-						break;
+			if (!isnull($row['abandon'])) {
+				echo ',"abandon":true}' ;
+			} else {
+				if (!isnull($row['eid'])) echo ',"event":"'.$row['title'].'"';
+				echo ',"hname":"'.$row['hname'].'","aname":"'.$row['aname'].'"';
+				echo ',"stime":'.$row['start_time'] ;
+				if (!isnull($row['end_time'])) echo ',"etime":'.$row['end_time'];
+				if (!isnull($row['h1'])) {
+					echo ',"games" ;[['.$row['h1'].','.$row['a1'].']';
+					for ($i=2;$i<=7;$i++) {
+						if(!isnull($row['h'.i])) {
+							echo ',['.$row['h'.i].','.$row['a'.i].']';
+						} else {
+							break;
+						}
 					}
+					echo ']';
 				}
-				echo ']';
+				echo '}';
 			}
-			echo '}';
 		}
 		echo '],';
 	}
 	dbFree($result);
 	$users = false;
-	$result = dbQuery('SELECT * FROM player WHERE last_state >= '.$last.' ORDER BY last_state DESC;');
+	$result = dbQuery('SELECT * FROM player WHERE last_state >= '.$last.' AND pid != '.dbMakeSafe($uid).' ORDER BY last_state DESC;');
 	if (dbNumRows($result) != 0 || $oid != 0 || $oldiid != 0) {
 		echo '"users":[' ;
 		while($row=dbFetch($result)) {
@@ -202,7 +218,7 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 			} else {
 				$users = true;
 			}
-			echo '{"pid":'.$oldiid.', "state":"I"}';
+			echo '{"pid":'.$oldiid.', "state":3}';
 		}
 		if ($oid !=0) {
 			//No change to record we invited so include now
@@ -211,13 +227,13 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 			} else {
 				$users = true;
 			}
-			echo '{"pid":'.$oid.', "state":"T"}';
+			echo '{"pid":'.$oid.',"state":3, "invite":"T"}';
 		}
 		echo '],';
 	}
 	echo  '"t":'.$now.'}';
 } else {
-	if($user['state'] == PRACTICE ) {
+	if($state == PRACTICE ) {
 		echo '{"state":'.PRACTICE.'}';
 	}
 }

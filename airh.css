@@ -273,7 +273,7 @@ body, td, th
 	cursor:pointer;
 }
 
-#master:hover, #master:active. #slave:hover,#slave:active {border-style:inset;}
+#master:hover, #master:active, #slave:hover,#slave:active {border-style:inset;}
 
 #tablesurround {
 	padding:5px 10px;
@@ -354,6 +354,5 @@ body, td, th
 	font-size:xx-large;
 	padding:2px;
 }
-	
 
 
