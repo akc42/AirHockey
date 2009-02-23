@@ -153,10 +153,10 @@ MBahladder = function() {
 				}
 				if (response.state) {
 					if(response.state == 5) {
-						//start a match
+						window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass+'&mid='+response.mid);
 					} else {
 						if(response.state == 6) {
-							//start practicing
+							window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass);
 						}
 					}
 				}
