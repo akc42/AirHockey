@@ -63,7 +63,7 @@ require('timeout.php');
 	<!--[if lt IE 7]>
 		<link rel="stylesheet" type="text/css" href="airh-ie.css"/>
 	<![endif]-->
-	<script src="/static/scripts/mootools-1.2-core.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="/static/scripts/mootools-1.2-core-nc.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>
@@ -121,7 +121,7 @@ while ($row=dbFetch($result)) {
 	$nomatches++;
 ?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
 <?php
-	if (!isnull($row['eid'])) {
+	if (!is_null($row['eid'])) {
 ?>			<div class="eventtitle"><?php echo $row['title'] ; ?></div>
 <?php
 	}
@@ -131,7 +131,7 @@ while ($row=dbFetch($result)) {
 			</div>
 <?php
 	for ($i=1;$i <= 7;$i++) {
-		if (!isnull($row['h'.$i])) {
+		if (!is_null($row['h'.$i])) {
 ?>			<div class="game">
 				<div class="score"><?php echo $row['h'.$i] ; ?></div>
 				<div class="score"><?php echo $row['a'.$i] ; ?></div>
@@ -152,7 +152,7 @@ if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
 		$nomatches++;
 ?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
 <?php
-		if (!isnull($row['eid'])) {
+		if (!is_null($row['eid'])) {
 ?>			<div class="eventtitle"><?php echo $row['title'] ; ?></div>
 <?php
 		}
@@ -162,7 +162,7 @@ if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
 			</div>
 <?php
 		for ($i=1;$i <= 7;$i++) {
-			if (!isnull($row['h'.$i])) {
+			if (!is_null($row['h'.$i])) {
 ?>			<div class="game">
 				<div class="score"><?php echo $row['h'.$i] ; ?></div>
 				<div class="score"><?php echo $row['a'.$i] ; ?></div>
@@ -182,10 +182,12 @@ if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
 		<div id="meOnline">
 			<div id="meHeader"><?php echo $name ; ?></div>
 			<div id="meOption">
-				<input type="radio" class="pt" name="playertype" value="<?php echo PRACTICE; ?>"/>Practice<br/>
-				<input type="radio" class="pt" name="playertype" value="<?php echo SPECTATOR; ?>" />Spectator<br/>
-				<input type="radio" class="pt" name="playertype" value="<?php echo ANYONE; ?>"/>Play Anyone<br/>
-				<input type="radio" class="pt" name="playertype" value="<?php echo INVITE; ?>"/>By Invite Only</div>
+				<div class="ps" id="<?php echo 'S'.PRACTICE; ?>" >Practice</div>
+				<div class="ps" id="<?php echo 'S'.SPECTATOR; ?>" >Spectator<img src="tick.gif" alt="Selected" /></div>
+				<div class="ps" id="<?php echo 'S'.INVITE; ?>" >By Invites Only</div>
+				<div class="ps" id="<?php echo 'S'.ANYONE; ?>" >Will Play Anyone</div>
+			</div>
+			
 		</div>
 		<div id="onlineListHeader">Others Online</div>
 <?php
@@ -200,7 +202,7 @@ while($row=dbFetch($result)) {
 ?><div class="free">A</div><?php
 		} else {
 			if ($state == INVITE) {
-				if (!isnull($row['iid']) && $row['iid'] == $uid) {
+				if (!is_null($row['iid']) && $row['iid'] == $uid) {
 ?><div class="inviteTo">T</div><?php
 				} else {
 ?><div class="byInvite">I</div><?php

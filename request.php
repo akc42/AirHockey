@@ -157,17 +157,17 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 				$matches = true;
 			}
 			echo '{"mid":'.$row['mid'] ;
-			if (!isnull($row['abandon'])) {
+			if (!is_null($row['abandon'])) {
 				echo ',"abandon":true}' ;
 			} else {
-				if (!isnull($row['eid'])) echo ',"event":"'.$row['title'].'"';
+				if (!is_null($row['eid'])) echo ',"event":"'.$row['title'].'"';
 				echo ',"hname":"'.$row['hname'].'","aname":"'.$row['aname'].'"';
 				echo ',"stime":'.$row['start_time'] ;
-				if (!isnull($row['end_time'])) echo ',"etime":'.$row['end_time'];
-				if (!isnull($row['h1'])) {
+				if (!is_null($row['end_time'])) echo ',"etime":'.$row['end_time'];
+				if (!is_null($row['h1'])) {
 					echo ',"games" ;[['.$row['h1'].','.$row['a1'].']';
 					for ($i=2;$i<=7;$i++) {
-						if(!isnull($row['h'.i])) {
+						if(!is_null($row['h'.i])) {
 							echo ',['.$row['h'.i].','.$row['a'.i].']';
 						} else {
 							break;

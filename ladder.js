@@ -167,9 +167,9 @@ MBahladder = function() {
 		}
 	};
 	var ropt;
-	var stateReq = new Request.JSON({url:'request.php',link:'chain',onComplete:requestresponse});
-	var pollReq = new Request.JSON({url:'request.php',link:'chain',onComplete:requestresponse});
-	var cmdReq = new Request.JSON({url:'request.php',link:'chain',onComplete:requestresponse});
+	var stateReq = new Request.JSON({url:'request.php?var=1',link:'chain',onComplete:requestresponse});
+	var pollReq = new Request.JSON({url:'request.php?var=2',link:'chain',onComplete:requestresponse});
+	var cmdReq = new Request.JSON({url:'request.php?var=3',link:'chain',onComplete:requestresponse});
 	var pollerID;
 	var poll = function() {
 		pollReq.post(ropt);
@@ -178,28 +178,21 @@ MBahladder = function() {
 	var duration = function() {
 		$$('match').each(function(match) { formatDuration(match);});
 	};
-
+	var personalState;
 	return {
 		init: function (param,initialstate,polldelay) {
 			ropt = param;  //save request options
 			timeOffset = new Date().getTime()/1000 - ropt.t;
-			var radio = $$('.pt');
-			//ensure intially the "Spectator" radio function is the only one checked
-			radio.each(function(item) {
-				if (item.value == initialstate) {
-					item.checked = true;
-				} else {
-					item.checked = false;
-				}
-			});
-			radio.addEvent('change',function(e) {
+			personalState = $('S'+initialstate);
+			$$('.ps').addEvent('click',function(e) {
 				e.stop();
-				if(this.checked) {
-					//only do something if now checked
-					stateReq.post($merge(ropt,{state: this.value.toInt()}));
-				} else {
-					var y = false; //just in case
-				}
+				var pstext = personalState.get('text');
+				personalState.set('html',pstext); //This should remove the tick image
+				personalState = this;
+				pstext = this.get('text');
+				this.set('html', pstext+'<img src="tick.gif" alt="selected" />') ;
+				//only do something if now checked
+				stateReq.post($merge(ropt,{state: this.get('id').substr(1).toInt()}));
 			});
 			//Go through matches and set the durations up, and then kick of regular update
 			$$('.match').each(function(match) {
