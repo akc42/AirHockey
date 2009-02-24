@@ -2,7 +2,7 @@
 if (!defined('AIRH'))
 	die('Hacking attempt...');
 
-define('AIR_HOCKEY_OFFLINE_USER',	120); //No of minutes before online user goes offline through lack of activity
+define('AIR_HOCKEY_OFFLINE_USER',	5); //No of minutes before online user goes offline through lack of activity
 define('AIR_HOCKEY_MATCH_ABANDON', 10); //No of minutes before lack of match action assumes match to be abandoned
 define('AIR_HOCKEY_MATCH_REMOVE', 100000); //Approx two months after match we remove friendlies (tournament matches are kept forever);
 

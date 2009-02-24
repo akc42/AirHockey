@@ -100,6 +100,15 @@ body, td, th
 	position:relative;
 }
 
+#exittoforum {
+	cursor:pointer;
+	border:2px outset #F4FAFC;
+}
+
+#exittoforum:hover, #exittoforum:active {
+	border:2px inset #F4FAFC;
+}
+
 #matchlist {
 	float:left;
 	width:458px;
@@ -293,6 +302,8 @@ body, td, th
 	padding:5px 10px;
 	background-color:#99FF33;
 	width:282px;
+	float:left;
+	margin:10px;
 }
 #opgoal, #mygoal {
 	background-color:#FF0000;
@@ -344,29 +355,38 @@ body, td, th
 	background-color:yellow;
 	color:black;
 	border:1px solid black;
-	width:300px;
-	height:200px;
-	position:absolute;
-	right:100px;
-	top:200px;
+	width:458px;
+	margin:10px 0 0 322px;	
 }
 
 #state {
 	background-color:white;
-	margin:5px;
-	border:2px solid black;
-	height:20px;
+	margin:3px;
+	padding:2px;
+	border:1px solid black;
+	height:22px;
+	width:317px;
+	font-size:20px
 }
 #countdown {
 	background-color:white;
 	margin:5px;
 	border:2px solid black;
-	width:1em;
-	height:1em;
+	width:48px;
+	height:48px;
 	text-align:center;
-	vertical-align:middle;
-	font-size:xx-large;
+	font-size:44px;
 	padding:2px;
+	float:right;
 }
 
+#server {
+	width:100px;
+	height:25px;
+	margin:5px 20px;
+	float:left;
+}
 
+.serve {
+	background-image:url("server.gif");
+}

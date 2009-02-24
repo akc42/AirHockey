@@ -111,7 +111,7 @@ window.addEvent('unload', function() {
 </tbody>
 </table>
 <div id="content">
-	<a href="/forum"><img src="/static/images/exit-f.gif" /></a>
+	<img id="exittoforum" src="/static/images/exit-f.gif" />
 	<div id="matchlist">
 		<div id="matchlistheader">Recent and Current Matches</div>
 <?php

@@ -139,11 +139,11 @@ MBahladder = function() {
 									break;
 								case 4:
 								case 5:
-									d.addClass('inMatch');
+									d.addClass('inmatch');
 									d.set('text','M');
 									break;
 								case 6:
-									d.addClass('inMatch');
+									d.addClass('inmatch');
 									d.set('text','P');
 									break;
 								default:
@@ -151,13 +151,13 @@ MBahladder = function() {
 						}	
 					});
 				}
-				if (response.state) {
-					if(response.state == 5) {
-						window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass+'&mid='+response.mid);
-					} else {
-						if(response.state == 6) {
-							window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass);
-						}
+			}
+			if (response.state) {
+				if(response.state == 5) {
+					window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass+'&mid='+response.mid);
+				} else {
+					if(response.state == 6) {
+						window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass);
 					}
 				}
 			}
@@ -210,13 +210,17 @@ MBahladder = function() {
 			});
 			// For each online user, set up the function of what to do when we click on him
 			$$('.userOnline').addEvent('click',userclick);
+			$('exittoforum').addEvent('click',function(e) {
+				stateReq.post($merge(ropt,{state:0})); //say going offline
+				MBahladder.logout();
+				window.location.assign('/forum/index.php');
+			});
 			pollerID = poll.periodical(polldelay);
 			durationID = duration.periodical(1000);
 		},
-		logout: function (statecode) {
+		logout: function () {
 			$clear(pollerID); //stop poller
 			$clear(durationID);
-			stateReq.post($merge(ropt,{state:statecode}));
 		}
 	}
 }();

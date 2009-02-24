@@ -123,15 +123,15 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 						$m = dbFetch($r);
 						$mid = $m['mid'];
 						dbFree($r);
-						dbQuery('UPDATE player SET state = "R", iid = '.dbPostSafe($mid).', last_state = '.dbPostSafe($now).' WHERE pid = '.dbMakeSafe($oid).';');
+						dbQuery('UPDATE player SET state = '.ACCEPTED.', iid = '.dbPostSafe($mid).', last_state = '.dbPostSafe($now)
+								.' WHERE pid = '.dbMakeSafe($oid).';');
 						$state = MATCH ;
 						echo '{"State":'.MATCH.',"mid":'.$mid.'}';
 					}
 				}
 			}
 		}
-	}							
-
+	}
 }
 
 dbQuery('UPDATE player SET state = '.dbPostSafe($state).', last_state = '.dbPostSafe($user['last_state'])
@@ -146,7 +146,9 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 	$matches = false;
 
 	echo '{';
-	if ($state != $user['state']) echo '"state":'.$state.',';
+	if ($state != $user['state']) {
+		echo '"state":'.$state.',';
+	}
 	$result = dbQuery('SELECT * FROM full_match WHERE last_activity >= '.$last.' ORDER BY start_time DESC;');
 	if(dbNumRows($result) != 0) {
 		echo '"matches":[' ;
