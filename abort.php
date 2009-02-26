@@ -4,11 +4,11 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
-if(!(isset($_POST['pid'])  && isset($_POST['pp'])&& isset($_POST['rw'])&& isset($_POST['ms'])))
+if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['oid'])))
 	die('Log - Hacking attempt - wrong parameters');
-$pid = $_POST['pid']; //extra security for abort so it doesn't get missued
-if ($_POST['pp'] != sha1("Air".$pid))
-	die('Log - Hacking attempt got: '.$_POST['pp'].' expected: '.sha1("Air".$pid));
+$uid = $_POST['user']; //extra security for abort so it doesn't get missued
+if ($_POST['pass'] != sha1("Air".$uid))
+	die('Log - Hacking attempt got: '.$_POST['pass'].' expected: '.sha1("Air".$uid));
 // Link to SMF forum as this is only for logged in members
 // Show all errors:
 error_reporting(E_ALL);
@@ -23,11 +23,13 @@ if($user_info['is_guest']) {
 	header( 'Location: /static/airhockey.html' ) ;
 	exit;
 };
-$uid = $ID_MEMBER;
-if ($uid != $pid)
+if ($uid != $ID_MEMBER)
 	die('Log - Hacking attempt - invalid user id');
 
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_POST['rw'] == 'r')?(($_POST['ms'] == 'm')?'mmsg':'smsg'):(($_POST['ms'] == 'm')?'mack':'sack')),'r+');
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //If opponent has gone away, I open his message pipe and that releases me
+usleep(10000);  //give the other side of the pipe a chance to wake up and notice
+fclose($pipe)
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$uid,'r+'); //If opponent has gone away, I open my ack pipe and that releases me
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe)
 ?>

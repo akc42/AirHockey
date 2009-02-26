@@ -18,7 +18,9 @@ while ($row = dbFetch($result)) {
 			.' AND (pid = '.dbMakeSafe($row['hid']).' OR pid = '.dbMakeSafe($row['aid']).') ;');
 	dbQuery('UPDATE match SET abandon = "A", last_activity = '.$rightnow.', end_time = '.$rightnow.' WHERE mid = '.dbMakeSafe($row['mid']).';');
 }
-dbQuery('UPDATE player SET state = '.OFFLINE.' WHERE last_poll < '.$offline.' AND state BETWEEN '.SPECTATOR.' AND '.INVITE.' ;');
+dbQuery('UPDATE player SET state = '.OFFLINE.' , last_state = '.$rightnow
+		.' WHERE ( last_poll < '.$offline.' AND state BETWEEN '.SPECTATOR.' AND '.INVITE.' )'
+		.' OR ( last_poll < '.$abandon.' AND state = '.PRACTICE.' );');
 dbQuery('DELETE FROM match WHERE (start_time < '.$remove.' AND eid IS NULL) OR (abandon IS NOT NULL AND end_time < '.$abandon.') ;');
 dbQuery('COMMIT;');
 ?>

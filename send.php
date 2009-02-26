@@ -4,13 +4,13 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
-if(!(isset($_POST['ms'])  && isset($_POST['msg'])))
+if(!(isset($_POST['uid']) && isset($_POST['msg'])))
 	die('Log - Hacking attempt - wrong parameters');
 define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
 define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_POST['ms'] == 'm')?'mmsg':'smsg'),'r+');
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.(($_POST['ms'] == 'm')?'mack':'sack'),'r');
+$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['uid'],'r+');
+$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r');
 fwrite($sendpipe,"$".$_POST['msg']);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);

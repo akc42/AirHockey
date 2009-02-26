@@ -17,7 +17,8 @@ define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have 
 define('AIR_HOCKEY_MALLET_DELAY',		30);   // Ticks between when mallet positions get sent
 define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
 define('AIR_HOCKEY_OFFSET_COUNT',		10);	//how many measurements of time offset do we need to get a good average
-define('AIR_HOCKEY_RESTART_DELAY',		5000);  //milliseconds before restarting game start countdown after foul or goal
+define('AIR_HOCKEY_RESTART_DELAY',		10);  //Seconds you have after foul or goal to place puck
+define('AIR_HOCKEY_INDEX_DELAY',		20);  //Seconds to leave messaage on screen about problem, before returning to index page
 
 define ('AIRH',1);   //defined so we can control access to some of the files.
 require_once('db.php');
@@ -46,6 +47,7 @@ if (isset($_GET['mid'])) {
 	}
 } else {
 	$oid = false;  //No opponent, so say am practicing
+	$opName = '&nbsp;' ;
 	$result = dbQuery('SELECT name FROM player WHERE pid = '.dbMakeSafe($uid).';');
 	if($row=dbFetch($result)) {
 		$myName = $row['name'];
@@ -74,7 +76,6 @@ dbFree($result);
 window.addEvent('domready', function() {
 	MBahplay.init({
 			uid: <?php echo $uid;?>,
-			name: '<?php echo $myName ; ?>',
 			password: '<?php echo sha1("Air".$uid); ?>',
 			practice: <?php echo (($oid)?'false':'true') ; ?>
 		},
@@ -86,13 +87,13 @@ window.addEvent('domready', function() {
 			mallet: <?php echo AIR_HOCKEY_MALLET_DELAY ; ?>,
 			myside: <?php echo AIR_HOCKEY_MYSIDE_TIMEOUT ; ?>,
 			count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>,
-			restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>
+			restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>,
+			index:<?php echo AIR_HOCKEY_INDEX_DELAY ;?>
 		}
 <?php
 if($oid) { // not a practice
 ?>		,{
-			uid: <?php echo $oid;?>,
-			name: '<?php echo $opName ;?>',
+			oid: <?php echo $oid;?>,
 			master: <?php echo (($isMaster)?'true':'false'); ?>,
 			mid: <?php echo $mid; ?>
 		}
@@ -149,13 +150,13 @@ soundManager.onload = function() {
 
 	// -->
 </script>
-<a href="index.php">Return to Index Page</a>
+
 <div id="content">
 	<div id="tablesurround">
 		<div id="opgoal"></div>			
 		<div id="table">
 			<img id="puck" src="puck.gif"/>
-			<img id="opmallet" src="mallet.gif"/>
+			<img id="opmallet" src="mallet.gif" />
 			<div id="myarea"><img id="mymallet" src="mallet.gif"/></div>
 		</div>
 		<div id="mygoal"></div>	
@@ -164,6 +165,7 @@ soundManager.onload = function() {
 		<div id="countdown"></div>
 		<div id="state"></div>
 		<div id="server" ></div><div id="faceoff"></div>
+		<div style="clear:both"></div>
 		<div class="match">
 <?php
 if ($oid && !is_null($row['eid'])) {
@@ -172,9 +174,9 @@ if ($oid && !is_null($row['eid'])) {
 }
 ?>			<div class="players">
 				<div class="user"><?php echo $myName ; ?></div>
-				<div class="user"><?php if ($oid) echo $opName ; ?></div>
+				<div class="user"><?php echo $opName ; ?></div>
 			</div>
-			<div class="game">
+			<div id="firstgame" class="game">
 				<div class="score">0</div>
 				<div class="score">0</div>
 			</div>
@@ -182,6 +184,7 @@ if ($oid && !is_null($row['eid'])) {
 
 		</div>
 		<div id="message"></div>
+		<img id="abandonmatch" src="/static/images/exit.gif" alt="abandonmatch" />
 	</div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
