@@ -1,644 +1,902 @@
-MBahplay = function() {
-	var myParams;
-	var Comms = function () {
-		var abortReq = new Request.JSON({url:'abort.php',link:'chain'});
-		var sopt ;
-		var ropt ;
-		var failFunc = null;
-		var sendCompleteFunc = null;
-		var readSuccFunc = null;
-		var sendReq = new Request.JSON({url:'send.php',onComplete: function(response) {
-			if (sendCompleteFunc) sendCompleteFunc(response.time);
-		}});
-		var readReq = new Request.JSON({url:'read.php',onComplete: function(response,errorstr) {
-			if (response) {
-				if (response.ok) {
-					readSuccFunc(response.time,response.msg);
-				} else {
-					failFunc(response.time);
-				}
-			}
-		}});
-		return {
-			init: function(uid,oid,fail) {
-				sopt = {uid:uid,msg:''}; //always write to my pipe
-				ropt =  {uid:oid};  //always read from opponents pipe
-				failFunc = fail;
-			},
-			read: function (success) {
-				readSuccFunc = success;
-				readReq.post(ropt);
-			},
-			write: function (msg,success) {
-				sendCompleteFunc = success;
-				sopt.msg=msg;
-				sendReq.post(sopt);
-			},
-			die: function () {
-				abortReq.post($merge(myParams,{oid:ropt.uid}));  //kill off all of my requests
+var Play = new Class({
+	initialize: function(mid,startTime,me,oid,master,timers,els) {
+		var play = function(sound) {
+			if(soundReady) soundManager.play(sound);
+		}
+		this.match = new Match(this.table,this.opponent,this.scoreboard,timers,play);
+		this.table = new Table(this.match,this.opponent,scoreboard,timers,els,play);
+		this.scoreboard = new Scoreboard(mid,startTime,me,master,els,play);
+		//this needs to be last, as it starts everything off - the rest has to be set up before it
+		if (mid == 0) {
+			//this is a practice
+			this.opponent = new Practice(timers,this.match,this.table);
+			els.opmallet.addClass('hidden'); // hide other mallet
+		} else {
+			this.opponent = new Opponent(me,oid,master,timers,this.match,this.table,els);
+		}
+		els.abandon.addEvent('click', function(e) {
+			e.stop();
+			this.match.abandon();
+			window.location.assign('index.php');
+		});
+	},
+	end: function() {
+		this.match.end();
+	}
+});
+
+var Practice = new Class({
+//'my' in this class refers to the opponent, which I am simulating
+	initialize: function(timers,match,table) {
+		this.timers = timers;
+		this.match = match;
+		this.table = table;
+		this.scorer = new Scorer({score:function(b){},game:function(b){},match:function(b){}});
+		this.match.start(1000);  //start in one second
+		this.ontable=this.myside.periodical(5000);
+	},
+ 	hit: function(mallet,puck) {
+		return; //practice, do nothing
+	},
+	goalFor : function() {
+		$clear(this.ontable);
+		if(this.scorer.goalAgainst()) this.foul();  //remember I am back to front
+		this.match.goal();  //simulate me scoring
+	},
+	goal: function() {
+		$clear(this.ontable);
+		if(this.scorer.goalFor()) this.foul();
+	},
+	foul: function () {
+		//simulate me serving and then hitting puck
+		this.d1=this.myserve.delay(3000);
+	},
+	serve: function (puck) {
+		this.ontable=this.myside.periodical(5000);
+	},
+	faceoff: function () {
+		this.scorer.faceoffOp();
+	},
+	end: function () {
+		$clear(this.d1);
+		$clear(this.ontable);
+	},
+	myside: function() {
+		var reply = this.table.getUpdate();
+		if(reply.puck.y < 1159) {
+			//puck is my side and out of reach players mallet
+			if (abs(reply.puck.d.y) < 5) {
+				//going slowly
+				if(this.scorer.faceoffMe()) this.match.faceoff(); //claim it
+				this.table.update(true,[560,148],[reply.puck.x,reply.puck.y],[random(-40,40),40],0);
 			}
 		}
-	}();  // End Comms
-	var setState = function (t) {
-		$('state').set('text',t);
-	};
-	var setCounter = function(c) {
-		$('countdown').set('text', (c < 0)?' ':c);
+	},
+ 	myserve: function() {
+		this.match.serve(new Duple([560,250]));
+		this.ontable=this.myside.periodical(5000);
+	}		
+});
+
+var Match = new Class({
+	initialize: function(table,opponent,scoreboard,timers,play) {
+		this.table = table;
+		this.opponent = opponent;
+		this.scoreboard = scoreboard;
+		this.timers = timers;
+		this.play = play;
+		this.scorer = new Scorer({
+			score: function(me) {
+				this.scoreboard.score(me);
+			},
+			game: function(me) {
+				this.scoreboard.score(me);
+				this.scoreboard.newGame();
+			},
+			match: function(me) {
+				this.scoreboard.score(me);
+				this.scoreboard.endMatch();
+			}
+		});
+	},
+	start: function(wait) {
+		var doStart = function() {
+			this.scoreboard.status('Start Match');
+			this.scoreboard.set(timers.startup, this.table.inPlay);
+		};
+		this.startDelay = doStart.delay(wait,this);
+	},
+	serve: function(position) {
+		this.table.place(position);
+	},
+	served: function (position) {
+		this.scoreboard.cancel(); //stop any serve timeout
+		this.opponent.serve(position);
+		this.scoreboard.set(timers.inplay, this.table.inPlay);
+		this.scoreboard.serve(false);
+	}
+	abandon: function() {
+		this.opponent.end();
+		this.scoreboard.abandonMatch();
+		this.end();
+	},
+	end: function () {
+		$clear(this.startDelay);
+		this.table.halt();
+		this.scoreboard.cancel();
+		this.scoreboard.status('Opponent Abandoned Match');
+	},
+	inControl: function () {
+		if(this.scorer.faceoffMe()) {
+			this.scoreboard.faceoff(true);
+			this.opponent.faceoff();
+		}
+	},
+	faceoff: function () {
+		if(this.scorer.faceoffOp()) this.scoreboard.faceoff(false);
+	},
+	tFoul: function(msg) {
+		this.table.halt();
+		this.play('foul');
+		this.scoreboard.cancel();
+		this.scoreboard.status(msg);
+		this.opponent.foul();
+	},
+	foul: function() {
+		this.table.halt();
+		this.play('foul');
+		this.scoreboard.status('Opponent Foul');
+		this.requestServe();
+	},
+	requestServe: function() {
+		this.scoreboard.serve(true);
+		this.scoreboard.set(timers.restart,function () {
+			this.scoreboard.serve(false);
+			this.tFoul('You took too long to serve');
+		});
+	},
+	goalAgainst: function() {
+		this.table.halt();
+		this.play('goal');
+		this.scoreboard.status('Opponent Scored');
+		this.opponent.goal();
+		if(this.scorer.goalAgainst()) {
+			this.requestServe();
+		}
+	},
+	goal: function() {
+		this.table.halt();
+		this.play('goal');
+		this.scoreboard.status('GOAL !!!!!!');
+		if(this.scorer.goalFor()) {
+			this.requestServe();
+		}
+	}
+});
+
+var Scorer = new Class({
+	initialize: function(callbacks) {
+		this.awaitingFaceOff = true;
+		this.myscore = 0;
+		this.mygames = 0;
+		this.opscore = 0;
+		this.opgames = 0;
+		this.callbacks = callbacks;
+	},
+	goalFor: function() {
+		if(this.awaitingFaceoff) {
+			this.myFaceoff = true;
+			this.awaitingFaceoff = false;
+		}
+		this.myscore++;
+		if(this.myscore >= 7) {
+			this.opscore = 0;
+			this.myscore = 0;
+			this.mygames++;
+			if(this.mygames < 4) {
+				this.callbacks.game(true);
+				if (this.myFaceoff) {
+					if ((this.opgames+this.mygames)%2 == 1) return true;
+				} else {
+					if ((this.opgames+this.mygames)%2 == 0) return true;
+				}
+			} else {
+				this.callbacks.match(true);
+			}
+		} else {
+			this.callbacks.score(true);
+		return false;
+	},
+	goalAgainst: function() {
+		if(this.awaitingFaceoff) {
+			this.myFaceoff = false;
+			this.awaitingFaceoff = false;
+		}
+		this.opscore++;
+		if(this.opscore >= 7) {
+			this.mygames++;
+			this.opscore = 0;
+			this.myscore = 0;
+			if(this.opgames < 4) {
+				this.callbacks.game(false);
+				if (this.myFaceoff) {
+					if ((this.opgames+this.mygames)%2 == 0) return false;
+				} else {
+					if ((this.opgames+this.mygames)%2 == 1) return false;
+				}
+			} else {
+				this.callbacks.match(false);
+				return false;
+			}
+		} else {
+			this.callbacks.score(false);
+		}
+		return true;
+	},
+	faceoffMe: function () {
+		if (this.awaitingFaceoff) {
+			this.awaitingFaceoff = false;
+			this.myFaceoff = true;
+			return true;
+		}
+		return false;
+	},
+	faceoffOp: function () {
+		if (this.awaitingFaceoff) {
+			this.awaitingFaceoff = false;
+			this.myFaceoff = false;
+			return true;
+		}
+		return false;
+	}
+});
+
+var Scoreboard = new Class({
+	initialize: function(mid,startTime,me,master,els,play) {
+		this.params = me;
+		this.params.m = mid;
+		this.params.g = 1;
+		this.params.h = 0;
+		this.params.a = 0
+		this.game = els.firstgame;
+		this.startTime = startTime;
+		this.master = master;
+		this.els = els;
+		this.play = play;
+		var updateDuration = function() {
+			var myDate = new Date(new Date.getTime() - this.startTime*1000);
+			var min = myDate.getMinutes();
+			min = min + "";
+			min = (min.length == 1)?'0'+min:min;
+			var secs = myDate.getSeconds();
+			secs = secs + "";
+			secs = (secs.length == 1)?'0'+secs:secs;
+			this.els.duration.set('text',mydate.getHours()+':'+min+':'+secs);
+		};
+		this.duration = updateDuration.periodical(1000);
+		if(mid != 0) {
+			//not a practice
+			this.updateMatchReq = new Request.json({url:'match.php',link:'chain',onComplete:function(response,errstr) {
+				if(response) {
+					var x = 1;
+				}else{
+					els.message.appendText(errorstr);
+				}
+			}});
+		}
+	},
+	endMatch: function() {
+		$clear(this.duration);
+		$clear(this.countdown);
+		if(this.mid != 0 && this.master) {
+			this.params.g = 0;  //special flag to say end the game
+			this.updateMatchReq.post(this.params);
+		}
+	},
+	abandonMatch: function () {
+		$clear(this.duration);
+		$clear(this.countdown);
+		if (this.mid !=0) {
+			this.params.g = -1;
+			this.updateMatchReq.post(this.params);
+		}
+	},
+	score: function (me) {
+		if((me && this.master) || !(me || this.master)) {
+			params.h++;
+		} else {
+			params.a++;
+		}
+		var h = this.game.getFirst();
+		h.set('text',params.h);
+		var a = h.getNext();
+		a.set('text',params.a);
+		if(this.mid != 0) this.updateMatchRequ.post(this.params);
+	},
+	newGame: function() {
+		var d = new Element('div',{'class':'game'}).inject(this.game,'after');
+		var p = new Element('div',{'class':'score','text':0}).inject(d);
+		p = new Element('div',{'class':'score','text':0}).inject(d);
+		this.game = d;
+		this.params.h=0;
+		this.params.a=0;
+		this.params.g++;
+		if(this.mid != 0) this.updateMatchRequ.post(this.params);
+	},
+	serve: function(s) {
+		if(s) {
+			this.els.serve.set('html','<img src="serve.gif" alt="my serve" />');
+		} else {
+			this.els.serve.set('html','');
+		}
+	},
+ 	status: function(msg) {
+		this.els.status.set('text',msg);
+	},
+	faceoff: function(s) {
+		if(s) {
+			this.els.faceoff.set('text','Won FaceOff');
+		} else {
+			this.els.faceoff.set('text','Lost FaceOff');
+		}
+	},
+	set: function(n,callback) {
+		var counter = function() {
+			n--;
+			setCounter(n);
+			if (n == 0) {
+				callback();
+			} else {
+				if (n < 0) {
+					$clear(this.countdown);
+				}
+			}
+		}
+		var setCounter = function(c) {
+			els.countdown.set('text', (c < 0)?' ':c);
+		}
+		this.countdown = counter.periodical(1000);
+		setCounter(n);
+	},
+	cancel: function() {
+		$clear(this.countdown);
+	}
+});
+
+	
+
+var Duple = new Class({
+	initialize: function(a) {
+		if(a) {
+			this.x = a[0];
+			this.y = a[1];
+		} else {
+			this.x = 0;
+			this.y = 0;
+		}
+		return this;
+	},
+	x:0,
+	y:0,
+	assign: function(d) {
+		this.x = d.x;
+		this.y = d.y;
+		return this;
+	},
+	add: function(d) {
+		this.x += d.x;
+		this.y += d.y;
+		return this;
+	},
+	sub: function(d) {
+		this.x -= d.x;
+		this.y -= d.y;
+		return this;
+	},
+	mul: function(d) {
+		this.x *= d.x;
+		this.y *= d.y;
+		return this;
+	},
+	scale: function(s) {
+		this.x *= s;
+		this.y *= s;
+		return this;
+	},
+	lt: function(d){
+		return (this.x < d.x || this.y < d.y);
+	},
+	gt: function (d) {
+		return (this.x > d.x || this.y > d.y);
+	},
+	limitabove (d) {
+		if (this.x < d.x) this.x = d.x;
+		if (this.y < d.y) this.y = d.y;
+	},
+	limitbelow (d) {
+		if (this.x > d.x) this.x = d.x;
+		if (this.y > d.y) this.x = d.y;
+	},
+	ar:function () {
+		return [this.x,this.y];
+	}
+});
+var opMallet = new Class{{
+	Extends: Duple,
+	initialize: function(el,position) {
+		this.parent(position);
+		this.el = el;
+		this.update();
+		return this;
+	},
+	update: function(d) {
+		if (d) this.assign(new Duple(d));
+		el.setStyles({'left':this.x/4 - 14,'top':this.y/4 -14});
+		return this;
+	}
+}};
+var myMallet = new Class({
+	Extends:opMallet;
+	initialize: function(els,position) {
+		var that = this;
+		this.parent(els.myMallet,position);
+		this.table = new Duple().assign(table.getPosition()).scale(4);
+		this.serve = false;
+		this.held = false;
+		this.d = new Duple();
+		this.mp = new Duple(); 
+		this.el.addEvent('mouseover',function(e) {
+			e.stop();
+			that.held = true;
+			that.update(that.mp.assign(e.page).scale(4).sub(els.table));
+			els.tablesurround.addEvent('mousemove',function(e) {
+				if (that.held) {
+					that.mp.assign(e.page).scale(4).sub(els.table); // convert to internal co-ordinates
+					if (that.mp.lt(new Duple([0,1200])){
+						that.held = false;
+					} else {
+						if (that.mp.gt(new Duple([1120,2400])) {
+							that.held = false;
+						} else {
+							that.mp.limitabove(new Duple([53,1200]);
+							that.mp.limitbelow(new Duple([1067,2347]);
+						}
+					}
+				}
+			});
+		});
+	},
+	tick: function() {
+		if(this.held) {
+			this.d.assign(this).sub(this.mp); //set velocity from movement over the period
+			this.update(this.mp); //update position from where mouse moved it to
+		}
+	},
+ 	drop: function() {
+		this.held = false;
+	}
+});
+
+var SimplePuck = new Class({
+	Extends:Duple,
+	intialize:function (position,delta) {
+		this.parent(position);
+		this.d = new Duple(delta);
+		this.side = (this.y > 1200);
+		this.table = table;
+	},
+	set: function(p) {
+		this.assign(p);
+		this.d.assign(p.d);
+	},
+	tick:function() {
+		var c = false; //if hit table
+		var t = 0;	//0 = no hit,  1 = transition no hit, 2. hit, no transition 3 = transition, hit 4 = goalFor,no transition, 5=goalFor transiation 6 = goalAgainst
+		var s = true;
+		this.add(this.d);
+		//now check
+		do {
+			if (this.x < 41) {
+				this.x =  82 -this.x;
+				this.d.x = - (this.d.x*0.96);
+				c = true;
+				t = 2;
+			} else {
+				if (this.x > 1079) {
+					this.x= 2158 - this.x;
+					this.d.x = -(this.d.x * 0.96);
+					c=true;
+					t=2;
+				} else {
+					c=false;
+				}
+			}
+		} while (c);
+		do {
+			if(this.y <= 1200) s = false;
+			if (this.y < 41 ) {
+				c = true;
+				if (t==0) t = 2;
+				if(this.x > 380 & this.x < 740) {
+					t = 4; //scored a goal for
+				}
+				this.y = 82 - this.y;
+				this.d.y = -(this.d.y * 0.96);
+			} else {
+				if (this.y > 2359) {
+					c = true;
+					if (t==0) t = 2;
+					if(this.x > 380 && this.x < 740) {
+						t = 6; //scored a goal for
+					}
+					this.y= 4718 - this.y;
+					this.d.y = -(this.d.y * 0.96);
+				} else {
+					c=false;
+				}
+			}
+		} while (c);
+		this.d.scale(0.99);
+		if(t==6) return 6;
+		var news = (this.y>1200);
+		if (!(this.side && s && news) && (this.side || news)) t++;
+		this.side = news;
+		return t;
+	}
+});
+				
+
+var ComplexPuck = new Class({
+	Extends: SimplePuck,
+	initialize: function(el,position,goalFor,goalAgainst,transition,play){
+		var that = this;
+		this.parent(position);
+		this.el = el;
+		el.removeClass('hidden'); //Make Sure
+		this.goalFor = goalFor;
+		this.goalAgainst = goalAgainst;
+		this.transition = transition;
+		this.play = play;
+		this.update();
+	},
+	tick: function() {
+		var t = this.parent();
+		switch (t) {
+			case 3:
+				this.transition();
+			case 2:
+				this.play('table');
+				break;
+			case 5:
+				this.transition();
+			case 4:
+				this.play('table');
+				this.goalFor(); 
+				break;
+			case 6:
+				this.play('goal');
+				this.goalAgainst();
+				return false;
+			default:
+		}
+		this.update();
+		return true;
+	},
+ 	place: function(position) {
+		this.assign(position);
+		this.d = new Duple();
+		this.el.removeClass('hidden');
+		this.update();
+		this.play('mallet'); //mallet sound as place on table (or will get this from comms saying hit occurred)
+	},
+	remove: function() {
+		this.el.addClass('hidden');
+	},
+	update: function() {
+		el.setStyles({'left':this.x/4 - 10,'top':this.y/4 -10});
 	}
 	
-	var tablePosition;
-	var opMallet = function() {
-		var el;
-		return {
-			x:560,
-			y:148,
-			update : function () {
-				el.setStyles({'left':opMallet.x/4-14,'top':opMallet.y/4 - 14});
-			},
-			init: function () {
-				el = $('opmallet');
-				el.setStyles({'left':126,'top':25});
-				opMallet.x = 560;
-				opMallet.y = 148;
-			}
-		};
-	}();
-	var myMallet = function() {
-		var myx;
-		var myy;
-		var el;
-		var mminplace = false;
-		var	areaPosition;
-		var held = false;
-		return {
-			x:560,
-			y:2252,
-			dx:0,
-			dy:0,
-			tick: function() {
-				if (held) {
-					if(myServe) {
-						held = false;
-					} else {
-						if (myx < areaPosition.x) {
-							if (myx < tablePosition.x) {
-								held = false;
-							}
-							myx = areaPosition.x;
-						} else {
-							if (myx > areaPosition.x + 252) {
-								if (myx > tablePosition.x + 280) {
-									held = false;
-								}
-								myx = areaPosition.x + 252;
-							}
-						}
-						var newv = 4*(myx-tablePosition.x);
-						myMallet.dx = newv-myMallet.x;
-						myMallet.x= newv;
-						if (myy < areaPosition.y) {
-							if (myy < (tablePosition.y+300)) {
-								held = false;
-							}
-							myy = areaPosition.y;
-						} else {
-							if (myy > areaPosition.y + 272) {
-								if (myy > tablePosition.y + 600) {
-									held = false;
-								}
-								myy = areaPosition.y + 272;
-							}
-						}
-						newv = 4*(myy-tablePosition.y);
-						myMallet.dy = newv - myMallet.y;
-						myMallet.y = newv;
-						if (myMallet.dx != 0 || myMallet.dy != 0)el.setStyles({'left':myx-areaPosition.x-14,'top':myy-areaPosition.y-14});
-					}
-				}
-			},
-			init: function () {
-				var myarea = $('myarea');
-				el = $('mymallet');
-				el.setStyles({'left':112,'top':235});
-				el.addEvent('mouseover',function(e) {
-					e.stop();
-					myx = e.page.x;
-					myy	= e.page.y;
-					held = true;
-					if(!mminplace) {
-						$('tablesurround').addEvent('mousemove',function(e) {
-							myx = e.page.x;
-							myy	= e.page.y;
-						});
-						mminplace = true;
-					}
+});
+
+
+var Table = new Class({
+	initialize: function(match,opponent,scoreboardtimers,els,play) {
+		var transition = function () {
+			var control = function() {
+				match.inControl();
+			};
+			var timer;
+			if(this.onMyside) {
+				scoreboard.cancel();
+				this.onMyside = false;
+				$clear(timer);
+			} else {
+				scoreboard.set(timers.myside, function() {
+					this.match.tFoul('Puck too long on your side');
 				});
-				myarea.addEvent('click',function(e) {
-					e.stop();
-					if(myServe) {
-						puck.place(4*(e.page.x-tableposition.x),4*(e.page.y-tableposition.y));
-						served();
-					}
-				});
-				areaPosition = myarea.getPosition();
-				myMallet.x = 560;
-				myMallet.y = 2252;
-				myMallet.dx = 0;
-				myMallet.dy = 0;
-				msCount = 1;
-			}
-		};
-	}();
-	var puck = function() {
-		var ht;
-		var el;
-		return {
-			x:560,
-			y:1200,
-			dx:0,
-			dy:0,
-			calculate: function (p,nogoal) {
-				var c = false;
-				p.x = p.x + p.dx;
-				p.y = p.y +p.dy;
-				do {
-					if (p.x < 41 ) {
-						p.x = 82 - p.x;
-						p.dx = -(p.dx * 0.96);
-						c = true;
-						soundManager.play('table');
-					} else {
-						if (p.x > 1079) {
-							p.x= 2158 - p.x;
-							p.dx = -(p.dx * 0.96);
-							c=true;
-							soundManager.play('table');
-						} else {
-							c=false;
-						}
-					}
-				} while (c);
-				p.dx = 0.99 * p.dx;
-				do {
-					if (p.y < 41 ) {
-						if(!g.practice || p.x <= 380 || p.x >= 740) {
-							p.y = 82 - p.y;
-							p.dy = -(p.dy * 0.96);
-							c=true;
-							soundManager.play('table');
-						} else {
-							c = false;
-						}
-					} else {
-						if (p.y > 2359) {
-							if(nogoal || p.x <= 380 || p.x >= 740) {
-								p.y= 4718 - p.y;
-								p.dy = -(p.dy * 0.96);
-								c=true;
-								soundManager.play('table');
-							} else {
-								c = false;
-							}
-						} else {
-							c=false;
-						}
-					}
-				} while (c);
-				p.dy = 0.99 * p.dy;
-				return p;
-			},
-			tick: function () {
-				if (onTable) {
-					var p = puck.calculate(puck);
-					if (g.practice) {
-						if(p.y < 0) {
-							//went in opponents goal, so we have scored
-							soundManager.play('goal');
-							puck.off();
-							goalScoredFor();
-						}
-						if (p.y > 1200 || abs(p.dx) > 5 ) {
-							puck.dx = p.dx; //only update speed if its higher than minumum at opponents end
-						}
-						if (p.y > 1200 || abs(p.dy) > 5 ) {
-							puck.dy = p.dy;
-						}
-					} else {
-						puck.dx = p.dx;
-						puck.dy = p.dy;
-					}	
-					puck.x = p.x;
-					if (p.y > 2400) {
-						//went in our goal
-						soundManager.play('goal');
-						puck.off();
-						puck.y = 0; //say normal goal
-						goalScoredAgainst();  //Go set a new state
-					} else {
-						if (p.y >= 0) {
-							puck.y = p.y;
-							if (puck.dx != 0 || puck.dy != 0) el.setStyles({'left':puck.x/4-10,'top':puck.y/4-10});
-							if (puck.y > 1200 ) {
-								//puck is in my half so count down
-								if (ht == 0) {
-									// if not already set up, set up counter;
-									ht = t.myside;
-									setCounter(ht);
-								}
-								if (--secs <= 0) {
-									secs = t.second;
-									setCounter(--ht);
-									if (ht = 0 ) {
-										foul('Puck on side too long');
-										puck.off();
-										ht = -1;
-									}
-								}
-							} else {
-								if (ht != 0) {
-									secs = t.second;
-									setCounter(-1);
-									ht = 0;
-								}
-							}
-						}
-					}
-				} 
-			},
-			off:function () {
-				el.addClass('hidden');
-				puck.x = 0;
-				onTable = false;
-			},
-			show:function () {
-				el.removeClass('hidden');
-				el.addEvent('mouseover',function(e) {
-					held = true;
-			},
-			place:function(x,y) {
-				if (x < 41 || x> 1079 ||y < 41 || y > 2359 ) return;
-				puck.x = x;
-				puck.y = y;
-				puck.dx = 0;
-				puck.dy = 0;
-				el.setStyles({'left':puck.x/4-10,'top':puck.y/4-10});
-				el.removeClass('hidden');
-				onTable = true;
-			},
-			
-			init: function () {
-				el=$('puck');
-				ht=t.myside;
-				secs=t.second;
-				puck.place(560,1200);
+				timer = control.delay(timers.control);
+				this.onMyside = true;
 			}
 		}
-	}();
-	
-	var timeOffset;
-	var t;				//object holding various timer values
-	var g;				//object holding game parameters
-
-	var onTable = false;  //puck is on the table
-	var inSync = false; //Set once we are in sync with other side (soo we can start sending our mallet position)
-	var inPlay = false; //Set once it is allowed to hit the puck
-	var myServe = false; //Set if I have to serve
-	var foulOccurred = false;
-
-	var msCount;
-	var commsTo = 0;  //comms timeout
-
-	var startT = 0;
-	var firstSec = 0; //used to sync sides by counting server time to start.
-	var timer = 0; //countdown timer
-	var func;
-	var startTimer = function(when,howlong,done) {
-		firstSec = when;
-		timer= 0;
-		startT = howlong;
-		func=done; //set routine to call when completed;
-	};
-	var stopTimer = function() {
-		firstSec = 0;
-		setCounter(-1);
-	};
-	var tKid = null;
-	var previouslyOnTable = true;
-	var tick = function() {
-		var actionOccured = false;
-		if (foulOccurred) actionOccurred = true; //foul happened between ticks from some other source
-		myMallet.tick();
-		if(onTable) { 
-			//only calculate if puck is on the table
-			puck.tick();
-			if(onTable) { // need to repeat in case it was reset by puck.tick();
-				var dx,dy,d,d2,cos_t,sin_t,pvn,pvt;
-				if (g.practice) {
-					//see if collided with (stationary) opponent mallet
-					dx = puck.x - opMallet.x;
-					dy = puck.y - opMallet.y;
-					if ((Math.abs(dx) < 94) && (Math.abs(dy) < 94) ) { 
-						//might have hit worth doing the more complex calculation
-						if( (dx*dx + dy*dy) < 8836) {
-							soundManager.play('mallet');
-							// Collision Occurred
-							d2 = Math.sqrt(dx*dx+dy*dy); //keep earlier distance
-							dx -= puck.dx;  //step back to previous tick (in case centres have passed)
-							dy -= puck.dy;
-							if (d2 < 94) {
-								d2 = 2*(94-d2);
-								puck.x += d2*cos_t;
-								puck.y += d2*sin_t;
-							}
-							pvn = puck.dx*cos_t + puck.dy*sin_t;  //puck velocity normal
-							pvt = puck.dx*sin_t + puck.dy*cos_t;  //puck velicity tangent
-							puck.dx = pvt*sin_t-pvn*cos_t ; //translate back to x and y velocities
-							puck.dy = pvt*cos_t-pvn*sin_t ; // but with reflected velocity in the normal direction
-						}
-					}
-				}
+		this.onMyside = false;
+		var that = this;
+		this.opmallet = new opMallet(els.opMallet,[560,148]);
+		this.puck = new ComplexPuck(els.puck,[560,1200],opponent.goalFor,this.match.goalAgainst,transition);
+		this.myMallet = new myMallet(els,[560,2252]);
+		els.table.addEvent('click',function(e) {
+			e.stop();
+			if(that.myServe) {
+				var mp = new Duple(e.page).scale(4).sub(els.table); // convert to internal co-ordinates
+				mp.limitabove(new Duple([41,41])); //ensure the puck can fit somewhere on the table
+				mp.limitbelow(new Duple([1079,2359])); //its the servers fault if he puts it at the other end
+				that.puck.place(mp);
+				that.myServe = false;
+				match.served(puck);
+			}
+		});
+		this.halt();
+		this.tick.periodical(timers.tick);
+	},
+	tick: function () {
+		if(this.ontable) {
+			mymallet.tick();
+			if(puck.tick()) {
+				var d1,d2,cos_t,sin_t,pvn,pvt;
 				//check for collision with my Mallet
-				dx = puck.x - myMallet.x;
-				dy = puck.y - myMallet.y;
-				if ((Math.abs(dx) < 94) && (Math.abs(dy) < 94) ) { 
+				var d = new Duple().assign(puck).sub(myMallet);
+				if ((Math.abs(d.x) < 94) && (Math.abs(d.y) < 94) ) {
 					//might have hit worth doing the more complex calculation
-					if( (dx*dx + dy*dy) < 8836) {
-						soundManager.play('mallet');
+					if( (d.x*d.x + d.y*d.y) < 8836) {
+						this.play('mallet');
 						// Collision Occurred
-						d2 = Math.sqrt(dx*dx+dy*dy); //keep earlier distance
-						dx += myMallet.dx - puck.dx;  //step back to previous tick (in case centres have passed)
-						dy += myMallet.dy - puck.dy;
-						d = Math.sqrt(dx*dx+dy*dy);
-						cos_t = dx/d; //cos theta where theta angle of normal to x axis
-						sin_t = dy/d; //sin theta where theta angle of normal to x axis
+						d2 = Math.sqrt(d.x*d.x+d.y*d.y); //keep earlier distance
+						d.add(myMallet.d).sub(puck.d);  //step back to previous tick (in case centres have passed)
+						d1 = Math.sqrt(dx*dx+dy*dy);
+						cos_t = dx/d1; //cos theta where theta angle of normal to x axis
+						sin_t = dy/d1; //sin theta where theta angle of normal to x axis
 						if (d2 < 94) {
 							d2 = 2*(94-d2);
 							puck.x += d2*cos_t;
 							puck.y += d2*sin_t;
 						}
-						var mvn = myMallet.dx*cos_t + myMallet.dy * sin_t;  //mallet velocity along normal
-						pvn = puck.dx*cos_t + puck.dy*sin_t;  //puck velocity normal
-						pvt = puck.dx*sin_t + puck.dy*cos_t;  //puck velicity tangent
+						var mvn = myMallet.d.x*cos_t + myMallet.d.y * sin_t;  //mallet velocity along normal
+						pvn = puck.d.x*cos_t + puck.d.y*sin_t;  //puck velocity normal
+						pvt = puck.d.x*sin_t + puck.d.y*cos_t;  //puck velicity tangent
 
 						var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
-						puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
-						puck.dy = pvn2*sin_t + pvt*cos_t;
+						puck.d.x = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
+						puck.d.y = pvn2*sin_t + pvt*cos_t;
 						// send model details as they are after the collision
 						if (!inPlay) {
-							// we hit the puck before we were supposed to
-							foul('Puck played too early');
-							puck.off();
-						}
-						actionOccurred = true;
-					}
-				}
-			} else {
-				actionOccurred = true;
-			}
-		} else {
-			previouslyOnTable = false;
-		}	
-		if (inSync) {
-			if (--msCount <= 0) {
-				msCount = t.mallet;
-				if (onTable)
-					// Send details
-					Comms.write(((actionOccurred)?'C':'M')+':'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
-							+':'+(new Date().getTime() + timeOffset),null);
-					previouslyOnTable = true;
-				} else {
-					if(actionOccurred) {
-						Comms.write(((foulOccurred)?'F':'G')+':'+myMallet.x+':'+myMallet.y+':'+(new Date().getTime() + timeOffset),null);
-					}
-				}
-			} else {
-				if(actionOccurred) {
-					if(onTable) {
-						Comms.write('C:'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
-						+':'+(new Date().getTime() + timeOffset),null);
-					} else {
-						Comms.write(((foulOccurred)?'F':'G')+':'+myMallet.x+':'+myMallet.y+':'+(new Date().getTime() + timeOffset),null);
-					}
-				} 
-			}
-			if(onTable && !prevouslyOnTable) {
-					Comms.write('M'+':'+myMallet.x+':'+myMallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
-							+':'+(new Date().getTime() + timeOffset),null);
-					previouslyOnTable = true;
-			}
-		}
-		foulOccurred = false;
-		// generic countdown timer.  firstSec must be the expected time of the first second, timer = seconds to count down
-		if (firstSec > 0) {
-			if((new Date().getTime() + timeOffset) >= firstSec) {
-				firstSec += 1000;
-				if (timer > 0 ) {
-					setCounter(--timer);
-					if(timer <=0) {
-						timer = -1;
-						soundManager.play('start');
-						func();
-					} else {
-						soundManager.play('count');
-					}
-				} else {
-					if (timer == 0) {
-						timer = startT;
-						setCounter(timer);
-					} else {
-						setCounter(-1);
-						firstSec = 0;
-					}
-				}
-			}
-		}
-		if (commsTo > 0) if(--commsTo <=0) Comms.die();
-	
-	}
-
-	var setServe = function() {
-		var div = $('serve')
-		div.set('html','<img src="serve.gif" alt="my serve" />');
-		inPlay = false;
-		myServe = true;
-		startTimer(new Date().getTime()+500,t.restart,function() {
-			div.set('html','');
-			myServe = false;
-			foul('failed to serve in time');
-		});
-	};
-	var served = function() {
-		stopTimer();
-		$('serve').set('html','');
-		myServe = false;
-		startTimer(new Date().getTime()+500,1,function(){ inPlay = true;});
-	};
-	
-	var foul = function (msg) {
-		setState(msg);
-		onTable = false;
-		foulOccurred = true; //signal to comms
-		if(g.practice) setServe();  //practicers need to re-serve themselves.
-	};
-
-	var goalScoredFor() {
-		onTable = false;	
-	};
-
-	var goalScoredAgainst() {
-		onTable = false;
-	}
-	var startPractice=function('time') {
-		CommsTo = 0; //don't want a comms timeout set
-		startModel();
-		startMatch(time);
-	};
-
-	var startModel = function() {
-		opMallet.init();
-		myMallet.init();
-		puck.init();
-		firstSec = 0;
-		tKid = tick.periodical(t.tick);
-	};
-			
-	var awaitOpponent = function () {
-		setState('Awaiting Opponent');
-		inSync = false;
-		commsTo = t.opponent;
-		startModel();
-		if (g.master) {
-			Comms.write('Start',startMatch);
-		} else {
-			Comms.read(startMatchS);
-		}
-	};
-	
-	var startMatchS = function(time,msg) {
-		switch (msg) {
-			case 'Start':
-				startMatch(time);
-				break;
-			case 'Abandon':
-				setState('Match Abandoned');
-				startTimer(time+1000,t.index,returnToMain);
-				break;
-			default:
-				awaitOpponent();
-		}
-	};	
-
-	var startMatch = function (time) {
-		setState('Start');
-		startTimer(time + 1000,t.startup,function(){inPlay = true});
-		if(!g.practice) {
-			inSync = true;
-			Comms.read.delay(1,Comms,eventReceived);
-		}
-	};
-
-	var eventReceived = function (time,msg) {
-		var splitMsg = msg.split(':');
-		var ti,aj,mt;
-		var ho,hm;
-		commsTo = t.timeout;
-		switch (splitMsg[0]) {
-			case 'F':
-				setServe();  //Other side fouled - so now my serve
-				break;
-			case 'G' :
-				goalScoredFor();
-				break;
-			case 'C' :
-				soundManager.play('mallet');
-			case 'M' :
-				var p = {x:splitMsg[3].toInt(),y:2400 - splitMsg[4].toInt(),dx:splitMsg[5].toInt(),dy:-splitMsg[6].toInt()};
-				ti = splitMsg[7].toInt();
-				mt = new Date().getTime() + timeOffset
-				aj = (mt -ti)/t.tick | 0;
-				//calculate where I think the puck should be based on the time
-				for( i=0;i<aj;i++) {
-					p=puck.calculate(p,true);
-				}
-				
-				if (splitMsg[0] == 'M' && onTable) {
-					// lets work out a percentage of contribution from each of us
-					hm=(puck.y+p.y)/4800;
-					ho=1-hm;
-					
-					puck.x=hm*puck.x+ho*p.x;
-					puck.y=hm*puck.y+ho*p.y;
-					puck.dx=hm*puck.dx+ho*p.dx;
-					puck.dy=hm*puck.dy+ho*p.dy;
-				} else {
-					//collisions or he has placed it on table we have to believe him because it is major change
-					puck.x = p.x;
-					puck.y = p.y;
-					puck.dx = p.dx;
-					puck.dy = p.dy;
-				}
-				opMallet.x = splitMsg[1].toInt();
-				opMallet.y = 2400 - splitMsg[2].toInt(); //its at the opposite end of the table
-				opMallet.update();		//Move it on screen
-				break;
-			default :
-				setState('Invalid Message:'+msg);
-		}
-		if (inSync) Comms.read.delay(1,Comms,eventReceived); //Just ensure the current read request completes before restarting it
-	};
-
-	var commsError = function () {
-		setState('Comms Timout Failure');
-		startTimer(new Date().getTime()+1000,t.index,returnToMain);
-	};
-
-	var returnToMain = function() {
-		window.location.assign('index.php');
-	};
-	return {
-		init: function (me,timers,game) {
-			myParams = {user:me.uid,pass:me.password};
-			t = timers;
-			t.second = (1000/t.tick) | 0 ;
-			g = game || {};
-			g.practice = me.practice;
-			g.el = $('firstgame');
-			g.hs = 0;  //Home Score
-			g.as = 0;  //Away Score
-			
-			tablePosition = $('table').getPosition(); //need to DOM to be ready to do this
-			if (!g.practice) {
-				Comms.init(me.uid.opponent.uid,commsError);
-				var startTime;
-				var totalOffset = 0;
-				var i = t.count;
-				var timeReq = function() {
-					startTime = new Date().getTime();
-					req.post(myParams); 
-				};	
-				var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
-					if (response ) {
-						var endTime = new Date().getTime();
-						var commsTime = endTime - startTime;
-						var midTime = parseInt(startTime+ commsTime/2);
-						var offsetTime = response.servertime - midTime;
-						totalOffset += offsetTime;
-						if (--i > 0 ) {
-							timeReq.delay(50);  //delay, otherwise of fast link it doesn't have time to exit this routing before re entering
+							
+								// we hit the puck before we were supposed to
+								this.match.tFoul('Puck played too early');
 						} else {
-							timeOffset = totalOffset/t.count;
-							awaitOpponent();
+							this.opponent.hit(myMallet,puck);
 						}
 					}
-				}});
-				timeReq();
+				}
 			} else {
-				timeOffset = 0;
-				startPractice(new Date().getTime());
+				this.ontable = false;
 			}
-		},
-		logout: function () {
-			Comms.die();
 		}
+	},
+ 	inPlay: function () {
+		this.inPlay = true;
+	},
+ 	serve: function () {
+		this.myServe = true;
+		this.puck.remove();
+		this.myMallet.drop();
+	},
+	place: function (position) {
+		this.ontable = true;
+		this.puck.place(position);
+	},
+	halt: function () {
+		this.ontable = false;
+		this.inPlay = false;
+		this.myServe = false;
+	},
+ 	update:function(firm,mallet,puckPosition,puckDelta,ticksBehind) {
+		var hm,ho;
+		this.myServe = false;
+		this.opmallet.update(mallet);
+		var p = new simplePuck(puckPosition,puckDelta);
+		while (ticksBehind > 0) {
+			ticksBehind--;
+			p.tick();
+		}
+		if (firm) {
+			this.puck.set(p);
+			this.ontable = true;
+		} else {
+			if (onTable) {
+			// lets work out a percentage of contribution from each of us
+				hm=(puck.y+p.y)/4800;
+				ho=1-hm;
+				p.scale(ho);
+				puck.scale(hm).add(p);
+				p.d.scale(ho);
+				puck.d.scale(hm).add(p.d);
+				puck.update();
+			}
+		}
+	},
+ 	getUpdate: function () {
+		return {puck:this.puck,mallet:this.myMallet};
 	}
-}();
+});
+			
+var Opponent = new Class({
+	initialize: function(me,oid,master,timers,match,table,els) {
+		this.comms = new Comms(me.oid,fail);
+		this.master = master;
+		this.timers = timers;
+		this.match = match;
+		this.table = table;
+		this.inSync = false;
+		var that = this;
+		var fail = function() {
+			this.match.end();
+			$clear(that.poller);
+			this.inSync = false;
+		};
+		var poll = function() {
+			var reply = that.table.getUpdate();
+			that.comms.write('M:'+reply.mallet.x+':'+reply.mallet.y+':'+reply.puck.x+':'+reply.puck.y+':'+reply.puck.d.x+':'+reply.puck.d.y
+							+':'+(new Date().getTime() + timeOffset),null);
+		};
+		var awaitOpponent = function() {
+			if (that.master) {
+				that.comms.write('Start',startMatch);
+				that.comms.setTimeout(that.timers.opponent);
+			} else {
+				that.comms.read(startMatchS,that.timers.opponent);
+			}
+		};
+		var startMatchS = function(time,msg) {
+			switch (msg) {
+				case 'Start':
+					startMatch(time);
+					break;
+				case 'Abandon':
+					that.match.end();
+					break;
+				default:
+					awaitOpponent();
+			}
+		};	
+		var startMatch = function (time) {
+			that.inSync = true;
+			var now = new Date().getTime() + that.timeOffset;
+			that.match.start(time+1000 - now);	//we want to start the match from 1 second from when the server told us.
+			that.comms.read.delay(1,that.comms,[eventReceived,that.timers.timeout]);
+			this.poller = poll.periodical(1000);
+		};
+
+		var eventReceived = function (time,msg) {
+			var splitMsg = msg.split(':');
+			var firm = false;
+			switch (splitMsg[0]) {
+				case 'O':
+					that.match.faceoff();
+					break;
+				case 'S' :
+					that.match.serve(new Duple([splitMsg[1].toInt(),splitMsg[2].toInt]);
+					break;
+				case 'E' :
+					fail(); //use this, as it shuts things down too
+					break;
+				case 'F' :
+					that.match.foul();
+					break;
+				case 'G' :
+					that.match.goal();
+					break;
+				case 'C' :
+					firm = true;
+				case 'M' :
+					that.table.update(firm,
+	 					[splitMsg[1].toInt(),splitMsg[2].toInt()],
+	 					[splitMsg[3].toInt(),2400 - splitMsg[4].toInt()],
+	 					[splitMsg[5].toInt(),splitMsg[6].toInt()],
+	   					((new Date().getTime() + that.timeOffset -splitMsg[7].toInt())/that.timers.tick | 0));
+					//calculate where I think the puck should be based on the time
+					break;
+				default :
+					els.message.AppendText('Invalid Message:'+msg);
+			}
+			that.comms.read.delay(1,that.comms,[eventReceived,that.timers.timeout]); //Just ensure the current read request completes before restarting it
+		};
+
+		var startTime;
+		var totalOffset = 0;
+		var i = timers.count;
+		var timeReq = function() {
+			startTime = new Date().getTime();
+			req.post(myParams);
+		};
+		var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
+			if (response ) {
+				var endTime = new Date().getTime();
+				var commsTime = endTime - startTime;
+				var midTime = parseInt(startTime+ commsTime/2);
+				var offsetTime = response.servertime - midTime;
+				totalOffset += offsetTime;
+				if (--i > 0 ) {
+					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
+				} else {
+					that.timeOffset = totalOffset/t.count;
+					awaitOpponent();
+				}
+			}
+		}});
+		timeReq();
+	},
+	hit: function(mallet,puck) {
+		if(this.inSync) this.comms.write('C:'+mallet.x+':'+mallet.y+':'+puck.x+':'+puck.y+':'+puck.d.x+':'+puck.d.y+':'+(new Date().getTime()+timeOffset),null);
+	},
+	goalFor = function() {
+		return;
+	},
+	end: function() {
+		if(this.inSync) this.comms.write('E');
+	},
+	faceoff: function() {
+		if(this.inSync) this.comms.write('O');
+	},
+	goal: function () {
+		if(this.inSync) this.comms.write('G');
+	},
+	foul: function () {
+		if(this.inSync) this.comms.write('F');
+	},
+	serve: function (p) {
+		if(this.inSync) this.comms.write('S:'+p.x+':'+p.y);
+	}
+});
+
+var Comms = new Class({
+	initialize: function(me,oid,fail) {
+		var that = this;
+		this.me = me;
+		this.ropt = {uid:oid}
+		this.sopt = {uid:me.user,msg:''};
+		this.fail = fail;
+		this.sendFunc = null;
+		this.readFunc = null;
+		this.sendReq = new Request.JSON({url:'send.php',link:'chain',onComplete: function(response) {
+			$clear(this.timeout);
+			if (that.sendFunc) that.sendFunc(response.time);
+		}});
+		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete: function(response,errorstr) {
+			$clear(this.timeout);
+			if (response) {
+				if (response.ok) {
+					if(that.readFunc) that.readFunc(response.time,response.msg);
+				} else {
+					fail(response.time);
+				}
+			}
+		}});
+		this.abortReq = new Request.JSON({url:'abort.php',link:'chain'});
+		this.timeout = null;
+	},
+	read: function (success,time) {
+		this.readFunc = success;
+		this.readReq.post(this.ropt);
+		if(timeout) this.timeout = this.fail.delay(time)
+	},
+	write: function (msg,success) {
+		sendFunc = success;
+		this.sopt.msg=msg;
+		this.sendReq.post(sopt);
+	},
+	setTimeout: function (time) {
+		this.timeout = this.fail.delay(time);
+	},
+	die: function () {
+		abortReq.post($merge(this.me,{oid:this.me.user}));  //kill off all of my requests
+	}
+});

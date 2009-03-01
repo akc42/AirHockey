@@ -11,15 +11,16 @@ if ($_GET['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_GET['pass'].' expected: '.sha1("Air".$uid));
 
 define('AIR_HOCKEY_MODEL_TICK',			33);	//milliseconds between calculating new table layout
-define('AIR_HOCKEY_OPPONENT_TIMEOUT',	909);  //Ticks to wait until assume opponent has not come (approx 30 secs)
-define('AIR_HOCKEY_MODEL_TIMEOUT', 		100);  //Ticks to wait until assume comms running the model have died (approx 2 secs)
+define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30000);  //Milliseconds to wait until assume opponent has not come (approx 30 secs)
+define('AIR_HOCKEY_MODEL_TIMEOUT', 		2500);  //Millisecomd to wait until assume comms running the model have died (approx 2 secs)
 define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have synchronised
-define('AIR_HOCKEY_MALLET_DELAY',		30);   // Ticks between when mallet positions get sent
+define('AIR_HOCKEY_MALLET_DELAY',		1000);   // Millisecs between when mallet positions get sent
 define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
 define('AIR_HOCKEY_OFFSET_COUNT',		10);	//how many measurements of time offset do we need to get a good average
 define('AIR_HOCKEY_RESTART_DELAY',		10);  //Seconds you have after foul or goal to place puck
-define('AIR_HOCKEY_INDEX_DELAY',		20);  //Seconds to leave messaage on screen about problem, before returning to index page
-
+define('AIR_HOCKEY_CONTROL_DELAY',		2000); //Milliseconds to have puck on your side to be "in Control" of it
+define('AIR_HOCLEY_INPLAY_DELAY',		2); //Seconds after puck server that he is allowed to hit it
+		
 define ('AIRH',1);   //defined so we can control access to some of the files.
 require_once('db.php');
 
@@ -42,11 +43,14 @@ if (isset($_GET['mid'])) {
 			$oid = $row['hid'];
 			$opName = $row['hname'];
 		}
+		$startTime = $row['starttime'];
 	} else {
 		die('Invalid Match Id = '.$mid);
 	}
 } else {
-	$oid = false;  //No opponent, so say am practicing
+	$mid = 0; //No opponent, so say am practicing
+	$oid = 0;
+	$isMaster = true;
 	$opName = '&nbsp;' ;
 	$result = dbQuery('SELECT name FROM player WHERE pid = '.dbMakeSafe($uid).';');
 	if($row=dbFetch($result)) {
@@ -54,6 +58,7 @@ if (isset($_GET['mid'])) {
 	} else {
 		die('Something wrong - I don\'t appear on the database');
 	}
+	$startTime = time();
 }
 dbFree($result);
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -74,35 +79,41 @@ dbFree($result);
 	<!--
 
 window.addEvent('domready', function() {
-	MBahplay.init({
-			uid: <?php echo $uid;?>,
-			password: '<?php echo sha1("Air".$uid); ?>',
-			practice: <?php echo (($oid)?'false':'true') ; ?>
-		},
-		{
-			tick:<?php echo AIR_HOCKEY_MODEL_TICK ;?>,
-			opponent:<?php echo AIR_HOCKEY_OPPONENT_TIMEOUT ; ?>,
-			timeout:<?php echo AIR_HOCKEY_MODEL_TIMEOUT ; ?>,
-			startup:<?php echo AIR_HOCKEY_START_DELAY ; ?>,
-			mallet: <?php echo AIR_HOCKEY_MALLET_DELAY ; ?>,
-			myside: <?php echo AIR_HOCKEY_MYSIDE_TIMEOUT ; ?>,
-			count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>,
-			restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>,
-			index:<?php echo AIR_HOCKEY_INDEX_DELAY ;?>
-		}
-<?php
-if($oid) { // not a practice
-?>		,{
-			oid: <?php echo $oid;?>,
-			master: <?php echo (($isMaster)?'true':'false'); ?>,
-			mid: <?php echo $mid; ?>
-		}
-<?php
-}	
-?>	);
+	MBahplay = new Play(
+			<?php echo $mid; ?>,
+			<?php echo $startTime ; ?>,
+			{uid: <?php echo $uid;?>,pass: '<?php echo sha1("Air".$uid); ?>'},
+			<?php echo $oid;?>,
+			<?php echo (($isMaster)?'true':'false'); ?>,
+			{
+				tick:<?php echo AIR_HOCKEY_MODEL_TICK ;?>,
+				opponent:<?php echo AIR_HOCKEY_OPPONENT_TIMEOUT ; ?>,
+				timeout:<?php echo AIR_HOCKEY_MODEL_TIMEOUT ; ?>,
+				startup:<?php echo AIR_HOCKEY_START_DELAY ; ?>,
+				mallet: <?php echo AIR_HOCKEY_MALLET_DELAY ; ?>,
+				myside: <?php echo AIR_HOCKEY_MYSIDE_TIMEOUT ; ?>,
+				count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>,
+				restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>,
+				control:<?php echo AIR_HOCKEY_CONTROL_DELAY ;?>,
+				inplay:<?php echo AIR_HOCKEY_INPLAY_DELAY ; ?>
+			},
+			{
+				table:$('table');
+				surround:$('surround')
+				puck:$('puck');
+				opmallet:$('opmallet');
+				mymallet:$('mymallet');
+				countdown:$('countdown');
+				state:$('state');
+				server:$('server');
+				faceoff:$('faceoff');
+				firstgame:$('firstgame');
+				duration:$('duration');
+				abandon:$('abandon');
+			});
 });
 window.addEvent('unload', function() {
-	MBahplay.logout();
+	MBahplay.end();
 	
 });
 var soundReady = false;
@@ -152,12 +163,12 @@ soundManager.onload = function() {
 </script>
 
 <div id="content">
-	<div id="tablesurround">
+	<div id="surround">
 		<div id="opgoal"></div>			
 		<div id="table">
 			<img id="puck" src="puck.gif"/>
 			<img id="opmallet" src="mallet.gif" />
-			<div id="myarea"><img id="mymallet" src="mallet.gif"/></div>
+			<img id="mymallet" src="mallet.gif"/>
 		</div>
 		<div id="mygoal"></div>	
 	</div>
@@ -184,7 +195,7 @@ if ($oid && !is_null($row['eid'])) {
 
 		</div>
 		<div id="message"></div>
-		<img id="abandonmatch" src="/static/images/exit.gif" alt="abandonmatch" />
+		<img id="abandon" src="/static/images/exit.gif" alt="abandonmatch" />
 	</div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>

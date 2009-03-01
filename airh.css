@@ -301,7 +301,7 @@ body, td, th
 
 #master:hover, #master:active, #slave:hover,#slave:active {border-style:inset;}
 
-#tablesurround {
+#surround {
 	padding:5px 10px;
 	background-color:#99FF33;
 	width:282px;
@@ -413,13 +413,13 @@ body, td, th
 	overflow-y:auto;
 	overflow-x:hidden;
 }
-#abandonmatch {
+#abandon {
 	cursor:pointer;
 	border:2px outset #F4FAFC;
 	margin:10px;
 }
 
-#abandonmatch:hover, #abandonmatch:active {
+#abandon:hover, #abandon:active {
 	border:2px inset #F4FAFC;
 }
 
