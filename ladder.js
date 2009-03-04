@@ -17,14 +17,14 @@ MBahladder = function() {
 	var formatDuration = function(match) {
 		var duration = match.getChildren('.duration');
 		if (duration) {
-			var myDate = new Date(new Date.getTime() - match.retrieve('start')*1000);
+			var myDate = new Date(new Date().getTime() - match.retrieve('start')*1000);
 			var min = myDate.getMinutes();
 			min = min + "";
 			min = (min.length == 1)?'0'+min:min;
 			var secs = myDate.getSeconds();
 			secs = secs + "";
 			secs = (secs.length == 1)?'0'+secs:secs;
-			duration.set('text',mydate.getHours()+':'+min+':'+secs);
+			duration.set('text',myDate.getHours()+':'+min+':'+secs);
 		}
 	};
 	var userclick = function(e) {
@@ -196,13 +196,13 @@ MBahladder = function() {
 			});
 			//Go through matches and set the durations up, and then kick of regular update
 			$$('.match').each(function(match) {
-				var duration = match.getChildren('.duration');
+				var duration = match.getFirst('.duration');
 				if (duration) {
 					//Only do this if a duration - ended matches are not included we add the time offset
 					match.store('start',duration.get('text').toInt() + timeOffset);
 					formatDuration(match);
 				} else {
-					var endmatch = match.getChildren('.endmatch');
+					var endmatch = match.getFirst('.endmatch');
 					if (endmatch) {
 						endmatch.set('text',formatDate(endmatch.get('text')));
 					}

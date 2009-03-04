@@ -63,7 +63,7 @@ require('timeout.php');
 	<!--[if lt IE 7]>
 		<link rel="stylesheet" type="text/css" href="airh-ie.css"/>
 	<![endif]-->
-	<script src="/static/scripts/mootools-1.2-core-nc.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="/static/scripts/mootools-1.2-core.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>

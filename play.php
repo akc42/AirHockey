@@ -11,15 +11,15 @@ if ($_GET['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_GET['pass'].' expected: '.sha1("Air".$uid));
 
 define('AIR_HOCKEY_MODEL_TICK',			33);	//milliseconds between calculating new table layout
-define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30000);  //Milliseconds to wait until assume opponent has not come (approx 30 secs)
-define('AIR_HOCKEY_MODEL_TIMEOUT', 		2500);  //Millisecomd to wait until assume comms running the model have died (approx 2 secs)
+define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30);  //Seconds to wait until assume opponent has not come (approx 30 secs)
+define('AIR_HOCKEY_MODEL_TIMEOUT', 		5);  //Seconds to wait until assume comms running the model have died (approx 2 secs)
 define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have synchronised
 define('AIR_HOCKEY_MALLET_DELAY',		1000);   // Millisecs between when mallet positions get sent
 define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
 define('AIR_HOCKEY_OFFSET_COUNT',		10);	//how many measurements of time offset do we need to get a good average
 define('AIR_HOCKEY_RESTART_DELAY',		10);  //Seconds you have after foul or goal to place puck
 define('AIR_HOCKEY_CONTROL_DELAY',		2000); //Milliseconds to have puck on your side to be "in Control" of it
-define('AIR_HOCLEY_INPLAY_DELAY',		2); //Seconds after puck server that he is allowed to hit it
+define('AIR_HOCKEY_INPLAY_DELAY',		2); //Seconds after puck server that he is allowed to hit it
 		
 define ('AIRH',1);   //defined so we can control access to some of the files.
 require_once('db.php');
@@ -43,7 +43,7 @@ if (isset($_GET['mid'])) {
 			$oid = $row['hid'];
 			$opName = $row['hname'];
 		}
-		$startTime = $row['starttime'];
+		$startTime = $row['start_time'];
 	} else {
 		die('Invalid Match Id = '.$mid);
 	}
@@ -72,11 +72,18 @@ dbFree($result);
 	<![endif]-->
 	<script src="/static/scripts/mootools-1.2-core.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="/static/scripts/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="scorer.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="practice.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="match.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="opponent.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>
 <script type="text/javascript">
 	<!--
+var MBahplay;
 
 window.addEvent('domready', function() {
 	MBahplay = new Play(
@@ -95,21 +102,22 @@ window.addEvent('domready', function() {
 				count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>,
 				restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>,
 				control:<?php echo AIR_HOCKEY_CONTROL_DELAY ;?>,
-				inplay:<?php echo AIR_HOCKEY_INPLAY_DELAY ; ?>
+				inplay:<?php echo AIR_HOCKEY_INPLAY_DELAY ; ?> 
 			},
 			{
-				table:$('table');
-				surround:$('surround')
-				puck:$('puck');
-				opmallet:$('opmallet');
-				mymallet:$('mymallet');
-				countdown:$('countdown');
-				state:$('state');
-				server:$('server');
-				faceoff:$('faceoff');
-				firstgame:$('firstgame');
-				duration:$('duration');
-				abandon:$('abandon');
+				table:$('table'),
+				surround:$('surround'),
+				puck:$('puck'),
+				opmallet:$('opmallet'),
+				mymallet:$('mymallet'),
+				countdown:$('countdown'),
+				state:$('state'),
+				server:$('server'),
+				faceoff:$('faceoff'),
+				firstgame:$('firstgame'),
+				duration:$('duration'),
+				abandon:$('abandon'),
+				message:$('message')
 			});
 });
 window.addEvent('unload', function() {
@@ -118,6 +126,7 @@ window.addEvent('unload', function() {
 });
 var soundReady = false;
 soundManager.url = '/static/scripts/';
+soundManager.debugMode = false;
 soundManager.onload = function() {
 	soundManager.createSound({
 		id : 'mallet',
@@ -164,8 +173,12 @@ soundManager.onload = function() {
 
 <div id="content">
 	<div id="surround">
-		<div id="opgoal"></div>			
-		<div id="table">
+<?php
+if ($mid != 0) {
+?>		<div id="opgoal"></div>
+<?php
+}			
+?>		<div id="table">
 			<img id="puck" src="puck.gif"/>
 			<img id="opmallet" src="mallet.gif" />
 			<img id="mymallet" src="mallet.gif"/>

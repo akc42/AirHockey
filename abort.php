@@ -4,9 +4,9 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
-if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['oid'])))
+if(!(isset($_POST['uid'])  && isset($_POST['pass'])&& isset($_POST['oid'])))
 	die('Log - Hacking attempt - wrong parameters');
-$uid = $_POST['user']; //extra security for abort so it doesn't get missued
+$uid = $_POST['uid']; //extra security for abort so it doesn't get missued
 if ($_POST['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_POST['pass'].' expected: '.sha1("Air".$uid));
 // Link to SMF forum as this is only for logged in members
@@ -28,8 +28,8 @@ if ($uid != $ID_MEMBER)
 
 $pipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //If opponent has gone away, I open his message pipe and that releases me
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-fclose($pipe)
+fclose($pipe);
 $pipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$uid,'r+'); //If opponent has gone away, I open my ack pipe and that releases me
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-fclose($pipe)
+fclose($pipe);
 ?>

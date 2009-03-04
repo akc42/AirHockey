@@ -59,15 +59,15 @@ if($state == ACCEPTED) {
 
 		$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$uid,'r+');
 		$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$uid,'r');
-		fwrite($sendpipe,"$A"); //Send the abandon
+		fwrite($sendpipe,"$Abandon"); //Send the abandon
 		fclose($sendpipe);
 		$response=fread($readpipe,10);
 		fclose($readpipe); //
 		$state = $_POST['state'];
-		echo '{"State":"'.$state.'"}';
+		echo '{"state":"'.$state.'"}';
 	} else {
 		$state = MATCH ; //we will now be in a match
-		echo '{"State":'.MATCH.',"mid":'.$user['iid'].'}';
+		echo '{"state":'.MATCH.',"mid":'.$user['iid'].'}';
 	}
 	$user['last_state'] = $now;
 } 
@@ -84,9 +84,9 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 				$m = dbFetch($r);
 				$mid = $m['mid'];
 				dbFree($r);
-				dbQuery('UPDATE player SET state = '.ACCEPTED.', iid = '.dbPostSage($mid).' WHERE pid = '.dbMakeSafe($row['pid']).';');
+				dbQuery('UPDATE player SET state = '.ACCEPTED.', iid = '.dbPostSafe($mid).' WHERE pid = '.dbMakeSafe($row['pid']).';');
 				$state = MATCH ;
-				echo '{"State":'.MATCH.',"mid":'.$mid.'}';
+				echo '{"state":'.MATCH.',"mid":'.$mid.'}';
 			} else {
 				$state = ANYONE ;
 			}

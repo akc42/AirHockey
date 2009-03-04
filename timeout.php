@@ -16,7 +16,7 @@ $result = dbQuery('SELECT mid,hid,aid, start_time, end_time, last_activity FROM 
 while ($row = dbFetch($result)) {
 	dbQuery('UPDATE player SET state = '.OFFLINE.', last_state = '.$rightnow.' WHERE state = '.MATCH
 			.' AND (pid = '.dbMakeSafe($row['hid']).' OR pid = '.dbMakeSafe($row['aid']).') ;');
-	dbQuery('UPDATE match SET abandon = "A", last_activity = '.$rightnow.', end_time = '.$rightnow.' WHERE mid = '.dbMakeSafe($row['mid']).';');
+	dbQuery('UPDATE match SET abandon = \'A\', last_activity = '.$rightnow.', end_time = '.$rightnow.' WHERE mid = '.dbMakeSafe($row['mid']).';');
 }
 dbQuery('UPDATE player SET state = '.OFFLINE.' , last_state = '.$rightnow
 		.' WHERE ( last_poll < '.$offline.' AND state BETWEEN '.SPECTATOR.' AND '.INVITE.' )'

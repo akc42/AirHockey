@@ -315,7 +315,7 @@ body, td, th
 	margin-left:96px;
 }
 #table {
-	background-color:#e7FFFF;
+	background:url(table.gif);
 	border:1px solid black;
 	width:280px;
 	height:600px;
@@ -376,7 +376,7 @@ body, td, th
 	background-color:white;
 	margin:5px 30px 5px 5px;
 	border:2px solid black;
-	width:48px;
+	width:56px;
 	height:48px;
 	text-align:center;
 	font-size:44px;
