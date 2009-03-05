@@ -58,11 +58,8 @@ if($state == ACCEPTED) {
 		//Other end will be sitting reading my msg pipe
 
 		$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$uid,'r+');
-		$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$uid,'r');
 		fwrite($sendpipe,"$Abandon"); //Send the abandon
 		fclose($sendpipe);
-		$response=fread($readpipe,10);
-		fclose($readpipe); //
 		$state = $_POST['state'];
 		echo '{"state":"'.$state.'"}';
 	} else {

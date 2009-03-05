@@ -45,7 +45,7 @@ var Practice = new Class({
 				//going slowly
 				this.scorer.faceoffMe(); //claim it
 				reply.puck.dx = $random(-40,40);
-				reply.puck.dy = 40;
+				reply.puck.dy = $random(40,80);
 				this.links.table.update(true,{x:560,y:148},reply.puck,0);
 			}
 		}

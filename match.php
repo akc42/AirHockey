@@ -27,9 +27,9 @@ if(dbNumRows($result) > 0) {
 				.' WHERE mid = '.dbMakeSafe($mid).' ;');
 	} else {
 		if($g == 0) {
-			dbQuery('UPDATE match SET  last_activity = '.$now.', end_date = '.$now.' WHERE mid = '.dbMakeSafe($mid).' ;');
+			dbQuery('UPDATE match SET  last_activity = '.$now.', end_time = '.$now.' WHERE mid = '.dbMakeSafe($mid).' ;');
 		} else {
-			dbQuery('UPDATE match SET  last_activity = '.$now.', end_date = '.$now.', abandon = \'A\' WHERE mid = '.dbMakeSafe($mid).' ;');
+			dbQuery('UPDATE match SET  last_activity = '.$now.', end_time = '.$now.', abandon = \'A\' WHERE mid = '.dbMakeSafe($mid).' ;');
 		}
 	}
 	dbQuery('COMMIT;');

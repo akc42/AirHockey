@@ -11,8 +11,8 @@ if ($_GET['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_GET['pass'].' expected: '.sha1("Air".$uid));
 
 define('AIR_HOCKEY_MODEL_TICK',			33);	//milliseconds between calculating new table layout
-define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30);  //Seconds to wait until assume opponent has not come (approx 30 secs)
-define('AIR_HOCKEY_MODEL_TIMEOUT', 		5);  //Seconds to wait until assume comms running the model have died (approx 2 secs)
+define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30000);  //Milliseconds to wait until assume opponent has not come (approx 30 secs)
+define('AIR_HOCKEY_MODEL_TIMEOUT', 		5000);  //Milliseconds to wait until assume comms running the model have died (approx 2 secs)
 define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have synchronised
 define('AIR_HOCKEY_MALLET_DELAY',		1000);   // Millisecs between when mallet positions get sent
 define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
