@@ -77,7 +77,7 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 				//OK found someone, so create a match and put him into the R state.
 				dbQuery('INSERT INTO match (mid,hid,aid,start_time,last_activity) VALUES(default,'
 							.dbPostSafe($row['pid']).','.dbPostSafe($uid).','.dbPostSafe($now).','.dbPostSafe($now).');');
-				$r = dbQuery('SELECT currval(\'match_mid_seq\'::regclass) AS mid;');
+				$r = dbQuery('SELECT currval(\'match_mid_seq\') AS mid;');
 				$m = dbFetch($r);
 				$mid = $m['mid'];
 				dbFree($r);
