@@ -105,7 +105,7 @@ var Opponent = new Class({
 			that.eventReceived(t,m);
 		};
 	  this.poller=$clear(this.poller);
-	  this.comms.write.delay(1,this.comms,[msg,er,this.timeout]);
+	  this.comms.write.delay(4,this.comms,[msg,er,this.timeout]);
 	},
 	eventReceived : function (time,msg) {
 		var that = this;
