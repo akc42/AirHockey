@@ -122,7 +122,7 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 					if($_POST['cmd'] == "A") {
 						dbQuery('INSERT INTO match (mid,hid,aid,start_time,last_activity) VALUES(default,'.dbMakeSafe($oid)
 							.','.dbPostSafe($uid).','.dbPostSafe($now).','.dbPostSafe($now).');');
-						$r = dbQuery('SELECT currval(\'match_mid_seq\'::regclass) AS mid;');
+						$r = dbQuery('SELECT currval(\'match_mid_seq\') AS mid;');
 						$m = dbFetch($r);
 						$mid = $m['mid'];
 						dbFree($r);
