@@ -30,11 +30,18 @@ MBahladder = function() {
 	var userclick = function(e) {
 		e.stop();
 		var oid = this.get('id').substr(1).toInt(); //he will be my opponent
+		if(personalState.get('id') != 'S3') {
+			var pstext = personalState.get('text');
+			personalState.set('html',pstext);
+			personalState = $('S3');
+			pstext = personalState.get('text');
+			personalState.set('html', pstext+'<img src="tick.gif" alt="selected" />') ;
+		}
 		var statediv = this.getFirst().getNext();
-		if(statediv.hasClass('free') || statediv.hasClass('inviteTo')) {
+		if(statediv.hasClass('free') || statediv.hasClass('inviteFrom')) {
 			cmdReq.post($merge(ropt,{cmd:'A',oid:oid}));
 		} else {
-			if(statediv.hasClass('byInvite') || statediv.hasClass('inviteFrom')) {
+			if(statediv.hasClass('byInvite') || statediv.hasClass('inviteTo')) {
 				cmdReq.post($merge(ropt,{cmd:'I',oid:oid}));
 			}
 		}
@@ -122,6 +129,7 @@ MBahladder = function() {
 								case 2 :
 									d.addClass('free');
 									d.set('text','A');
+									el.addClass('cpoint');
 									break;
 								case 3 :
 									if (user.invite) {
@@ -136,6 +144,8 @@ MBahladder = function() {
 										d.addClass('byInvite');
 										d.set('text','I');
 									}
+
+									el.addClass('cpoint');
 									break;
 								case 4:
 								case 5:
@@ -209,7 +219,14 @@ MBahladder = function() {
 				}
 			});
 			// For each online user, set up the function of what to do when we click on him
-			$$('.userOnline').addEvent('click',userclick);
+			$$('.onlineUser').addEvent('click',userclick);
+			var addCpoint = function(user) {
+				user.addClass('cpoint');
+			} 
+			$$('.free').each(addCpoint);
+			$$('.byInvite').each(addCpoint);
+			$$('.inviteTo').each(addCpoint);
+			$$('.inviteFrom').each(addCpoint);
 			$('exittoforum').addEvent('click',function(e) {
 				stateReq.post($merge(ropt,{state:0})); //say going offline
 				MBahladder.logout();

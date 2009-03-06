@@ -97,6 +97,7 @@ var Table = new Class({
 	},
 	halt: function () {
 		this.ontable = false;
+		this.puck.remove();
 		this.inP = false;
 		this.myServe = false;
 		this.transition();;
@@ -114,7 +115,7 @@ var Table = new Class({
 		  		this.puck.set(p);
 				this.puck.update();
 				this.ontable = true;
-		  		this.inP = true;
+				this.inP = true; //opponent hit the puck, so it must be in play
 				this.myServe = false;
 		  		this.links.scoreboard.foul(false);
 	  		} else {
@@ -134,6 +135,10 @@ var Table = new Class({
 					this.puck.dy *= hm;
 					this.puck.dx += p.dx;
 			  		this.puck.dy += p.dy; 
+/*					this.puck.x = (this.puck.x+ p.x)/2;
+					this.puck.y = (this.puck.y+p.y)/2;
+					this.puck.dx = (this.puck.dx+p.dx)/2;
+					this.puck.dy = (this.puck.dy+p.dy)/2; */
 			  		this.puck.update();
 				}
 			}
@@ -154,7 +159,7 @@ var Table = new Class({
 		};
 		if(this.puck.y <= 1200 || !this.ontable) {
 			this.links.scoreboard.cancel();
-			$clear(this.timer);
+			this.timer= $clear(this.timer);
 		} else {
 			this.links.scoreboard.set(this.timers.myside, function() {
 				that.links.match.tFoul('Puck too long on your side');
@@ -204,7 +209,6 @@ var myMallet = new Class({
 				that.mp.y = e.page.y*4 - that.table.y;
 				if (that.mp.x < 0 || that.mp.y < 1147) {
 					return false;
-					els.surround.removeEvents('mousemove');
 				} else {
 					if (that.mp.x > 1120 || that.mp.y > 2400) {
 						return false;
@@ -265,49 +269,53 @@ var SimplePuck = new Class({
 		var c = false; //if hit table
 		var t = 0;	//0 = no hit,  1 = transition no hit, 2. hit, no transition 3 = transition, hit 4 = goalFor,no transition, 5=goalFor transiation 6 = goalAgainst
 		var s = true;
-		this.x += this.dx;
-		this.y += this.dy
-		//now check
-		do {
-			if (this.x < 41) {
-				this.x =  82 -this.x;
-				this.dx = - (this.dx*0.96);
-				c = true;
-				t = 2;
-			} else {
-				if (this.x > 1079) {
-					this.x= 2158 - this.x;
-					this.dx = -(this.dx * 0.96);
-					c=true;
-					t=2;
-				} else {
-					c=false;
-				}
-			}
-		} while (c);
-		do {
-			if(this.y <= 1200) s = false;
-			if (this.y < 41 ) {
-				c = true;
-				t = 2;
-				this.y = 82 - this.y;
-				this.dy = -(this.dy * 0.96);
-			} else {
-				if (this.y > 2359) {
+		if(this.dx != 0) {
+			this.x += this.dx;
+			//now check
+			do {
+				if (this.x < 41) {
+					this.x =  82 -this.x;
+					this.dx = - (this.dx*0.96);
 					c = true;
-					if (t==0) t = 2;
-					if(this.x > 380 && this.x < 740) {
-						t = 6; //scored a goal for
+					t = 2;
+				} else {
+					if (this.x > 1079) {
+						this.x= 2158 - this.x;
+						this.dx = -(this.dx * 0.96);
+						c=true;
+						t=2;
+					} else {
+						c=false;
 					}
-					this.y= 4718 - this.y;
+				}
+			} while (c);
+			this.dx *= 0.99;
+		}
+		if(this.dy != 0) {
+			this.y += this.dy
+			do {
+				if(this.y <= 1200) s = false;
+				if (this.y < 41 ) {
+					c = true;
+					t = 2;
+					this.y = 82 - this.y;
 					this.dy = -(this.dy * 0.96);
 				} else {
-					c=false;
+					if (this.y > 2359) {
+						c = true;
+						if (t==0) t = 2;
+						if(this.x > 380 && this.x < 740) {
+							t = 6; //scored a goal for
+						}
+						this.y= 4718 - this.y;
+						this.dy = -(this.dy * 0.96);
+					} else {
+						c=false;
+					}
 				}
-			}
-		} while (c);
-		this.dx *= 0.99;
-		this.dy *= 0.99;
+			} while (c);
+			this.dy *= 0.99;
+		}
 		if(t==6) return 6;
 		var news = (this.y>1200);
 		if (!(this.side && s && news) && (this.side || news)) t++;

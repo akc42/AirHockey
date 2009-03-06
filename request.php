@@ -109,12 +109,18 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 				$oid = $_POST['oid'];
 				if($_POST['cmd'] == "I") {
 					//To invite an opponent we just add his id into our user record
-					$invitechange = true;
 					$oldiid = $user['iid'];
-					$user['iid'] = $oid;
+					if($oldiid == $oid) {
+						$user['iid'] = 0; //uninvite him if we had previously invited him
+						$oid = 0;
+					} else {
+						$user['iid'] = $oid;
+					}
+					$state = INVITE;     //if user wasin't in invite mode, they are now.
+					$user['last_state'] = $now;
 				} else {
 					if($_POST['cmd'] == "A") {
-						dbQuery('INSERT INTO match (mid,hid,aid,start_time,last_activity) VALUES(default,'.dbPostSafe($oid)
+						dbQuery('INSERT INTO match (mid,hid,aid,start_time,last_activity) VALUES(default,'.dbMakeSafe($oid)
 							.','.dbPostSafe($uid).','.dbPostSafe($now).','.dbPostSafe($now).');');
 						$r = dbQuery('SELECT currval(\'match_mid_seq\'::regclass) AS mid;');
 						$m = dbFetch($r);
@@ -123,7 +129,8 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 						dbQuery('UPDATE player SET state = '.ACCEPTED.', iid = '.dbPostSafe($mid).', last_state = '.dbPostSafe($now)
 								.' WHERE pid = '.dbMakeSafe($oid).';');
 						$state = MATCH ;
-						echo '{"State":'.MATCH.',"mid":'.$mid.'}';
+						$user['last_state'] = $now;
+						echo '{"state":'.MATCH.',"mid":'.$mid.'}';
 					}
 				}
 			}
@@ -132,7 +139,7 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 }
 
 dbQuery('UPDATE player SET state = '.dbPostSafe($state).', last_state = '.dbPostSafe($user['last_state'])
-		.', iid = '.dbPostSafe($user['iid']).', last_poll = '.dbPostSafe($now).' WHERE pid = '.dbMakeSafe($uid).';');
+		.', iid = '.dbMakeSafe($user['iid']).', last_poll = '.dbPostSafe($now).' WHERE pid = '.dbMakeSafe($uid).';');
 dbQuery('COMMIT;');
 
 //Timeout users who are supposed to be on line, but haven't contacted for a while and old matches.
@@ -192,7 +199,7 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 			}
 			$pid = $row['pid']; 
 			echo '{"pid":'.$pid.',"name":"'.$row['name'].'","state":'.$row['state'] ;
-			if ($pid == $oid) {
+			if ($pid == $oid ) {
 				$oid = 0; // indicate that iid has been dealt with
 				echo ',"invite":"T"}';
 			} else {

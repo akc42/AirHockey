@@ -264,7 +264,7 @@ body, td, th
 	cursor:pointer;
 }
 
-.inviteFrom, .inviteTo {
+.inviteFrom {
 	background-color:#FFAE00;
 }
 
@@ -275,8 +275,14 @@ body, td, th
 .inmatch {
 	background-color:#FF0000;
 }
+.inviteTo {
+	background-color:	#8929FF;
+	color:white;
+}
 
-	
+.cpoint {
+	cursor:pointer;
+}
 
 #ladder {
 	float:left;
@@ -422,5 +428,7 @@ body, td, th
 #abandon:hover, #abandon:active {
 	border:2px inset #F4FAFC;
 }
+
+a:link, a:visited, a:active {color:white}
 
 

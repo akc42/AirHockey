@@ -18,15 +18,14 @@ var Opponent = new Class({
 			}
 		};
 		var startMatchM = function(time,msg) {
-		  if(msg == 'OK') {
-		    startMatch(time);
-			that.poll.delay(500,that);  //start immediately
-		  }
+			if(msg == 'OK') {
+				startMatch(time);
+			}
 		};
 		var startMatchS = function(time,msg) {
 			switch (msg) {
 				case 'Start':
-				  that.send('OK');
+					that.send.delay(20,that,'OK'); // just wait a short while before returning the OK
 					startMatch(time);
 					break;
 				case 'Abandon':
@@ -37,9 +36,14 @@ var Opponent = new Class({
 			}
 		};	
 		var startMatch = function (time) {
+			var er = function(t,m) {
+				that.eventReceived(t,m);
+			};
+			that.comms.read(er,that.timers.timeout);
 			that.inSync = true;
 			var now = new Date().getTime() + that.timeOffset;
 			that.links.match.start(time+1000 - now);	//we want to start the match from 1 second from when the server told us.
+			that.poll.delay(1000,that);  //start sending my stuff on a regular bassis (nothing can legitimately move in the next three seconds
 		};
 
 		var startTime;
@@ -101,10 +105,14 @@ var Opponent = new Class({
 			that.eventReceived(t,m);
 		};
 	  this.poller=$clear(this.poller);
-	  this.comms.write(msg,er,this.timeout);
+	  this.comms.write.delay(1,this.comms,[msg,er,this.timeout]);
 	},
 	eventReceived : function (time,msg) {
-		if(msg == 'I') return;  //this read request was interrupted, but I have another one set, so no need to do anything
+		var that = this;
+		var er = function(t,m) {
+			that.eventReceived(t,m);
+		};
+		this.comms.read.delay(1,this.comms,[er,this.timers.opponent]);
 		var splitMsg = msg.split(':');
 		var firm = false;
 		switch (splitMsg[0]) {
@@ -112,7 +120,7 @@ var Opponent = new Class({
 				this.links.match.faceoff();
 				break;
 			case 'S' :
-				this.links.match.serve({x:splitMsg[1].toInt(),y:splitMsg[2].toInt()});
+				this.links.match.serve({x:splitMsg[1].toInt(),y:2400-splitMsg[2].toInt()});
 				break;
 			case 'E' :
 				fail(); //use this, as it shuts things down too
@@ -136,7 +144,7 @@ var Opponent = new Class({
 				this.links.table.update(false,{x:splitMsg[1].toInt(),y:2400 - splitMsg[2].toInt()},null,null);
 				break;
 			default :
-				els.message.appendText('Invalid Message:'+msg);
+				this.els.message.appendText('Invalid Message:'+msg);
 		}
 	},
 	fail: function(reason) {
@@ -151,27 +159,19 @@ var Comms = new Class({
 	initialize: function(me,oid,fail) {
 		var that = this;
 		this.timeout = null;
-		this.opt = {uid:me.uid,msg:'',oid:oid};
+		this.opt = {uid:me.uid,oid:oid};
 		this.commsFailed = false;
 		this.fail = function(reason) {
 			this.commsFailed = true;
-			this.abortReq.post(this.opt);  //kill off all requests (including opponent)
+			this.abortReq.post(this.opt);  //kill off outstanding requests
 		};
 		this.func = null;
-		this.sendReq = new Request.JSON({url:'send.php',link:'cancel',onComplete: function(response,errorstr) {
+		this.req = new Request.JSON({url:'pipe.php',link:'cancel',onComplete: function(response,errorstr) {
 			that.timeout=$clear(that.timeout);
 			if (response) {
 				if (that.func) that.func(response.time,response.msg);
 			} else {
-				fail('Send Fails : '+errorstr);
-			}
-		}});
-		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete: function(response,errorstr) {
-			that.timeout=$clear(that.timeout);
-			if (response) {
-				if(that.func) that.func(response.time,response.msg);
-			} else {
-				fail('Read Fails :'+errorstr);
+				fail('Pipe Fails : '+errorstr);
 			}
 		}});
 		this.abortReq = new Request.JSON({url:'abort.php',link:'chain'});
@@ -182,15 +182,14 @@ var Comms = new Class({
 		this.func = success;
 		this.timeout = $clear(this.timeout);
 		this.timeout = this.fail.delay(time,this,'Read Timeout');
-		this.readReq.post(this.opt);
+		this.req.post(this.opt);
 	},
 	write: function (msg,success,time) {
-		if(this.commsFailed) return; 
+		if(this.commsFailed) return;
 		this.func = success;
-		this.opt.msg=msg;
 		this.timeout = $clear(this.timeout);
 		this.timeout = this.fail.delay(time,this,'Send Timeout');
-		this.sendReq.post(this.opt);
+		this.req.post($merge(this.opt,{msg:msg,w:'x'}));
 	},
 	die: function () {
 		this.abortReq.post(this.opt);  //kill off all of my requests

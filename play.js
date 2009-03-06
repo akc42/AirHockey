@@ -4,7 +4,7 @@ var Play = new Class({
 			if(soundReady) soundManager.play(sound);
 		};
 		this.links = {table:null,match:null,opponent:null,scoreboard:new Scoreboard(mid,startTime,me,master,els,play),play:play};
-		this.links.match = new Match(this.links,timers,play);
+		this.links.match = new Match(this.links,timers,els);
 		this.links.table = new Table(this.links,timers,els,play);
 		//this needs to be last, as it starts everything off - the rest has to be set up before it
 		if (mid == 0) {

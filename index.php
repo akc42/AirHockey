@@ -43,10 +43,10 @@ dbQuery('BEGIN;');
 $result=dbQuery('SELECT * FROM player WHERE pid = '.dbMakeSafe($uid).';');
 if(dbNumRows($result) > 0) {
 	dbQuery('UPDATE player SET last_poll = '.dbPostSafe($time).' , name = '
-			.dbPostSafe($name).', state = '.SPECTATOR.', last_state = '.dbPostSafe($time).' WHERE pid = '.dbMakeSafe($uid).';');
+			.dbPostSafe($name).', state = '.SPECTATOR.', last_state = '.dbPostSafe($time).', iid = \'0\' WHERE pid = '.dbMakeSafe($uid).';');
 } else {
-	dbQuery('INSERT INTO player (pid,name,last_poll, state, last_state, mu, sigma) VALUES ('
-			.dbMakeSafe($uid).','.dbPostSafe($name).', '.dbPostSafe($time).','.SPECTATOR.','.dbPostSafe($time).', DEFAULT,DEFAULT);');
+	dbQuery('INSERT INTO player (pid,name,last_poll, state, last_state, mu, sigma, iid) VALUES ('
+			.dbMakeSafe($uid).','.dbPostSafe($name).', '.dbPostSafe($time).','.SPECTATOR.','.dbPostSafe($time).', DEFAULT,DEFAULT,DEFAULT);');
 }
 dbQuery('COMMIT;');
 dbFree($result);
@@ -111,7 +111,7 @@ window.addEvent('unload', function() {
 </tbody>
 </table>
 <div id="content">
-	<img id="exittoforum" src="/static/images/exit-f.gif" />
+	<p><img id="exittoforum" src="/static/images/exit-f.gif" />  An explanation of how to play can be found <b><a href="rules.html">here</a></b></p>
 	<div id="matchlist">
 		<div id="matchlistheader">Recent and Current Matches</div>
 <?php
@@ -202,8 +202,8 @@ while($row=dbFetch($result)) {
 ?><div class="free">A</div><?php
 		} else {
 			if ($state == INVITE) {
-				if (!is_null($row['iid']) && $row['iid'] == $uid) {
-?><div class="inviteTo">T</div><?php
+				if ($row['iid'] == $uid) {
+?><div class="inviteFrom">T</div><?php
 				} else {
 ?><div class="byInvite">I</div><?php
 				}

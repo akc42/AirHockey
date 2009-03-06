@@ -30,20 +30,21 @@ var Scoreboard = new Class({
 		}
 	},
 	endMatch: function() {
-		$clear(this.duration);
-		$clear(this.countdown);
+		this.duration = $clear(this.duration);
+		this.countdown = $clear(this.countdown);
 		if(this.params.m != 0 && this.master) {
 			this.params.g = 0;  //special flag to say end the game
 			this.updateMatchReq.post(this.params);
 		}
 	},
 	abandonMatch: function () {
-		$clear(this.duration);
-		$clear(this.countdown);
+		this.duration = $clear(this.duration);
+		this.duration = $clear(this.countdown);
 		if (this.params.m !=0) {
 			this.params.g = -1;
 			this.updateMatchReq.post(this.params);
 		}
+		this.status('Match Abandoned');
 	},
 	score: function (me) {
 		if((me && this.master) || !(me || this.master)) {
@@ -55,7 +56,7 @@ var Scoreboard = new Class({
 		h.set('text',(this.master)?this.params.h:this.params.a);
 		var a = h.getNext();
 		a.set('text',(this.master)?this.params.a:this.params.h);
-		if(this.params.m != 0) 	this.updateMatchReq.post(this.params);
+		if(this.master && this.params.m != 0) 	this.updateMatchReq.post(this.params);
 	},
 	newGame: function() {
 		var d = new Element('div',{'class':'game'}).inject(this.game,'after');
@@ -65,7 +66,6 @@ var Scoreboard = new Class({
 		this.params.h=0;
 		this.params.a=0;
 		this.params.g++;
-		if(this.params.m != 0) this.updateMatchReq.post(this.params);
 	},
 	serve: function(s) {
 		if(s) {
@@ -105,19 +105,19 @@ var Scoreboard = new Class({
 				callback();
 			} else {
 				if (n < 0) {
-					$clear(that.countdown);
+					that.countdown = $clear(that.countdown);
 				} else {
 					this.play('count');
 				}
 			}
 		};
-		$clear(this.countdown);
+		this.countdown = $clear(this.countdown);
 		that.countdown = counter.periodical(1000,this);
 		setCounter(n);
 	},
 	cancel: function() {
-		$clear(this.countdown);
-		this.els.countdown.set('text',' ');
+		this.countdown = $clear(this.countdown);
+		this.els.countdown.set('text','');
 	}
 });
 

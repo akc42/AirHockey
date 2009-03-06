@@ -1,14 +1,17 @@
 var Match = new Class({
-	initialize: function(links,timers) {
+	initialize: function(links,timers,els) {
 		this.links = links;
 		links.scoreboard.status('Please wait ...');
 		this.timers = timers;
+		this.els = els;
 		var that = this
 		this.matchInProgress = true;
+this.els.message.appendText('[IN]');
 		this.scorer = new Scorer({
 			faceoff: function (me) {
 				that.links.scoreboard.faceoff(me);
 				if(me) that.links.opponent.faceoff();
+if(me) that.els.message.appendText('[MF]');
 			},
 			score: function(me) {
 				that.links.scoreboard.score(me);
@@ -33,11 +36,14 @@ var Match = new Class({
 			};
 			this.links.scoreboard.status('Start Match');
 			this.links.scoreboard.set(this.timers.startup,inPlay);
-			this.serve({x:560,y:1200});
+			this.links.table.place({x:560,y:1200});
+this.els.message.appendText('[AS]');
 		};
+this.els.message.appendText('[ST]');
 		this.startDelay = doStart.delay(wait,this);
 	},
 	serve: function(position) {
+this.els.message.appendText('[OV]');
 		this.links.table.place(position);
 	},
 	served: function (position) {
@@ -50,6 +56,7 @@ var Match = new Class({
 		this.links.opponent.serve(position);
 		this.links.scoreboard.set(this.timers.inplay, setInPlay);
 		this.links.scoreboard.serve(false);
+this.els.message.appendText('[MV]');
 	},
 	abandon: function() {
 		if (this.matchInProgress) {
@@ -60,6 +67,7 @@ var Match = new Class({
 			this.links.scoreboard.abandonMatch();
 			this.matchInProgress=false;
 		}
+this.els.message.appendText('[MA]');
 	},
 	end: function () {
 		if(this.matchInProgress) {
@@ -69,12 +77,15 @@ var Match = new Class({
 			this.links.scoreboard.status('Opponent Abandoned Match');
 			this.matchInProgress = false;
 		}
+this.els.message.appendText('[OA]');
 	},
 	inControl: function () {
 		this.scorer.faceoffMe();
+this.els.message.appendText('[IC]');
 	},
 	faceoff: function () {
 		this.scorer.faceoffOp();
+this.els.message.appendText('[OF]');
 	},
 	tFoul: function(msg) {
 		this.links.table.halt();
@@ -83,12 +94,14 @@ var Match = new Class({
 		this.links.scoreboard.status(msg);
 		this.links.scoreboard.foul(true);
 		this.links.opponent.foul();
+this.els.message.appendText('[MZ]');
 	},
 	foul: function() {
 		this.links.table.halt();
 		this.links.play('foul');
 		this.links.scoreboard.status('Opponent Foul');
 		this.requestServe();
+this.els.message.appendText('[OZ]');
 	},
 	requestServe: function() {
 		var that = this;
@@ -98,6 +111,7 @@ var Match = new Class({
 			that.tFoul('You took too long to serve');
 		});
 		this.links.table.serve();
+this.els.message.appendText('[RV]');
 	},
 	goalAgainst: function() {
 		this.links.table.halt();
@@ -107,6 +121,7 @@ var Match = new Class({
 		if(this.scorer.goalAgainst()) {
 			this.requestServe();
 		}
+this.els.message.appendText('[OG]');
 	},
 	goal: function() {
 		this.links.table.halt();
@@ -115,6 +130,7 @@ var Match = new Class({
 		if(this.scorer.goalFor()) {
 			this.requestServe();
 		}
+this.els.message.appendText('[MG]');
 	}
 });
 
