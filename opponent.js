@@ -10,6 +10,7 @@ var Opponent = new Class({
 		this.els = els;
 		this.inSync = false;
 		this.timeout = timers.timeout;
+		this.timeOffset = 0;
 		this.comms = new Comms(me,oid,timers.opponent,myfail,els);
 		var awaitOpponent = function() {
 			if (master) {
@@ -137,7 +138,7 @@ var Opponent = new Class({
 				this.links.table.update(firm,
 					{x:splitMsg[1].toInt(),y:2400 - splitMsg[2].toInt()},
 					{x:splitMsg[3].toInt(),y:2400 - splitMsg[4].toInt(),dx:splitMsg[5].toInt(),dy:-splitMsg[6].toInt()},
-					((new Date().getTime() + this.timeOffset -splitMsg[7].toInt())/this.timers.tick | 0));
+					((new Date().getTime() + this.timeOffset -splitMsg[7])/this.timers.tick).toInt());
 				//calculate where I think the puck should be based on the time
 				break;
 			case 'M' :

@@ -1,6 +1,7 @@
 var Table = new Class({
 	initialize: function(links,timers,els) {
 		var that = this;
+		this.els = els;
 		this.links = links;
 		this.opmallet = new opMallet(els.opmallet,{x:560,y:148});
 		this.puck = new ComplexPuck({
@@ -110,6 +111,7 @@ var Table = new Class({
 		this.opmallet.update(mallet);
 		if(puck) {
 			var p = new SimplePuck(puck);
+			if (ticksBehind > 150) return ;//defense against problem with its size.
 			while (ticksBehind > 0) {
 		  		ticksBehind--;
 		  		p.tick();

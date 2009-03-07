@@ -11,7 +11,7 @@ define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['oid'],'r+'); //Say I am ready for a send from the other end
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r');
-$response=fread($readpipe,100);
+$response=fread($readpipe,200);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
 fclose($readpipe);
