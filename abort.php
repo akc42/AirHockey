@@ -22,10 +22,8 @@ if($user_info['is_guest']) {
 if ($uid != $ID_MEMBER)
 	die('Log - Hacking attempt - invalid user id');
 
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //If opponent has gone away, I open his for writing and that releases me trying to read it
-usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-fclose($pipe);
-//$pipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$uid,'r+'); //In case my opponent is stuck, he should be reading from my pipe, so I open it and release him
-//usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-//fclose($pipe);
+$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //unlock any previous read (cancel already happened)
+fclose($readpipe);
+$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r+'); //unlock any write waiting to go
+fclose($sendpipe);
 ?>

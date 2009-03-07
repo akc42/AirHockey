@@ -10,7 +10,6 @@ var Match = new Class({
 			faceoff: function (me) {
 				that.links.scoreboard.faceoff(me);
 				if(me) that.links.opponent.faceoff();
-if(me) that.els.message.appendText('[MF]');
 			},
 			score: function(me) {
 				that.links.scoreboard.score(me);
@@ -40,7 +39,6 @@ if(me) that.els.message.appendText('[MF]');
 		this.startDelay = doStart.delay(wait,this);
 	},
 	serve: function(position) {
-this.els.message.appendText('[OV]');
 		this.links.table.place(position);
 	},
 	served: function (position) {
@@ -53,7 +51,6 @@ this.els.message.appendText('[OV]');
 		this.links.opponent.serve(position);
 		this.links.scoreboard.set(this.timers.inplay, setInPlay);
 		this.links.scoreboard.serve(false);
-this.els.message.appendText('[MV]');
 	},
 	abandon: function() {
 		if (this.matchInProgress) {
@@ -87,14 +84,12 @@ this.els.message.appendText('[MV]');
 		this.links.scoreboard.status(msg);
 		this.links.scoreboard.foul(true);
 		this.links.opponent.foul();
-this.els.message.appendText('[MZ]');
 	},
 	foul: function() {
 		this.links.table.halt();
 		this.links.play('foul');
 		this.links.scoreboard.status('Opponent Foul');
 		this.requestServe();
-this.els.message.appendText('[OZ]');
 	},
 	requestServe: function() {
 		var that = this;
@@ -104,7 +99,6 @@ this.els.message.appendText('[OZ]');
 			that.tFoul('You took too long to serve');
 		});
 		this.links.table.serve();
-this.els.message.appendText('[RV]');
 	},
 	goalAgainst: function() {
 		this.links.table.halt();
@@ -114,7 +108,6 @@ this.els.message.appendText('[RV]');
 		if(this.scorer.goalAgainst()) {
 			this.requestServe();
 		}
-this.els.message.appendText('[OG]');
 	},
 	goal: function() {
 		this.links.table.halt();
@@ -123,7 +116,6 @@ this.els.message.appendText('[OG]');
 		if(this.scorer.goalFor()) {
 			this.requestServe();
 		}
-this.els.message.appendText('[MG]');
 	}
 });
 

@@ -2,6 +2,7 @@ var Opponent = new Class({
 	initialize: function(links,me,oid,master,timers,els) {
 		var that = this;
 		var myfail = function(reason) {
+			that.poller = $clear(that.poller);
 			that.fail(reason);
 		};
 		this.links = links;
@@ -13,6 +14,7 @@ var Opponent = new Class({
 		var awaitOpponent = function() {
 			if (master) {
 				that.comms.set(startMatchM,timers.opponent);
+				that.comms.read();
 				that.comms.write('Start');
 			} else {
 				that.comms.set(startMatchS,timers.opponent);
@@ -44,7 +46,7 @@ var Opponent = new Class({
 			that.comms.read();
 			var now = new Date().getTime() + that.timeOffset;
 			that.links.match.start(time+1000 - now);	//we want to start the match from 1 second from when the server told us.
-			that.poller=that.poll.delay(1000,that);  //start sending my stuff on a regular basis
+			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
 		var er = function(t,m) {
 			that.eventReceived(t,m);
@@ -75,35 +77,27 @@ var Opponent = new Class({
 		timeReq();
 	},
 	hit: function(mallet,puck) {
-this.els.message.appendText('[C]');
 		if(this.inSync) this.send('C:'+mallet.x+':'+mallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+(new Date().getTime()+this.timeOffset));
 	},
 	end: function() {
 		this.comms.die();
 	},
 	faceoff: function() {
-this.els.message.appendText('[O]');
 		if(this.inSync) this.send('O');
 	},
 	goal: function () {
-this.els.message.appendText('[G]');
 		if(this.inSync) this.send('G');
 	},
 	foul: function () {
-this.els.message.appendText('[F]');
 		if(this.inSync) this.send('F');
 	},
 	serve: function (p) {
-this.els.message.appendText('[S]');
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
 	send: function(msg) {
-		this.poller = $clear(this.poller);
-		this.poller = this.poll.delay(1000,this);
 		this.comms.write(msg);
 	},
 	poll : function() {
-		this.poller = this.poll.delay(1000,this);
 	  var reply = this.links.table.getUpdate();
 	  if(reply.puck) {
 	    //puck is on table
@@ -167,34 +161,29 @@ var Comms = new Class({
 		this.els = els;
 		this.timeoutValue = initialTimeout;
 		this.timeout = null;
-		this.opt = {uid:me.uid,oid:oid};
+		this.aopt = {uid:me.uid,oid:oid};
+		this.ropt = {oid:oid};
+		this.sopt = {uid:me.uid,msg:''};
 		this.commsFailed = false;
 		this.fail = function(reason) {
 			this.commsFailed = true;
-			this.abortReq.post(this.opt);  //kill off outstanding requests
+			this.abortReq.post(this.aopt);  //kill off outstanding requests
 			fail('Comms Timeout');
 		};
-		this.func = null;
-		var complete = function(r,e) {
-			if(r){
-				if (r.ok) {
-if(r.w) {
-	els.message.appendText('{'+r.w+':'+r.t1+','+r.t2+':'+r.msg.charAt(0)+'}');
-} else {
-	if(!(r.msg.charAt(0) == 'M' || r.msg.charAt(0) == 'P')) els.message.appendText('['+r.msg.charAt(0)+']');
-}
-					that.timeout=$clear(that.timeout);
-					if (that.func) that.func(r.time,r.msg);
-} else {
-els.message.appendText('()');
-				}
-
-		} else {
-			els.message.appendText(e);
+		var callback = function(t,m) {
+			if (that.func) that.func(t,m);
 		}
-		};
-		this.readReq = new Request.JSON({url:'pipe.php',link:'cancel',onComplete:complete});
-		this.req = new Request.JSON({url:'pipe.php',link:'cancel',onComplete:complete})
+		
+		this.func = null;
+		
+		this.sendReq = new Request.JSON({url:'send.php',link:'chain'});
+		
+		this.readReq = new Request.JSON({url:'read.php',link:'cancel',onComplete:function(r) {
+			if(r){
+				that.timeout=$clear(that.timeout);
+				callback.delay(1,that,[r.time,r.msg]); //allow escape from this routine before actually runnign round to call me again
+			}
+		}});
 		this.abortReq = new Request.JSON({url:'abort.php',link:'chain'});
 		this.timeout = null;
 	},
@@ -203,18 +192,15 @@ els.message.appendText('()');
 		this.timeout = $clear(this.timeout);
 		this.func = success;
 	},
-	read: function (time) {
+	read: function () {
 		if(this.commsFailed) return;
 		if(!this.timeout) this.timeout = this.fail.delay(this.timeoutValue,this);
-this.els.message.appendText('(R)');
-		this.readReq.post(this.opt);
+		this.readReq.post(this.ropt);
 	},
-	write: function (msg,time) {
+	write: function (msg) {
 		if(this.commsFailed) return;
-//		this.readReq.cancel(); //we switch over from reading to writing
-		if(!this.timeout) this.timeout = this.fail.delay(this.timeoutValue,this);
-this.els.message.appendText('(W)');
-		this.req.post($merge(this.opt,{msg:msg,w:new Date().getTime()}));
+		this.sopt.msg = msg;
+		this.sendReq.post(this.sopt);
 	},
 	die: function () {
 		this.abortReq.post(this.opt);  //kill off all of my requests
