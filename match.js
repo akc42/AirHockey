@@ -6,7 +6,6 @@ var Match = new Class({
 		this.els = els;
 		var that = this
 		this.matchInProgress = true;
-this.els.message.appendText('[IN]');
 		this.scorer = new Scorer({
 			faceoff: function (me) {
 				that.links.scoreboard.faceoff(me);
@@ -37,9 +36,7 @@ if(me) that.els.message.appendText('[MF]');
 			this.links.scoreboard.status('Start Match');
 			this.links.scoreboard.set(this.timers.startup,inPlay);
 			this.links.table.place({x:560,y:1200});
-this.els.message.appendText('[AS]');
 		};
-this.els.message.appendText('[ST]');
 		this.startDelay = doStart.delay(wait,this);
 	},
 	serve: function(position) {
@@ -67,7 +64,6 @@ this.els.message.appendText('[MV]');
 			this.links.scoreboard.abandonMatch();
 			this.matchInProgress=false;
 		}
-this.els.message.appendText('[MA]');
 	},
 	end: function () {
 		if(this.matchInProgress) {
@@ -77,15 +73,12 @@ this.els.message.appendText('[MA]');
 			this.links.scoreboard.status('Opponent Abandoned Match');
 			this.matchInProgress = false;
 		}
-this.els.message.appendText('[OA]');
 	},
 	inControl: function () {
 		this.scorer.faceoffMe();
-this.els.message.appendText('[IC]');
 	},
 	faceoff: function () {
 		this.scorer.faceoffOp();
-this.els.message.appendText('[OF]');
 	},
 	tFoul: function(msg) {
 		this.links.table.halt();

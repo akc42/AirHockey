@@ -94,13 +94,16 @@ var Table = new Class({
 	place: function (position) {
 		this.ontable = true;
 		this.puck.place(position);
+		this.myMallet.hold();
 	},
 	halt: function () {
 		this.ontable = false;
 		this.puck.remove();
 		this.inP = false;
 		this.myServe = false;
-		this.transition();;
+		this.myMallet.drop();
+		this.myMallet.hold(); //but I am allowed to pick up the mallet again (prevented during serving)
+		this.transition();
 	},
  	update:function(firm,mallet,puck,ticksBehind) {
 		var hm,ho;
@@ -222,15 +225,17 @@ var myMallet = new Class({
 			}
 			e.stop();
 			if (setMalletPosition(e)) {
-				if(!that.held) els.surround.addEvent('mousemove',function(e) {
-					if (that.held) {
-						if (!setMalletPosition(e)) {
-							that.held = false
-							els.surround.removeEvents('mousemove');
+				if (!that.serve) {
+					if(!that.held) els.surround.addEvent('mousemove',function(e) {
+						if (that.held) {
+							if (!setMalletPosition(e)) {
+								that.held = false
+								els.surround.removeEvents('mousemove');
+							}
 						}
-					}
-				});
-				that.held = true;
+					});
+					that.held = true;
+				}
 			}
 		});
 	},
@@ -247,7 +252,12 @@ var myMallet = new Class({
  	drop: function() {
 		this.held = false;
 		this.els.surround.removeEvents('mousemove');
+		this.serve = true;  //say can't pick up until served.
+	},
+	hold: function () {
+		this.serve = false; //cant hold during serving
 	}
+	
 });
 
 var SimplePuck = new Class({
