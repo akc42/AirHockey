@@ -92,6 +92,8 @@ els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 		if(this.inSync) this.send('C:'+mallet.x+':'+mallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+(new Date().getTime()+this.timeOffset));
 	},
 	end: function() {
+		this.inSync = false;
+		this.poller = $clear(this.poller);
 		this.comms.die();
 	},
 	faceoff: function() {
@@ -170,10 +172,8 @@ els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 		}
 	},
 	fail: function(reason) {
-		this.links.match.end();
 		this.els.message.appendText(reason);
-		$clear(this.poller);
-		this.inSync = false;
+		this.links.match.end();
 	}
 });
 
@@ -188,10 +188,6 @@ var Comms = new Class({
 		this.sopt = {uid:me.uid,msg:''};
 		this.commsFailed = false;
 		this.fail = function(reason) {
-			this.commsFailed = true;
-			this.readReq.cancel();
-			this.sendReq.cancel();
-			this.abortReq.post(this.aopt);  //kill off outstanding requests
 			fail('Comms Timeout');
 		};
 		var callback = function(t,m) {
@@ -227,6 +223,9 @@ var Comms = new Class({
 		this.sendReq.post(this.sopt);
 	},
 	die: function () {
-		this.abortReq.post(this.opt);  //kill off all of my requests
+		this.commsFailed = true;
+		this.readReq.cancel();
+		this.sendReq.cancel();
+		this.abortReq.post(this.aopt);  //kill off all of my requests
 	}
 });

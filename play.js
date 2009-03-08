@@ -3,6 +3,11 @@ var Play = new Class({
 		var play = function(sound) {
 			if(soundReady) soundManager.play(sound);
 		};
+if(master) {
+	els.message.appendText('MASTER:');
+} else {
+	els.message.appendText('SLAVE:');
+}
 		this.links = {table:null,match:null,opponent:null,scoreboard:new Scoreboard(mid,startTime,me,master,els,play),play:play};
 		this.links.match = new Match(this.links,timers,els);
 		this.links.table = new Table(this.links,timers,els,play);
@@ -17,8 +22,12 @@ var Play = new Class({
 		var that = this;
 		els.abandon.addEvent('click', function(e) {
 			e.stop();
-			that.links.match.abandon();
+			that.links.match.end();
 			window.location.assign('index.php');
+		});
+		els.freeze.addEvent('click',function(e) {
+			e.stop();
+			that.links.match.end();
 		});
 	},
 	end: function() {
