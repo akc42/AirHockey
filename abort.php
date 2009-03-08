@@ -4,6 +4,9 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
+header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+
 if(!(isset($_POST['uid']) && isset($_POST['oid'])))
 	die('Log - Hacking attempt - wrong parameters');
 // Show all errors:
@@ -22,8 +25,11 @@ if($user_info['is_guest']) {
 if ($uid != $ID_MEMBER)
 	die('Log - Hacking attempt - invalid user id');
 
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //unlock any previous read (cancel already happened)
-fclose($readpipe);
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r+'); //unlock any write waiting to go
+sleep(1);
 fclose($sendpipe);
+
+$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //unlock any previous read (cancel already happened)
+sleep(1);
+fclose($readpipe);
 ?>

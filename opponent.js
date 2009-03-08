@@ -54,23 +54,33 @@ var Opponent = new Class({
 		};
 
 		var startTime;
-		var totalOffset = 0;
+		that.timeOffset = 0;
+		var achievedCloseOffset = false;
+		
 		var i = timers.count;
 		var timeReq = function() {
 			startTime = new Date().getTime();
-			req.post(me);
+			req.post($merge(me,{t:startTime+that.timeOffset}));
 		};
 		var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
 			if (response ) {
-				var endTime = new Date().getTime();
-				var commsTime = endTime - startTime;
-				var midTime = parseInt(startTime+ commsTime/2);
-				var offsetTime = response.servertime - midTime;
-				totalOffset += offsetTime;
+				if (Math.abs(response.error) < timers.tick/3) achievedCloseOffset = true;
+				if(achievedCloseOffset) {
+					that.timeOffset += response.error/2;
+				} else {
+					that.timeOffset += response.error;
+				}
+/*				var endTime = new Date().getTime();
+				var halfTime = (endTime - startTime)/2;
+				var midTime = startTime+ halfTime;
+				var serverTime = response.servertime;
+				var error = response.error;
+				totalOffset += (serverTime-midTime); */
+els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 				if (--i > 0 ) {
 					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
 				} else {
-					that.timeOffset = (totalOffset/timers.count).toInt();
+//					that.timeOffset = (totalOffset/timers.count).toInt();
 					awaitOpponent();
 				}
 			}
@@ -135,10 +145,11 @@ var Opponent = new Class({
 			case 'C' :
 				firm = true;
 			case 'P' :
-				this.links.table.update(firm,
+					var t = new Date().getTime() + this.timeOffset -splitMsg[7].toInt();
+					this.links.table.update(firm,
 					{x:splitMsg[1].toInt(),y:2400 - splitMsg[2].toInt()},
 					{x:splitMsg[3].toInt(),y:2400 - splitMsg[4].toInt(),dx:splitMsg[5].toInt(),dy:-splitMsg[6].toInt()},
-					((new Date().getTime() + this.timeOffset -splitMsg[7])/this.timers.tick).toInt());
+					((t)/this.timers.tick).toInt());
 				//calculate where I think the puck should be based on the time
 				break;
 			case 'M' :
@@ -168,6 +179,8 @@ var Comms = new Class({
 		this.commsFailed = false;
 		this.fail = function(reason) {
 			this.commsFailed = true;
+			this.readReq.cancel();
+			this.sendReq.cancel();
 			this.abortReq.post(this.aopt);  //kill off outstanding requests
 			fail('Comms Timeout');
 		};
@@ -179,7 +192,7 @@ var Comms = new Class({
 		
 		this.sendReq = new Request.JSON({url:'send.php',link:'chain'});
 		
-		this.readReq = new Request.JSON({url:'read.php',link:'cancel',onComplete:function(r) {
+		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete:function(r) {
 			if(r){
 				that.timeout=$clear(that.timeout);
 				callback.delay(1,that,[r.time,r.msg]); //allow escape from this routine before actually runnign round to call me again
@@ -198,7 +211,7 @@ var Comms = new Class({
 		if(!this.timeout) this.timeout = this.fail.delay(this.timeoutValue,this);
 		this.readReq.post(this.ropt);
 	},
-	write: function (msg) {
+	write: function (msg,t) {
 		if(this.commsFailed) return;
 		this.sopt.msg = msg;
 		this.sendReq.post(this.sopt);

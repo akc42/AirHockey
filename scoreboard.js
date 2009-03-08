@@ -28,6 +28,8 @@ var Scoreboard = new Class({
 				}
 			}});
 		}
+		this.countdown = null;
+		this.n = -1;
 	},
 	endMatch: function() {
 		this.duration = $clear(this.duration);
@@ -39,7 +41,7 @@ var Scoreboard = new Class({
 	},
 	abandonMatch: function () {
 		this.duration = $clear(this.duration);
-		this.duration = $clear(this.countdown);
+		this.countdown = $clear(this.countdown);
 		if (this.params.m !=0) {
 			this.params.g = -1;
 			this.updateMatchReq.post(this.params);
@@ -92,31 +94,30 @@ var Scoreboard = new Class({
 		}
 	},
 	set: function(n,callback) {
-		this.play('count');
 		var that = this;
-		var setCounter = function(c) {
-			that.els.countdown.set('text',(c < 0)?'':c);
-		};
 		var counter = function() {
-			n--;
-			setCounter(n);
-			if (n == 0) {
-				this.play('start');
-				callback();
+			this.n--;
+			if (this.n < 0) {
+				this.els.countdown.set('text','');
+				this.countdown = $clear(this.countdown);
 			} else {
-				if (n < 0) {
-					that.countdown = $clear(that.countdown);
+				this.els.countdown.set('text',this.n);
+				if (this.n == 0) {
+					this.play('start');
+					callback();
 				} else {
 					this.play('count');
 				}
 			}
 		};
 		this.countdown = $clear(this.countdown);
-		that.countdown = counter.periodical(1000,this);
-		setCounter(n);
+		this.n = n;
+		this.countdown = counter.periodical(1000,this);
+		this.els.countdown.set('text',this.n);
 	},
 	cancel: function() {
 		this.countdown = $clear(this.countdown);
+		this.n = -1;
 		this.els.countdown.set('text','');
 	}
 });

@@ -4,6 +4,8 @@
 	Copyright (c) 2009 Alan Chandler
 	Licenced under the GPL
 */
+header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+header("Expires: -1"); // Date in the past
 if(!(isset($_POST['oid'])))
 	die('Log - Hacking attempt - wrong parameters');
 define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
@@ -14,9 +16,8 @@ $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r');
 $response=fread($readpipe,200);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
-fclose($readpipe);
 fclose($sendpipe);
-
+fclose($readpipe);
 
 if(strlen($response) > 0) {
 	$r = strchr($response,'$');
