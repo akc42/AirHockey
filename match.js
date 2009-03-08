@@ -42,7 +42,7 @@ var Match = new Class({
 	serve: function(position) {
 		this.links.table.place(position);
 		this.inPlay = true;
-		this.scoreboard.status('');
+		this.links.scoreboard.status('');
 	},
 	served: function (position) {
 		var that = this;
