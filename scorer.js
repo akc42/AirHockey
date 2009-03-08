@@ -60,6 +60,9 @@ var Scorer = new Class({
 		}
 		return true;
 	},
+	faceoffSet: function () {
+		return !this.awaitingFaceoff;
+	},
 	faceoffMe: function () {
 		if (this.awaitingFaceoff) {
 			this.awaitingFaceoff = false;

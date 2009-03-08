@@ -124,6 +124,7 @@ var Table = new Class({
 				this.inP = true; //opponent hit the puck, so it must be in play
 				this.myServe = false;
 		  		this.links.scoreboard.foul(false);
+				this.links.scoreboard.status('');
 	  		} else {
 		  		if (this.ontable) {
 		  		// lets work out a percentage of contribution from each of us

@@ -21,17 +21,20 @@ var Practice = new Class({
 	goal: function() {
 		$clear(this.ontable);
 		if(this.scorer.goalFor()) this.foul();
+		this.links.match.goalConfirmed();
 	},
-	foul: function () {
+	foul: function (msg) {
 		$clear(this.ontable);
 		//simulate me serving and then hitting puck
 		this.d1=this.myserve.delay(3000,this);
+		this.links.match.foulConfirmed(msg);
 	},
 	serve: function (puck) {
 		this.ontable=this.myside.periodical(5000,this);
 	},
 	faceoff: function () {
 		this.scorer.faceoffOp();
+		this.links.match.faceoffConfirmed();
 	},
 	end: function () {
 		$clear(this.d1);

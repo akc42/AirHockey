@@ -8,6 +8,7 @@ var Opponent = new Class({
 		this.links = links;
 		this.timers = timers;
 		this.els = els;
+		this.master = master;
 		this.inSync = false;
 		this.timeout = timers.timeout;
 		this.timeOffset = 0;
@@ -95,12 +96,15 @@ els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 	},
 	faceoff: function() {
 		if(this.inSync) this.send('O');
+		if(this.master) this.links.match.faceoffConfirmed();
 	},
 	goal: function () {
 		if(this.inSync) this.send('G');
+		if(this.master) this.links.match.goalConfirmed();
 	},
-	foul: function () {
-		if(this.inSync) this.send('F');
+	foul: function (msg) {
+		if(this.inSync) this.send('F:'+msg);
+		if(this.master) this.links.match.foulConfirmed(msg);
 	},
 	serve: function (p) {
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
@@ -127,20 +131,26 @@ els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 		var splitMsg = msg.split(':');
 		var firm = false;
 		switch (splitMsg[0]) {
+			case 'N' :
+				this.links.match.faceoffConfirmed();
+				break;
 			case 'O':
-				this.links.match.faceoff();
+				if (this.links.match.faceoff() && this.master) this.comms.write('N');
 				break;
 			case 'S' :
 				this.links.match.serve({x:splitMsg[1].toInt(),y:2400-splitMsg[2].toInt()});
 				break;
 			case 'E' :
-				fail(); //use this, as it shuts things down too
+				this.links.match.foulConfirmed(splitMsg[1]);
 				break;
 			case 'F' :
-				this.links.match.foul();
+				if (this.links.match.foul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm if can and master
 				break;
 			case 'G' :
-				this.links.match.goal();
+				if (this.links.match.goal() && this.master) this.comms.write('H'); //confirm if can and master
+				break;
+			case 'H' :
+				this.links.match.goalConfirmed();
 				break;
 			case 'C' :
 				firm = true;
