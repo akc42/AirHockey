@@ -173,8 +173,8 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 				if (!is_null($row['h1'])) {
 					echo ',"games" ;[['.$row['h1'].','.$row['a1'].']';
 					for ($i=2;$i<=7;$i++) {
-						if(!is_null($row['h'.i])) {
-							echo ',['.$row['h'.i].','.$row['a'.i].']';
+						if(!is_null($row['h'.$i])) {
+							echo ',['.$row['h'.$i].','.$row['a'.$i].']';
 						} else {
 							break;
 						}

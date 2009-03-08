@@ -29,6 +29,9 @@ var Practice = new Class({
 		this.d1=this.myserve.delay(3000,this);
 		this.links.match.foulConfirmed(msg);
 	},
+ 	ofoul: function (msg) {
+		this.foul(msg);
+	},
 	serve: function (puck) {
 		this.ontable=this.myside.periodical(5000,this);
 	},

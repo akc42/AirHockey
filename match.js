@@ -94,6 +94,12 @@ this.els.message.appendText('[f]');
 			this.links.opponent.foul(msg);
 		}
 	},
+	oFoul: function(msg) {
+		if(!this.inPlay) {
+this.els.message.appendText('[d]');
+			this.links.opponent.ofoul(msg);
+		}
+	},
 	foulConfirmed: function (msg) {
 this.els.message.appendText('[E]');
 		this.inPlay = false;
@@ -115,13 +121,22 @@ this.els.message.appendText('[F]');
 		}
 		return false;
 	},
+	offTfoul: function() {
+this.els.message.appendText('[D]');
+		if(!this.inPlay) {
+			this.links.play('foul');
+			this.links.scoreboard.status('Opponent Foul');
+			this.requestServe();
+			return true;
+		}
+		return false;
+	},
 	requestServe: function() {
 		var that = this;
 		this.links.scoreboard.serve(true);
 		this.links.scoreboard.set(this.timers.restart,function () {
 			that.links.scoreboard.serve(false);
-			that.served({x:560,y:1200}); //simulate a serve followed by a foul so opponent knows
-			that.tFoul('You took too long to serve');
+			that.oFoul('You took too long to serve');
 		});
 		this.links.table.serve();
 	},

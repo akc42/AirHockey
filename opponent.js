@@ -108,6 +108,10 @@ els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 		if(this.inSync) this.send('F:'+msg);
 		if(this.master) this.links.match.foulConfirmed(msg);
 	},
+	ofoul: function(msg) {
+		if(this.inSync) this.send('D:'+msg);
+		if(this.master) this.links.match.foulConfirmed(msg);
+	},
 	serve: function (p) {
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
@@ -142,14 +146,17 @@ els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 			case 'S' :
 				this.links.match.serve({x:splitMsg[1].toInt(),y:2400-splitMsg[2].toInt()});
 				break;
+			case 'D' :
+				if(this.links.match.offTfoul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm
+				break;
 			case 'E' :
 				this.links.match.foulConfirmed(splitMsg[1]);
 				break;
 			case 'F' :
-				if (this.links.match.foul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm if can and master
+				if (this.links.match.foul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm 
 				break;
 			case 'G' :
-				if (this.links.match.goal() && this.master) this.comms.write('H'); //confirm if can and master
+				if (this.links.match.goal() && this.master) this.comms.write('H'); //confirm 
 				break;
 			case 'H' :
 				this.links.match.goalConfirmed();
