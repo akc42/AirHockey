@@ -15,9 +15,8 @@ list($utime,$now) = explode(" ",microtime());
 $now .= substr($utime,2,3);
 
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r'); //This waits until an read request is outstanding
-usleep(100); //just a short wait in case he had only just posted this and hasn't yet got his read on my pipe.
-fclose($readpipe);
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['uid'],'r+');
+$r=fread($readpipe,10); //not reading, but syncronising with other end
 fwrite($sendpipe,"$".$_POST['msg']);
 fclose($sendpipe);
 list($utime,$time) = explode(" ",microtime());
