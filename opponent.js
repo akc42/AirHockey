@@ -12,7 +12,6 @@ var Opponent = new Class({
 		this.inSync = false;
 		this.timeout = timers.timeout;
 		this.timeOffset = 0;
-		this.comms = new Comms(me,oid,timers.opponent,myfail,els);
 		var awaitOpponent = function() {
 			if (master) {
 				that.comms.set(startMatchM,timers.opponent);
@@ -71,17 +70,11 @@ var Opponent = new Class({
 				} else {
 					that.timeOffset += response.error;
 				}
-/*				var endTime = new Date().getTime();
-				var halfTime = (endTime - startTime)/2;
-				var midTime = startTime+ halfTime;
-				var serverTime = response.servertime;
-				var error = response.error;
-				totalOffset += (serverTime-midTime); */
-els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 				if (--i > 0 ) {
 					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
 				} else {
-//					that.timeOffset = (totalOffset/timers.count).toInt();
+					that.timeOffset = that.timeOffset.toInt();
+					that.comms = new Comms(me,oid,timers.opponent,myfail,that.timeOffset,els);
 					awaitOpponent();
 				}
 			}
@@ -185,30 +178,30 @@ els.message.appendText('['+i+':'+response.error+':'+achievedCloseOffset+']');
 });
 
 var Comms = new Class({
-	initialize: function(me,oid,initialTimeout,fail,els) {
+	initialize: function(me,oid,initialTimeout,fail,offset,els) {
 		var that = this;
 		this.els = els;
+		this.offset = offset;
 		this.timeoutValue = initialTimeout;
 		this.timeout = null;
 		this.aopt = {uid:me.uid,oid:oid};
 		this.ropt = {oid:oid};
-		this.sopt = {uid:me.uid,msg:''};
+		this.sopt = {uid:me.uid,msg:'',t:0};
 		this.commsFailed = false;
 		this.fail = function(reason) {
 			fail('Comms Timeout');
 		};
-		var callback = function(t,m) {
-			if (that.func) that.func(t,m);
-		}
 		
 		this.func = null;
-		
+		var done = function (t,m) {
+			if (that.func) that.func(t,m);
+		};
 		this.sendReq = new Request.JSON({url:'send.php',link:'chain'});
 		
-		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete:function(r) {
+		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete:function(r,e) {
 			if(r){
 				that.timeout=$clear(that.timeout);
-				callback.delay(1,that,[r.time,r.msg]); //allow escape from this routine before actually runnign round to call me again
+				done.delay(1,this,[r.time,r.msg]); //ensure this routine exits before the reply is processed
 			}
 		}});
 		this.abortReq = new Request.JSON({url:'abort.php',link:'chain'});
@@ -224,10 +217,12 @@ var Comms = new Class({
 		if(!this.timeout) this.timeout = this.fail.delay(this.timeoutValue,this);
 		this.readReq.post(this.ropt);
 	},
-	write: function (msg,t) {
+	write: function (msg) {
 		if(this.commsFailed) return;
+		this.sopt.t = new Date().getTime() + this.offset;
 		this.sopt.msg = msg;
-		this.sendReq.post(this.sopt);
+		var that = this;
+		this.sendReq.post.delay(1,this.sendReq,that.sopt);
 	},
 	die: function () {
 		this.commsFailed = true;

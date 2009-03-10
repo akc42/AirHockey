@@ -110,7 +110,7 @@ var Table = new Class({
 		var hm,ho;
 		this.opmallet.update(mallet);
 		if(puck) {
-//this.els.message.appendText('['+ticksBehind+']');
+//this.els.message.appendText('('+ticksBehind+')');
 			var p = new SimplePuck(puck);
 			if (Math.abs(ticksBehind) > 150) return ;//defense against problem with its size.
 			while (ticksBehind > 0) {
