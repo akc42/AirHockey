@@ -193,15 +193,12 @@ var Comms = new Class({
 		};
 		
 		this.func = null;
-		var done = function (t,m) {
-			if (that.func) that.func(t,m);
-		};
 		this.sendReq = new Request.JSON({url:'send.php',link:'chain'});
 		
 		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete:function(r,e) {
 			if(r){
 				that.timeout=$clear(that.timeout);
-				done.delay(1,this,[r.time,r.msg]); //ensure this routine exits before the reply is processed
+				if (that.func) that.func(r.time,r.msg);
 			}
 		}});
 		this.abortReq = new Request.JSON({url:'abort.php',link:'chain'});
@@ -222,7 +219,7 @@ var Comms = new Class({
 		this.sopt.t = new Date().getTime() + this.offset;
 		this.sopt.msg = msg;
 		var that = this;
-		this.sendReq.post.delay(1,this.sendReq,that.sopt);
+		this.sendReq.post(this.sopt);
 	},
 	die: function () {
 		this.commsFailed = true;
