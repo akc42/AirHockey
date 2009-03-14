@@ -46,7 +46,7 @@ var Opponent = new Class({
 			that.comms.set(er,timers.timeout);
 			that.comms.read();
 			var now = new Date().getTime() + that.timeOffset;
-			that.links.match.start(time+1000 - now);	//we want to start the match from 1 second from when the server told us.
+			that.links.match.start.delay(time+800 - now,that.links.match);	//we want to start the match from 1 second from when the server told us.
 			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
 		var er = function(t,m) {
@@ -81,8 +81,10 @@ var Opponent = new Class({
 		}});
 		timeReq();
 	},
-	hit: function(mallet,puck) {
-		if(this.inSync) this.send('C:'+mallet.x+':'+mallet.y+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy+':'+(new Date().getTime()+this.timeOffset));
+	hit: function(mallet,puck,time) {
+		if(this.inSync) this.send('C:'+mallet.x+':'+mallet.y
+			+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
+			+':'+(time+this.timeOffset));
 	},
 	end: function() {
 		this.inSync = false;
@@ -108,6 +110,9 @@ var Opponent = new Class({
 	serve: function (p) {
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
+	inPlay: function() {
+		if(this.inSync) this.send('T');
+	},
 	send: function(msg) {
 		this.comms.write(msg);
 	},
@@ -115,8 +120,9 @@ var Opponent = new Class({
 	  var reply = this.links.table.getUpdate();
 	  if(reply.puck) {
 	    //puck is on table
-	    this.comms.write('P:'+reply.mallet.x+':'+reply.mallet.y+':'+reply.puck.x+':'+reply.puck.y+':'+reply.puck.dx+':'+reply.puck.dy
-							+':'+(new Date().getTime() + this.timeOffset));
+	    this.comms.write('P:'+reply.mallet.x+':'+reply.mallet.y
+				+':'+reply.puck.x+':'+reply.puck.y+':'+reply.puck.dx+':'+reply.puck.dy
+				+':'+(reply.time+this.timeOffset));
 	  } else {
 	    this.comms.write('M:'+reply.mallet.x+':'+reply.mallet.y);
 	  }
@@ -137,7 +143,10 @@ var Opponent = new Class({
 				if (this.links.match.faceoff() && this.master) this.comms.write('N');
 				break;
 			case 'S' :
-				this.links.match.serve({x:splitMsg[1].toInt(),y:2400-splitMsg[2].toInt()});
+				this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
+				break;
+			case 'T' :
+				this.links.match.mayHitPuck();
 				break;
 			case 'D' :
 				if(this.links.match.offTfoul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm
@@ -146,10 +155,10 @@ var Opponent = new Class({
 				this.links.match.foulConfirmed(splitMsg[1]);
 				break;
 			case 'F' :
-				if (this.links.match.foul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm 
+				if (this.links.match.foul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm
 				break;
 			case 'G' :
-				if (this.links.match.goal() && this.master) this.comms.write('H'); //confirm 
+				if (this.links.match.goal() && this.master) this.comms.write('H'); //confirm
 				break;
 			case 'H' :
 				this.links.match.goalConfirmed();
@@ -157,15 +166,15 @@ var Opponent = new Class({
 			case 'C' :
 				firm = true;
 			case 'P' :
-					var t = new Date().getTime() + this.timeOffset -splitMsg[7].toInt();
 					this.links.table.update(firm,
-					{x:splitMsg[1].toInt(),y:2400 - splitMsg[2].toInt()},
-					{x:splitMsg[3].toInt(),y:2400 - splitMsg[4].toInt(),dx:splitMsg[5].toInt(),dy:-splitMsg[6].toInt()},
-					((t)/this.timers.tick).toInt());
+					{x:splitMsg[1].toFloat(),y:2400 - splitMsg[2].toFloat()},
+					{x:splitMsg[3].toFloat(),y:2400 - splitMsg[4].toFloat(),
+						dx:splitMsg[5].toFloat(),dy:-splitMsg[6].toFloat()},
+	 				splitMsg[7].toInt()-this.timeOffset);
 				//calculate where I think the puck should be based on the time
 				break;
 			case 'M' :
-				this.links.table.update(false,{x:splitMsg[1].toInt(),y:2400 - splitMsg[2].toInt()},null,null);
+				this.links.table.update(false,{x:splitMsg[1].toFloat(),y:2400 - splitMsg[2].toFloat()},null,null);
 				break;
 			default :
 				this.els.message.appendText('Invalid Message:'+msg);
@@ -218,7 +227,6 @@ var Comms = new Class({
 		if(this.commsFailed) return;
 		this.sopt.t = new Date().getTime() + this.offset;
 		this.sopt.msg = msg;
-		var that = this;
 		this.sendReq.post(this.sopt);
 	},
 	die: function () {

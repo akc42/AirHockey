@@ -26,13 +26,19 @@ var Table = new Class({
 		this.timers = timers;
 		this.timer = null;
 		this.halt();
-		this.tick.periodical(timers.tick,this);
+	},
+	start: function () {
+		this.time = new Date().getTime();
+		this.tickId = this.tick.periodical(this.timers.tick,this);
 	},
 	tick: function () {
+		var now = new Date().getTime();
+		var timeSince = now - this.time;
+		this.time = now;
 		if(this.ontable) {
-			this.myMallet.tick();
+			this.myMallet.tick(timeSince);
 			if(this.myMallet.y >= 1147) {
-				if(this.puck.tick()) {
+				if(this.puck.tick(timeSince)) {
 					var d1,d2,cos_t,sin_t,pvn,pvt;
 					//check for collision with my Mallet
 					var dx = this.puck.x - this.myMallet.x;
@@ -50,8 +56,8 @@ var Table = new Class({
 									this.links.match.tFoul('Invalid Hit - wrong side');
 								} else {
 									d2 = Math.sqrt(dx*dx+dy*dy); //keep earlier distance
-									dx += this.myMallet.dx - this.puck.dx;  //step back to previous tick (in case centres have passed)
-									dy += this.myMallet.dy - this.puck.dy;
+									dx += (this.myMallet.dx - this.puck.dx)*this.timers.tick;  //step back to previous tick (in case centres have passed)
+									dy += (this.myMallet.dy - this.puck.dy)*this.timers.tick;
 									d1 = Math.sqrt(dx*dx+dy*dy);
 									cos_t = dx/d1; //cos theta where theta angle of normal to x axis
 									sin_t = dy/d1; //sin theta where theta angle of normal to x axis
@@ -68,7 +74,8 @@ var Table = new Class({
 									this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
 									this.puck.dy = pvn2*sin_t + pvt*cos_t;
 									// send model details as they are after the collision
-									this.links.opponent.hit(this.myMallet,this.puck);
+									this.links.opponent.hit(this.myMallet,this.puck,this.time);
+									this.wait = true;
 									this.links.scoreboard.status('');
 								}
 							}
@@ -106,16 +113,18 @@ var Table = new Class({
 		this.myMallet.hold(); //but I am allowed to pick up the mallet again (prevented during serving)
 		this.transition();
 	},
- 	update:function(firm,mallet,puck,ticksBehind) {
+ 	update:function(firm,mallet,puck,time) {
 		var hm,ho;
 		this.opmallet.update(mallet);
 		if(puck) {
-//this.els.message.appendText('('+ticksBehind+')');
+			this.tick(); //ensure this side is up to date
 			var p = new SimplePuck(puck);
-			if (Math.abs(ticksBehind) > 150) return ;//defense against problem with its size.
-			while (ticksBehind > 0) {
-		  		ticksBehind--;
-		  		p.tick();
+			var timeBehind = this.time - time;
+			if (Math.abs(timeBehind) > 1500) {
+				return ;//defense against problem with its size.
+			}
+			if (timeBehind > 0) {
+		  		p.tick(timeBehind);
 	  		}
 	  		if (firm) {
 		  		this.puck.set(p);
@@ -128,7 +137,7 @@ var Table = new Class({
 	  		} else {
 		  		if (this.ontable) {
 		  		// lets work out a percentage of contribution from each of us
-				hm=(this.puck.y+p.y)/4800;
+					hm=(this.puck.y+p.y)/4800;
 			  		ho=1-hm;
 			  		p.x *= ho;
 			  		p.y *= ho;
@@ -154,7 +163,7 @@ var Table = new Class({
  	getUpdate: function () {
 		if(this.ontable ) {
 			//only send data if on the table
-			return {puck:this.puck,mallet:this.myMallet};
+			return {puck:this.puck,mallet:this.myMallet,time:this.time};
 		} else {
 			return {mallet:this.myMallet};
 		}
@@ -171,6 +180,7 @@ var Table = new Class({
 			this.links.scoreboard.set(this.timers.myside, function() {
 				that.links.match.tFoul('Puck too long on your side');
 			});
+			this.timer = $clear(this.timer);  //clear in case was already running.
 			this.timer = control.delay(this.timers.control,this);
 		}
 	}
@@ -246,10 +256,10 @@ var myMallet = new Class({
 	dx:0,
  	dy:0,
 	mp: {},
-	tick: function() {
+	tick: function(time) {
 		if(this.held) {
-			this.dx = this.mp.x - this.x; //set velocity from movement over the period
-			this.dy = this.mp.y - this.y;
+			this.dx = (this.mp.x - this.x)/time; //set velocity from movement over the period
+			this.dy = (this.mp.y - this.y)/time;
 			this.update(this.mp); //update position from where mouse moved it to
 		}
 	},
@@ -279,57 +289,135 @@ var SimplePuck = new Class({
 		this.dx = p.dx;
 		this.dy = p.dy;
 	},
-	tick:function() {
-		var c = false; //if hit table
-		var t = 0;	//0 = no hit,  1 = transition no hit, 2. hit, no transition 3 = transition, hit 4 = goalFor,no transition, 5=goalFor transiation 6 = goalAgainst
+	tick: function(n) {
+		var x,y;
+		var t = 0;
+		var dn = (n==1)?1:Math.pow(0.9995,n-1);
+		//store equation y=mx+c of line made by puck but in a coordinate space where the zero is 41 in from the table
+		var m = this.dy/this.dx;
+		var c = (this.y-41)-m*(this.x-41);
 		var s = true;
-		if(this.dx != 0) {
-			this.x += this.dx;
-			//now check
-			do {
-				if (this.x < 41) {
-					this.x =  82 -this.x;
-					this.dx = - (this.dx*0.96);
-					c = true;
-					t = 2;
-				} else {
-					if (this.x > 1079) {
-						this.x= 2158 - this.x;
-						this.dx = -(this.dx * 0.96);
-						c=true;
-						t=2;
-					} else {
-						c=false;
-					}
-				}
-			} while (c);
-			this.dx *= 0.99;
+		if(this.dx !=0) {
+			this.x += n*dn*this.dx;
 		}
-		if(this.dy != 0) {
-			this.y += this.dy
-			do {
-				if(this.y <= 1200) s = false;
-				if (this.y < 41 ) {
-					c = true;
-					t = 2;
-					this.y = 82 - this.y;
-					this.dy = -(this.dy * 0.96);
+		if(this.dy !=0) {
+			this.y += n*dn*this.dy;
+		}
+		do {
+			hit = false;
+			if (this.y <= 1200) s=false;
+			if (this.x < 41) {
+				hit=true;
+				t = 2;
+				if (this.y < 41) {
+					if ( c > 0) {
+						//we hit the side first
+						this.x = 82-this.x;
+						this.dx = - (this.dx*0.96);
+						m *= -1.0416667; // = 1/0.96
+					} else {
+						this.y = 82 - this.y;
+						this.dy = - (this.dy*0.96);
+						m *= -0.96;
+						c *= -0.96;
+					}
 				} else {
 					if (this.y > 2359) {
-						c = true;
-						if (t==0) t = 2;
-						if(this.x > 380 && this.x < 740) {
-							t = 6; //scored a goal for
+						if (c < 2318) {
+							//hit the side first
+							this.x = 82-this.x;
+							this.dx = - (this.dx*0.96);
+							m *= -1.0416667; // = 1/0.96
+						} else {
+							x = (2318 -c)/m;
+							if (x > 339 && x < 699) {
+								t = 6; //goal scored
+								hit = false; //no need to carry on
+							}
+							this.y= 4718 - this.y;
+							this.dy = -(this.dy * 0.96);
+							m *= -0.96;
+							c = 4543.28 - c*0.96;
 						}
-						this.y= 4718 - this.y;
-						this.dy = -(this.dy * 0.96);
 					} else {
-						c=false;
+						this.x = 82-this.x;
+						this.dx = - (this.dx*0.96);
+						m *= -1.0416667; // = 1/0.96
 					}
 				}
-			} while (c);
-			this.dy *= 0.99;
-		}
+			} else {
+				if(this.x > 1079) {
+					hit = true;
+					t=2;
+					y = m*1038+c; //where it meets the side
+					if(this.y < 41) {
+						if (y > 0) {
+							//hit the side first
+							this.x= 2158 - this.x;
+							this.dx = -(this.dx * 0.96);
+							m *= -1.0416667; // = 1/0.96
+							c= y - m*1038;
+						} else {
+							this.y = 82 - this.y;
+							this.dy = - (this.dy*0.96);
+							m *= -0.96;
+							c *= -0.96;
+						}
+					} else {
+						if ( this.y > 2359) {
+							if (y < 2318) {
+								//hit the side first
+								this.x= 2158 - this.x;
+								this.dx = -(this.dx * 0.96);
+								m *= -1.0416667; // = 1/0.96
+								c= y - m*1038;
+							} else {
+								x = (2318 -c)/m;
+								if (x > 339 && x < 699) {
+									t = 6; //goal scored
+									hit = false; //no need to carry on
+								}
+								this.y= 4718 - this.y;
+								this.dy = -(this.dy * 0.96);
+								m *= -0.96;
+								c = 4543.28 - c*0.96;
+							}
+						} else { 	
+							this.x= 2158 - this.x;
+							this.dx = -(this.dx * 0.96);
+							m *= -1.0416667; // = 1/0.96
+							c= y - m*1038;
+						}
+					}
+				} else {
+					if (this.y < 41) {
+						hit= true;
+						t=2;
+						this.y = 82 - this.y;
+						this.dy = - (this.dy*0.96);
+						m *= -0.96;
+						c *= -0.96;
+					} else {
+						if (this.y > 2359) {
+							hit = true;
+							t=2;
+							x = (2318 -c)/m;
+							if (x > 339 && x < 699) {
+								t = 6; //goal scored
+								hit = false; //no need to carry on
+							}
+							this.y= 4718 - this.y;
+							this.dy = -(this.dy * 0.96);
+							m *= -0.96;
+							c = 4543.28 - c*0.96;
+						}
+					}
+				}
+			}
+		} while (hit) ;	
+		dn *= 0.9995;
+		this.dx *= dn;
+		this.dy *= dn;
 		if(t==6) return 6;
 		var news = (this.y>1200);
 		if (!(this.side && s && news) && (this.side || news)) t++;
@@ -349,8 +437,8 @@ var ComplexPuck = new Class({
 		this.links = links;
 		this.update();
 	},
-	tick: function() {
-		var t = this.parent();
+	tick: function(n) {
+		var t = this.parent(n);
 		switch (t) {
 			case 1:
 				this.links.transition();

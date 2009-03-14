@@ -29,36 +29,35 @@ var Match = new Class({
 		});
 	},
 	start: function(wait) {
-		var doStart = function() {
-			var that = this;
-			var inPlay = function () {
-				that.links.table.inPlay();
-			};
-			this.links.scoreboard.status('Start Match');
-			this.links.scoreboard.set(this.timers.startup,inPlay);
-			this.links.table.place({x:560,y:1200});
-			this.inPlay = true;
+		var that = this;
+		var inPlay = function () {
+			that.links.table.inPlay();
+			that.inPlay = true;
 		};
-		this.startDelay = doStart.delay(wait,this);
+		this.links.scoreboard.status('Start Match');
+		this.links.scoreboard.set(this.timers.startup,inPlay);
+		this.links.table.start();
+		this.links.table.place({x:560,y:1200});
 	},
 	serve: function(position) {
-this.els.message.appendText('[S]');
 		this.links.table.place(position);
-		this.inPlay = true;
 		this.links.scoreboard.status('');
 	},
+	mayHitPuck: function() {
+		this.inPlay = true;
+	},
 	served: function (position) {
-this.els.message.appendText('[s]');
 		var that = this;
 		var setInPlay = function() {
 			that.links.table.inPlay();
 			that.links.table.transition();
+			that.links.opponent.inPlay();
+			that.inPlay = true;
 		};
 		this.links.scoreboard.cancel(); //stop any serve timeout
 		this.links.opponent.serve(position);
 		this.links.scoreboard.set(this.timers.inplay, setInPlay);
 		this.links.scoreboard.serve(false);
-		this.inPlay = true;
 	},
 	end: function() {
 		if (this.matchInProgress) {
@@ -74,34 +73,28 @@ this.els.message.appendText(':abandon');
 	},
 	inControl: function () {
 		if (!this.scorer.faceoffSet()) {
-this.els.message.appendText('[o]');
 			this.links.opponent.faceoff();
 		}
 	},
 	faceoffConfirmed: function () {
-this.els.message.appendText('[N]');
 		this.scorer.faceoffMe();
 	},
 	faceoff: function () {
-this.els.message.appendText('[O]');
 		if(this.scorer.faceoffSet()) return false;
 		this.scorer.faceoffOp();
 		return true;
 	},
 	tFoul: function(msg) {
 		if(this.inPlay) {
-this.els.message.appendText('[f]');
 			this.links.opponent.foul(msg);
 		}
 	},
 	oFoul: function(msg) {
 		if(!this.inPlay) {
-this.els.message.appendText('[d]');
 			this.links.opponent.ofoul(msg);
 		}
 	},
 	foulConfirmed: function (msg) {
-this.els.message.appendText('[E]');
 		this.inPlay = false;
 		this.links.table.halt();
 		this.links.play('foul');
@@ -110,7 +103,6 @@ this.els.message.appendText('[E]');
 		this.links.scoreboard.foul(true);
 	},
 	foul: function() {
-this.els.message.appendText('[F]');
 		if(this.inPlay) {
 			this.inPlay = false;
 			this.links.table.halt();
@@ -122,7 +114,6 @@ this.els.message.appendText('[F]');
 		return false;
 	},
 	offTfoul: function() {
-this.els.message.appendText('[D]');
 		if(!this.inPlay) {
 			this.links.play('foul');
 			this.links.scoreboard.status('Opponent Foul');
@@ -141,13 +132,11 @@ this.els.message.appendText('[D]');
 		this.links.table.serve();
 	},
 	goalAgainst: function() {
-this.els.message.appendText('[g]');
 		if(this.inPlay) {
 			this.links.opponent.goal();
 		}
 	},
 	goalConfirmed: function() {
-this.els.message.appendText('[H]');
 		this.inPlay = false;
 		this.links.table.halt();
 		this.links.play('goal');
@@ -157,7 +146,6 @@ this.els.message.appendText('[H]');
 		}
 	},		
 	goal: function() {
-this.els.message.appendText('[G]');
 		if(this.inPlay) {
 			this.inPlay = false;
 			this.links.table.halt();

@@ -12,7 +12,7 @@ var Practice = new Class({
   			game:function(b){},
 			match:function(b){}
 		});
-		this.links.match.start.delay(50,this.links.match,1000);  //start in one second
+		this.links.match.start.delay(1000,this.links.match);  //start in one second
 		this.ontable=this.myside.periodical(5000,this);
 	},
  	hit: function(mallet,puck) {
@@ -35,6 +35,9 @@ var Practice = new Class({
 	serve: function (puck) {
 		this.ontable=this.myside.periodical(5000,this);
 	},
+	inPlay: function () {
+		return; //practice do nothing
+	},
 	faceoff: function () {
 		this.scorer.faceoffOp();
 		this.links.match.faceoffConfirmed();
@@ -47,17 +50,18 @@ var Practice = new Class({
 		var reply = this.links.table.getUpdate();
 		if(reply.puck && reply.puck.y < 1159) {
 			//puck is my side and out of reach players mallet
-			if (Math.abs(reply.puck.dy) < 5) {
+			if (Math.abs(reply.puck.dy) < 0.2) {
 				//going slowly
 				this.scorer.faceoffMe(); //claim it
-				reply.puck.dx = $random(-40,40);
-				reply.puck.dy = $random(40,80);
+				reply.puck.dx = $random(-2,2);
+				reply.puck.dy = $random(2,4);
 				this.links.table.update(true,{x:560,y:148},reply.puck,0);
 			}
 		}
 	},
  	myserve: function() {
 		this.links.match.serve({x:560,y:250});
+		this.links.match.inPlay.delay(2000,this.links.match);
 		this.ontable=this.myside.periodical(5000,this);
 	}		
 });
