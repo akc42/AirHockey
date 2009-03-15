@@ -33,6 +33,7 @@ var Match = new Class({
 		var inPlay = function () {
 			that.links.table.inPlay();
 			that.inPlay = true;
+that.els.message.appendText('[p]');
 		};
 		this.links.scoreboard.status('Start Match');
 		this.links.scoreboard.set(this.timers.startup,inPlay);
@@ -44,11 +45,13 @@ var Match = new Class({
 		this.links.scoreboard.status('');
 	},
 	mayHitPuck: function() {
+this.els.message.appendText('[P]');
 		this.inPlay = true;
 	},
 	served: function (position) {
 		var that = this;
 		var setInPlay = function() {
+that.els.message.appendText('[p]');
 			that.links.table.inPlay();
 			that.links.table.transition();
 			that.links.opponent.inPlay();
@@ -61,7 +64,6 @@ var Match = new Class({
 	},
 	end: function() {
 		if (this.matchInProgress) {
-this.els.message.appendText(':abandon');
 			$clear(this.startDelay);
 			this.links.table.halt();
 			this.links.scoreboard.cancel();
@@ -91,10 +93,12 @@ this.els.message.appendText(':abandon');
 	},
 	oFoul: function(msg) {
 		if(!this.inPlay) {
+			this.links.scoreboard.cancel(); //prevent countdown whilst we get confirmation
 			this.links.opponent.ofoul(msg);
 		}
 	},
 	foulConfirmed: function (msg) {
+this.els.message.appendText('[f]');
 		this.inPlay = false;
 		this.links.table.halt();
 		this.links.play('foul');
@@ -104,6 +108,7 @@ this.els.message.appendText(':abandon');
 	},
 	foul: function() {
 		if(this.inPlay) {
+this.els.message.appendText('[F]');
 			this.inPlay = false;
 			this.links.table.halt();
 			this.links.play('foul');
@@ -137,6 +142,7 @@ this.els.message.appendText(':abandon');
 		}
 	},
 	goalConfirmed: function() {
+this.els.message.appendText('[g]');
 		this.inPlay = false;
 		this.links.table.halt();
 		this.links.play('goal');
@@ -147,6 +153,7 @@ this.els.message.appendText(':abandon');
 	},		
 	goal: function() {
 		if(this.inPlay) {
+this.els.message.appendText('[G]');
 			this.inPlay = false;
 			this.links.table.halt();
 			this.links.play('goal');

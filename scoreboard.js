@@ -38,6 +38,7 @@ var Scoreboard = new Class({
 			this.params.g = 0;  //special flag to say end the game
 			this.updateMatchReq.post(this.params);
 		}
+		this.status('Match Complete');
 	},
 	abandonMatch: function () {
 		this.duration = $clear(this.duration);

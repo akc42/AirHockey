@@ -89,7 +89,7 @@ var Opponent = new Class({
 	end: function() {
 		this.inSync = false;
 		this.poller = $clear(this.poller);
-		this.comms.die();
+		this.comms.die.delay(1000,this.comms); //need to wait for last message to have gone
 	},
 	faceoff: function() {
 		if(this.inSync) this.send('O');
@@ -149,16 +149,28 @@ var Opponent = new Class({
 				this.links.match.mayHitPuck();
 				break;
 			case 'D' :
-				if(this.links.match.offTfoul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm
+				if(this.links.match.offTfoul() && this.master) {
+					this.comms.write('E:'+splitMsg[1]); //confirm
+				} else {
+					if(this.master) this.comms.write('T'); //if can't confirm then ensure in play
+				}
 				break;
 			case 'E' :
 				this.links.match.foulConfirmed(splitMsg[1]);
 				break;
 			case 'F' :
-				if (this.links.match.foul() && this.master) this.comms.write('E:'+splitMsg[1]); //confirm
+				if (this.links.match.foul() && this.master) {
+					this.comms.write('E:'+splitMsg[1]); //confirm
+				} else {
+					if(this.master) this.comms.write('T'); //if can't confirm then ensure in play
+				}
 				break;
 			case 'G' :
-				if (this.links.match.goal() && this.master) this.comms.write('H'); //confirm
+				if (this.links.match.goal() && this.master) {
+					this.comms.write('H'); //confirm
+				} else {
+					if(this.master) this.comms.write('T'); //if can't confirm then ensure in play
+				}
 				break;
 			case 'H' :
 				this.links.match.goalConfirmed();
@@ -198,7 +210,10 @@ var Comms = new Class({
 		this.sopt = {uid:me.uid,msg:'',t:0};
 		this.commsFailed = false;
 		this.fail = function(reason) {
-			fail('Comms Timeout');
+			if(!that.commsFailed) {
+				that.commsFailed = true;
+				fail('Comms Timeout');
+			}
 		};
 		
 		this.func = null;

@@ -210,7 +210,6 @@ if ($oid && !is_null($row['eid'])) {
 		</div>
 		<div id="message"></div>
 		<img id="abandon" src="/static/images/exit.gif" alt="abandonmatch" />
-		<img id="freeze" src="freeze.gif" alt="freeze match" />
 	</div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>

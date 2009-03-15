@@ -41,7 +41,7 @@ var Scorer = new Class({
 		}
 		this.opscore++;
 		if(this.opscore >= 7) {
-			this.mygames++;
+			this.opgames++;
 			this.opscore = 0;
 			this.myscore = 0;
 			if(this.opgames < 4) {
