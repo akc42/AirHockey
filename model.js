@@ -75,7 +75,6 @@ var Table = new Class({
 									this.puck.dy = pvn2*sin_t + pvt*cos_t;
 									// send model details as they are after the collision
 									this.links.opponent.hit(this.myMallet,this.puck,this.time);
-									this.wait = true;
 									this.links.scoreboard.status('');
 								}
 							}

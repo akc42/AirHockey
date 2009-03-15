@@ -12,6 +12,7 @@ var Opponent = new Class({
 		this.inSync = false;
 		this.timeout = timers.timeout;
 		this.timeOffset = 0;
+		this.pending = false;
 		var awaitOpponent = function() {
 			if (master) {
 				that.comms.set(startMatchM,timers.opponent);
@@ -82,7 +83,7 @@ var Opponent = new Class({
 		timeReq();
 	},
 	hit: function(mallet,puck,time) {
-		if(this.inSync) this.send('C:'+mallet.x+':'+mallet.y
+		if(this.inSync) this.comms.write('C:'+mallet.x+':'+mallet.y
 			+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
 			+':'+(time+this.timeOffset));
 	},
@@ -93,27 +94,18 @@ var Opponent = new Class({
 	},
 	faceoff: function() {
 		if(this.inSync) this.send('O');
-		if(this.master) this.links.match.faceoffConfirmed();
 	},
 	goal: function () {
 		if(this.inSync) this.send('G');
-		if(this.master) this.links.match.goalConfirmed();
 	},
 	foul: function (msg) {
 		if(this.inSync) this.send('F:'+msg);
-		if(this.master) this.links.match.foulConfirmed(msg);
-	},
-	ofoul: function(msg) {
-		if(this.inSync) this.send('D:'+msg);
-		if(this.master) this.links.match.foulConfirmed(msg);
 	},
 	serve: function (p) {
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
-	inPlay: function() {
-		if(this.inSync) this.send('T');
-	},
 	send: function(msg) {
+		this.pending = true;
 		this.comms.write(msg);
 	},
 	poll : function() {
@@ -137,42 +129,35 @@ var Opponent = new Class({
 		var firm = false;
 		switch (splitMsg[0]) {
 			case 'N' :
+				this.pending = false;
 				this.links.match.faceoffConfirmed();
 				break;
 			case 'O':
-				if (this.links.match.faceoff() && this.master) this.comms.write('N');
+				if(!(this.pending && this.master)) this.comms.write('N');
+				this.links.match.faceoff()
 				break;
 			case 'S' :
+				if(!(this.pending && this.master)) this.comms.write('T');
 				this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
 				break;
 			case 'T' :
-				this.links.match.mayHitPuck();
-				break;
-			case 'D' :
-				if(this.links.match.offTfoul() && this.master) {
-					this.comms.write('E:'+splitMsg[1]); //confirm
-				} else {
-					if(this.master) this.comms.write('T'); //if can't confirm then ensure in play
-				}
+				this.pending = false;
+				this.links.match.serveConfirmed();
 				break;
 			case 'E' :
+				this.pending = false;
 				this.links.match.foulConfirmed(splitMsg[1]);
 				break;
 			case 'F' :
-				if (this.links.match.foul() && this.master) {
-					this.comms.write('E:'+splitMsg[1]); //confirm
-				} else {
-					if(this.master) this.comms.write('T'); //if can't confirm then ensure in play
-				}
+				if (!(this.pending && this.master)) this.comms.write('E:'+splitMsg[1]); //confirm
+				this.links.match.foul();
 				break;
 			case 'G' :
-				if (this.links.match.goal() && this.master) {
-					this.comms.write('H'); //confirm
-				} else {
-					if(this.master) this.comms.write('T'); //if can't confirm then ensure in play
-				}
+				if ( !(this.pending && this.master)) this.comms.write('H'); //confirm
+				this.links.match.goal();
 				break;
 			case 'H' :
+				this.pending = false;
 				this.links.match.goalConfirmed();
 				break;
 			case 'C' :

@@ -32,8 +32,6 @@ var Match = new Class({
 		var that = this;
 		var inPlay = function () {
 			that.links.table.inPlay();
-			that.inPlay = true;
-that.els.message.appendText('[p]');
 		};
 		this.links.scoreboard.status('Start Match');
 		this.links.scoreboard.set(this.timers.startup,inPlay);
@@ -42,36 +40,22 @@ that.els.message.appendText('[p]');
 	},
 	serve: function(position) {
 		this.links.table.place(position);
+		this.links.table.inPlay();
 		this.links.scoreboard.status('');
-	},
-	mayHitPuck: function() {
-this.els.message.appendText('[P]');
-		this.inPlay = true;
+		this.links.scoreboard.foul(false);
 	},
 	served: function (position) {
+		this.links.opponent.serve(position);
+	},
+	serveConfirmed: function() {
 		var that = this;
 		var setInPlay = function() {
-that.els.message.appendText('[p]');
 			that.links.table.inPlay();
 			that.links.table.transition();
-			that.links.opponent.inPlay();
-			that.inPlay = true;
 		};
 		this.links.scoreboard.cancel(); //stop any serve timeout
-		this.links.opponent.serve(position);
 		this.links.scoreboard.set(this.timers.inplay, setInPlay);
 		this.links.scoreboard.serve(false);
-	},
-	end: function() {
-		if (this.matchInProgress) {
-			$clear(this.startDelay);
-			this.links.table.halt();
-			this.links.scoreboard.cancel();
-			this.links.scoreboard.abandonMatch();
-			this.inPlay = false;
-			this.matchInProgress=false;
-		}
-		this.links.opponent.end();
 	},
 	inControl: function () {
 		if (!this.scorer.faceoffSet()) {
@@ -87,19 +71,13 @@ that.els.message.appendText('[p]');
 		return true;
 	},
 	tFoul: function(msg) {
-		if(this.inPlay) {
-			this.links.opponent.foul(msg);
-		}
+		this.links.opponent.foul(msg);
 	},
 	oFoul: function(msg) {
-		if(!this.inPlay) {
-			this.links.scoreboard.cancel(); //prevent countdown whilst we get confirmation
-			this.links.opponent.ofoul(msg);
-		}
+		this.links.scoreboard.cancel(); //prevent countdown whilst we get confirmation
+		this.links.opponent.foul(msg);
 	},
 	foulConfirmed: function (msg) {
-this.els.message.appendText('[f]');
-		this.inPlay = false;
 		this.links.table.halt();
 		this.links.play('foul');
 		this.links.scoreboard.cancel();
@@ -107,25 +85,30 @@ this.els.message.appendText('[f]');
 		this.links.scoreboard.foul(true);
 	},
 	foul: function() {
-		if(this.inPlay) {
-this.els.message.appendText('[F]');
-			this.inPlay = false;
-			this.links.table.halt();
-			this.links.play('foul');
-			this.links.scoreboard.status('Opponent Foul');
-			this.requestServe();
-			return true;
-		}
-		return false;
+		this.inPlay = false;
+		this.links.table.halt();
+		this.links.play('foul');
+		this.links.scoreboard.status('Opponent Foul');
+		this.requestServe();
 	},
-	offTfoul: function() {
-		if(!this.inPlay) {
-			this.links.play('foul');
-			this.links.scoreboard.status('Opponent Foul');
+	goalAgainst: function() {
+		this.links.opponent.goal();
+	},
+	goalConfirmed: function() {
+		this.links.table.halt();
+		this.links.play('goal');
+		this.links.scoreboard.status('Opponent Scored');
+		if(this.scorer.goalAgainst()) {
 			this.requestServe();
-			return true;
 		}
-		return false;
+	},		
+	goal: function() {
+		this.links.table.halt();
+		this.links.play('goal');
+		this.links.scoreboard.status('GOAL !!!!!!');
+		if(this.scorer.goalFor()) {
+			this.requestServe();
+		}
 	},
 	requestServe: function() {
 		var that = this;
@@ -136,34 +119,16 @@ this.els.message.appendText('[F]');
 		});
 		this.links.table.serve();
 	},
-	goalAgainst: function() {
-		if(this.inPlay) {
-			this.links.opponent.goal();
-		}
-	},
-	goalConfirmed: function() {
-this.els.message.appendText('[g]');
-		this.inPlay = false;
-		this.links.table.halt();
-		this.links.play('goal');
-		this.links.scoreboard.status('Opponent Scored');
-		if(this.scorer.goalAgainst()) {
-			this.requestServe();
-		}
-	},		
-	goal: function() {
-		if(this.inPlay) {
-this.els.message.appendText('[G]');
-			this.inPlay = false;
+	end: function() {
+		if (this.matchInProgress) {
+			$clear(this.startDelay);
 			this.links.table.halt();
-			this.links.play('goal');
-			this.links.scoreboard.status('GOAL !!!!!!');
-			if(this.scorer.goalFor()) {
-				this.requestServe();
-			}
-			return true;
+			this.links.scoreboard.cancel();
+			this.links.scoreboard.abandonMatch();
+			this.inPlay = false;
+			this.matchInProgress=false;
 		}
-		return false;
+		this.links.opponent.end();
 	}
 });
 

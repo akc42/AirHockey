@@ -20,7 +20,11 @@ var Practice = new Class({
 	},
 	goal: function() {
 		$clear(this.ontable);
-		if(this.scorer.goalFor()) this.foul();
+		if(this.scorer.goalFor()) {
+			$clear(this.ontable);
+			//simulate me serving and then hitting puck
+			this.d1=this.myserve.delay(3000,this);
+		}
 		this.links.match.goalConfirmed();
 	},
 	foul: function (msg) {
@@ -29,14 +33,9 @@ var Practice = new Class({
 		this.d1=this.myserve.delay(3000,this);
 		this.links.match.foulConfirmed(msg);
 	},
- 	ofoul: function (msg) {
-		this.foul(msg);
-	},
 	serve: function (puck) {
+		this.links.match.serveConfirmed();
 		this.ontable=this.myside.periodical(5000,this);
-	},
-	inPlay: function () {
-		return; //practice do nothing
 	},
 	faceoff: function () {
 		this.scorer.faceoffOp();
@@ -61,7 +60,6 @@ var Practice = new Class({
 	},
  	myserve: function() {
 		this.links.match.serve({x:560,y:250});
-		this.links.match.inPlay.delay(2000,this.links.match);
 		this.ontable=this.myside.periodical(5000,this);
 	}		
 });
