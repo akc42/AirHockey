@@ -283,7 +283,7 @@ var SimplePuck = new Class({
 	dy:0,
 	set: function(p) {
 		this.y = p.y;
-		this.side = (this.y > 1200);
+		this.side = (this.y > 1200)?1:(this.y<1200)?-1:0;
 		this.x = p.x;
 		this.dx = p.dx;
 		this.dy = p.dy;
@@ -295,7 +295,7 @@ var SimplePuck = new Class({
 		//store equation y=mx+c of line made by puck but in a coordinate space where the zero is 41 in from the table
 		var m = this.dy/this.dx;
 		var c = (this.y-41)-m*(this.x-41);
-		var s = true;
+		var s = false;
 		if(this.dx !=0) {
 			this.x += n*dn*this.dx;
 		}
@@ -304,7 +304,7 @@ var SimplePuck = new Class({
 		}
 		do {
 			hit = false;
-			if (this.y <= 1200) s=false;
+			if (this.y <= 1200) s=true;
 			if (this.x < 41) {
 				hit=true;
 				t = 2;
@@ -418,8 +418,8 @@ var SimplePuck = new Class({
 		this.dx *= dn;
 		this.dy *= dn;
 		if(t==6) return 6;
-		var news = (this.y>1200);
-		if (!(this.side && s && news) && (this.side || news)) t++;
+		var news = (this.y > 1200)?1:(this.y<1200)?-1:0;
+		if (t!=6 && (this.side != news || (s && this.y>1200 ))) t++;
 		this.side = news;
 		return t;
 	}
