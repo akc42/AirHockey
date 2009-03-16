@@ -40,18 +40,46 @@ pageTracker._trackPageview();
 </table>
 <div id="content">
 	<a href="index.php"><img id="exittoindex" src="/static/images/exit-f.gif" alt="exit to main game page"/></a>
-	<h1>The Rules of Online Air Hockey</h1>
-	<h2>Introduction</h2>
-		<p>Welcome to the Melinda's Backups Online AirHockey System.  This system provides a mechanism for playing, over the internet, a
-		simulation of air hockey.  The basic rules of the game are taken from the <a href="www.airhockey.com">United States Air Hockey Association</a>
-		and adapted slightly for the limitations of on-line play</p>
-		<p>The system comes in two parts.  The initial page where people can meet up, get a view of matches in progress and if they wish initiate a
-		match, or go and play a single person practice game</p>
-	<h2>The Opening Screen</h2>
-	<h2>Playing a Match</h2>
-		<h3>Basic Layout of Screen</h3>
-		<h3>Basic Rules of Play</h3>
-		<h3>Fouls</h3>	
+	<div id="rules">
+		<h1>The Rules of Online Air Hockey</h1>
+		<h2>Introduction</h2>
+			<p>Welcome to the Melinda's Backups Online AirHockey System.  This system provides a mechanism for playing, over the 
+			internet, a	simulation of air hockey.  The basic rules of the game are taken from the <a href="www.airhockey.com">United
+			States Air Hockey Association</a> and adapted slightly for the limitations of on-line play</p>
+			<p>The system comes in two parts.  The initial page where people can meet up, get a view of matches in progress and if
+	they wish initiate a match, or go and play a single person practice game</p>
+		<h2>The Opening Screen</h2>
+		<h3>Introduction</h3>
+			<p>When you first arrive at the airhockey page, either directly or via the forum, or as a result of completing
+			practice or a match, you will see two main areas below the page heading.  On the left is the list of matches underway,
+or recently completed, to the right of this will be an area related the users currently involved with the air hockey system.  The
+most important user is yourself, and it is here that you can select your current mode.  Below that is a list of players, with some
+flags indicating their current mode</p>
+			<p>You may desire to remain a spectator, in which case the screen will be automatically updated at approximately 15
+second intervals with the current state of each match (updated everytime someone scores a goal), or the state of all the other
+players.</p>
+		<h3>The List of Matches</h3>
+			<p>The list of matches shows the current progress of matches underway, together with the state of completed matches.
+each match is shown its its own small area, with the names of the two players and their current score shown as a series of numbers
+next to each name.  Initially, there is only one game with a 0-0 score, but as the match progresses each time a game reaches 7
+points for one of the players, that game is over and a new game starts. Matches are the best of 7 games, so the first person to win
+4 games wins the match.  You can tell whether a match is completed or not by whether there is a match duration shown or whether the
+display gives the time that the match ended.</p>
+			<p>Matches may be abandoned by one or other of the players (or because of a technical glitch) before the match is over.
+ In this case the match will be should as completed before one or other player has 4 games.  These "Abandoned" games will only
+remain in the list for about 10 minutes before they are removed.
+		<h3>Your own state</h3>
+			<p>There are four lines in your area indicating which state you are currently in, and allowing you to change state.  A
+green tick indicates your current state.  When you first join this page you automatically start in spectator mode.  In this state,
+you cannot be invited to play a match with someone else, you will just remain and watch the matches as they unfold.</p>
+			<p>Although everyone else will see you in their list of players, the marker next to your name will be blank, meaning
+you are only a spectatator</p>
+			<p>If you wish to practice, click on the line that says 
+		<h2>Playing a Match</h2>
+			<h3>Basic Layout of Screen</h3>
+			<h3>Basic Rules of Play</h3>
+			<h3>Fouls</h3>
+	</div>
 	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
 </body>
