@@ -191,6 +191,7 @@ MBahladder = function() {
 	var personalState;
 	return {
 		init: function (param,initialstate,polldelay) {
+			$('version').appendText(version); //output version variable supplied by git
 			ropt = param;  //save request options
 			timeOffset = new Date().getTime()/1000 - ropt.t;
 			personalState = $('S'+initialstate);

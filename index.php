@@ -65,6 +65,7 @@ require('timeout.php');
 	<![endif]-->
 	<script src="/static/scripts/mootools-1.2.1-core-ac.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="version.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -218,7 +219,7 @@ while($row=dbFetch($result)) {
 dbFree($result);
 ?>	</div>
 	<div style="clear:both"></div>
-	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
+	<div id="copyright">Air Hockey <span id="version">php:<?php include('version.php');?> js:</span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
 </body>
 </html>
