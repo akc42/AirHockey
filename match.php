@@ -21,10 +21,11 @@ $now = dbPostSafe(time());
 $g = $_POST['g'];
 
 $result = dbQuery('SELECT * FROM match WHERE mid = '.dbMakeSafe($mid).' ;');
-if(dbNumRows($result) > 0) {
+if($row = dbFetch($result)) {
 	if($g > 0) {
 		dbQuery('UPDATE match SET  last_activity = '.$now.', h'.$g.' = '.dbPostSafe($_POST['h']).' , a'.$g.' = '.dbPostSafe($_POST['a'])
 				.' WHERE mid = '.dbMakeSafe($mid).' ;');
+		dbQuery('UPDATE player SET last_poll = '.$now.' WHERE pid = '.$row['hid'].' OR pid = '.$row['aid'].' ;');
 	} else {
 		if($g == 0) {
 			dbQuery('UPDATE match SET  last_activity = '.$now.', end_time = '.$now.' WHERE mid = '.dbMakeSafe($mid).' ;');
