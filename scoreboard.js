@@ -100,14 +100,12 @@ var Scoreboard = new Class({
 			if (this.n < 0) {
 				this.els.countdown.set('text','');
 				this.countdown = $clear(this.countdown);
-this.els.message.appendText('}');
 			} else {
 				this.els.countdown.set('text',this.n);
 				if (this.n == 0) {
 					this.play('start');
-this.els.message.appendText('^');
+this.els.message.appendText('}');
 					callback();
-this.els.message.appendText('$');
 				} else {
 					this.play('count');
 				}
@@ -123,7 +121,7 @@ this.els.message.appendText('{');
 		this.countdown = $clear(this.countdown);
 		this.n = -1;
 		this.els.countdown.set('text','');
-this.els.message.appendText('%}');
+this.els.message.appendText('}');
 	}
 });
 
