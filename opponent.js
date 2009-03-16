@@ -93,15 +93,19 @@ var Opponent = new Class({
 		this.comms.die.delay(1000,this.comms); //need to wait for last message to have gone
 	},
 	faceoff: function() {
+this.els.message.appendText('[o]');
 		if(this.inSync) this.send('O');
 	},
 	goal: function () {
+this.els.message.appendText('[g]');
 		if(this.inSync) this.send('G');
 	},
 	foul: function (msg) {
+this.els.message.appendText('[f]');
 		if(this.inSync) this.send('F:'+msg);
 	},
 	serve: function (p) {
+this.els.message.appendText('[s]');
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
 	send: function(msg) {
@@ -129,34 +133,62 @@ var Opponent = new Class({
 		var firm = false;
 		switch (splitMsg[0]) {
 			case 'N' :
+this.els.message.appendText('[N]');
 				this.pending = false;
 				this.links.match.faceoffConfirmed();
 				break;
 			case 'O':
-				if(!(this.pending && this.master)) this.comms.write('N');
+this.els.message.appendText('[O]');
+				if(!(this.pending && this.master)){
+this.els.message.appendText('[n]');
+					this.comms.write('N');
+				} else {
+this.els.message.appendText('[X--n]');
+				}
 				this.links.match.faceoff()
 				break;
 			case 'S' :
-				if(!(this.pending && this.master)) this.comms.write('T');
+this.els.message.appendText('[S]');
+				if(!(this.pending && this.master)){
+this.els.message.appendText('[t]');
+					this.comms.write('T');
+				} else {
+this.els.message.appendText('[X--t]');
+				}
 				this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
 				break;
 			case 'T' :
+this.els.message.appendText('[T]');
 				this.pending = false;
 				this.links.match.serveConfirmed();
 				break;
 			case 'E' :
+this.els.message.appendText('[E]');
 				this.pending = false;
 				this.links.match.foulConfirmed(splitMsg[1]);
 				break;
 			case 'F' :
-				if (!(this.pending && this.master)) this.comms.write('E:'+splitMsg[1]); //confirm
+this.els.message.appendText('[F]');
+				if (!(this.pending && this.master)) {
+this.els.message.appendText('[e]');
+					this.comms.write('E:'+splitMsg[1]); //confirm
+				} else {
+this.els.message.appendText('[X--e]');
+				}
 				this.links.match.foul();
 				break;
 			case 'G' :
-				if ( !(this.pending && this.master)) this.comms.write('H'); //confirm
+this.els.message.appendText('[G]');
+				if ( !(this.pending && this.master)) {
+this.els.message.appendText('[h]');
+					this.comms.write('H'); //confirm
+				} else {
+this.els.message.appendText('[X--h]');
+				}
 				this.links.match.goal();
 				break;
 			case 'H' :
+this.els.message.appendText('[H]');
 				this.pending = false;
 				this.links.match.goalConfirmed();
 				break;
