@@ -95,17 +95,19 @@ var Scoreboard = new Class({
 		}
 	},
 	set: function(n,callback) {
-		var that = this;
 		var counter = function() {
 			this.n--;
 			if (this.n < 0) {
 				this.els.countdown.set('text','');
 				this.countdown = $clear(this.countdown);
+this.els.message.appendText('}');
 			} else {
 				this.els.countdown.set('text',this.n);
 				if (this.n == 0) {
 					this.play('start');
+this.els.message.appendText('^');
 					callback();
+this.els.message.appendText('$');
 				} else {
 					this.play('count');
 				}
@@ -115,11 +117,13 @@ var Scoreboard = new Class({
 		this.n = n;
 		this.countdown = counter.periodical(1000,this);
 		this.els.countdown.set('text',this.n);
+this.els.message.appendText('{');
 	},
 	cancel: function() {
 		this.countdown = $clear(this.countdown);
 		this.n = -1;
 		this.els.countdown.set('text','');
+this.els.message.appendText('%}');
 	}
 });
 
