@@ -20,7 +20,7 @@ while ($row = dbFetch($result)) {
 }
 dbQuery('UPDATE player SET state = '.OFFLINE.' , last_state = '.$rightnow
 		.' WHERE ( last_poll < '.$offline.' AND state BETWEEN '.SPECTATOR.' AND '.INVITE.' )'
-		.' OR ( last_poll < '.$abandon.' AND state BETWEEEN '.MATCH.' AND '.PRACTICE.' );');
+		.' OR ( last_poll < '.$abandon.' AND state BETWEEN '.MATCH.' AND '.PRACTICE.' );');
 dbQuery('DELETE FROM match WHERE (start_time < '.$remove.' AND eid IS NULL) OR (abandon IS NOT NULL AND end_time < '.$abandon.') ;');
 dbQuery('COMMIT;');
 ?>
