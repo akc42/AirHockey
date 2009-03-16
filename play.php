@@ -79,6 +79,7 @@ dbFree($result);
 	<script src="match.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="opponent.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="version.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -118,7 +119,8 @@ window.addEvent('domready', function() {
 				duration:$('duration'),
 				abandon:$('abandon'),
 				freeze:$('freeze'),
-				message:$('message')
+				message:$('message'),
+				version:$('version')
 			});
 });
 window.addEvent('unload', function() {
@@ -211,7 +213,7 @@ if ($oid && !is_null($row['eid'])) {
 		<div id="message"></div>
 		<img id="abandon" src="/static/images/exit.gif" alt="abandonmatch" />
 	</div>
-	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
+	<div id="copyright">Air Hockey <span id="version">php:<?php include('version.php');?> js:</span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>
 </body>
 
