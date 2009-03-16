@@ -276,6 +276,7 @@ var myMallet = new Class({
 var SimplePuck = new Class({
 	initialize:function (p) {
 		this.set(p);
+		this.side = (this.y > 1200)?1:(this.y<1200)?-1:0;
 	},
 	x:0,
 	y:0,
@@ -283,7 +284,6 @@ var SimplePuck = new Class({
 	dy:0,
 	set: function(p) {
 		this.y = p.y;
-		this.side = (this.y > 1200)?1:(this.y<1200)?-1:0;
 		this.x = p.x;
 		this.dx = p.dx;
 		this.dy = p.dy;
@@ -417,7 +417,6 @@ var SimplePuck = new Class({
 		dn *= 0.9995;
 		this.dx *= dn;
 		this.dy *= dn;
-		if(t==6) return 6;
 		var news = (this.y > 1200)?1:(this.y<1200)?-1:0;
 		if (t!=6 && (this.side != news || (s && this.y>1200 ))) t++;
 		this.side = news;
@@ -462,6 +461,7 @@ var ComplexPuck = new Class({
 		position.dy = 0;//ensure it is not moving
 		position.dx = 0;
 		this.set(position);
+		this.side = (this.y > 1200)?1:(this.y<1200)?-1:0;
 		this.el.removeClass('hidden');
 		this.update();
 		this.links.play('mallet'); //mallet sound as place on table (or will get this from comms saying hit occurred)

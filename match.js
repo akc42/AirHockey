@@ -34,6 +34,7 @@ that.els.message.appendText('||');
 		var that = this;
 		var inPlay = function () {
 			that.links.table.inPlay();
+			that.links.table.transition();
 		};
 		this.links.scoreboard.status('Start Match');
 		this.links.scoreboard.set(this.timers.startup,inPlay);
