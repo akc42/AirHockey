@@ -229,7 +229,6 @@ MBahladder = function() {
 			$$('.inviteTo').each(addCpoint);
 			$$('.inviteFrom').each(addCpoint);
 			$('exittoforum').addEvent('click',function(e) {
-				stateReq.post($merge(ropt,{state:0})); //say going offline
 				MBahladder.logout();
 				window.location.assign('/forum/index.php');
 			});
@@ -237,6 +236,7 @@ MBahladder = function() {
 			durationID = duration.periodical(1000);
 		},
 		logout: function () {
+			stateReq.post($merge(ropt,{state:0})); //say going offline
 			$clear(pollerID); //stop poller
 			$clear(durationID);
 		}
