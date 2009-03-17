@@ -11,8 +11,9 @@ error_reporting(E_ALL);
 
 define ('AIRH',1);   //defined so we can control access to some of the files.
 require_once('db.php');
-
+require('timeout.php');
 // Set up a user record with type = spectator
-dbQuery('BEGIN;');
 $result=dbQuery('SELECT * FROM player WHERE state <> '.OFFLINE.' ;');
 echo '{ "count":'.dbNumRows($result).' }';
+dbFree($result);
+?>
