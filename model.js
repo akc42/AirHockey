@@ -37,55 +37,64 @@ var Table = new Class({
 		this.time = now;
 		if(this.ontable) {
 			this.myMallet.tick(timeSince);
-			if(this.myMallet.y >= 1147) {
-				if(this.puck.tick(timeSince)) {
-					var d1,d2,cos_t,sin_t,pvn,pvt;
-					//check for collision with my Mallet
-					var dx = this.puck.x - this.myMallet.x;
-					var dy = this.puck.y - this.myMallet.y;
-					if ((Math.abs(dx) < 94) && (Math.abs(dy) < 94) ) {
-						//might have hit worth doing the more complex calculation
-						if( (dx*dx + dy*dy) < 8836) {
-							this.links.play('mallet');
-							// Collision Occurred
-							if (!this.inP) {
-									// we hit the puck before we were supposed to
-									this.links.match.oFoul('Puck played too early');
-							} else {
-								if (this.puck.y < 1159 && this.opmallet.y < 1147) {
-									this.links.match.tFoul('Invalid Hit - wrong side');
-								} else {
-									d2 = Math.sqrt(dx*dx+dy*dy); //keep earlier distance
-									dx += (this.myMallet.dx - this.puck.dx)*this.timers.tick;  //step back to previous tick (in case centres have passed)
-									dy += (this.myMallet.dy - this.puck.dy)*this.timers.tick;
-									d1 = Math.sqrt(dx*dx+dy*dy);
-									cos_t = dx/d1; //cos theta where theta angle of normal to x axis
-									sin_t = dy/d1; //sin theta where theta angle of normal to x axis
-									if (d2 < 94) {
-										d2 = 2*(94-d2);
-										this.puck.x += d2*cos_t;
-										this.puck.y += d2*sin_t;
-									}
-									var mvn = this.myMallet.dx*cos_t + this.myMallet.dy * sin_t;  //mallet velocity along normal
-									pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
-									pvt = this.puck.dx*sin_t + this.puck.dy*cos_t;  //puck velicity tangent
+			if(this.puck.tick(timeSince)) {
+				var d1,d2,cos_t,sin_t,pvn,pvt;
+				//check for collision with my Mallet
+				var x = this.puck.x - this.myMallet.x;
+				var y = this.puck.y - this.myMallet.y;
+				var dx = this.puck.dx - this.myMallet.dx;
+				var dy = this.puck.dy - this.myMallet.dy;
+				var t;
+				if(dx != 0 || dy !=0) {
+						//calculate how long in the past the minimum pass of puck and mallet was
+					t = (x*dx + y*dy)/(dx*dx + dy*dy);
 
-									var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
-									this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
-									this.puck.dy = pvn2*sin_t + pvt*cos_t;
-									// send model details as they are after the collision
-									this.links.opponent.hit(this.myMallet,this.puck,this.time);
-									this.links.scoreboard.status('');
-								}
+				} else {
+					t=0;
+				}
+				//if we are closer than the two radii, or if since the last tick we got closer
+				// (this if puck is moving really fast we may have missed it)
+				if ((x*x + y*y) < 8836 || (t > 0 && t < timeSince && ((x-dx*t)*(x-dx*t)+(y-dy*t)*(y-dy*t)) < 8836 )) {
+					this.links.play('mallet');
+					// Collision Occurred
+					if (!this.inP) {
+							// we hit the puck before we were supposed to
+							this.links.match.oFoul('Puck played too early');
+					} else {
+						if (this.puck.y < 1159 && this.opmallet.y < 1147 || this.myMallet.y < 1094) {
+							this.links.match.tFoul('Invalid Hit - wrong side');
+						} else {
+							d2 = Math.sqrt(x*x+y*y); //keep earlier distance
+							if (t <= 0 || t > timeSince) {
+								x -= dx*this.timers.tick;  //step back to previous tick (in case centres have passed)
+								y -= dy*this.timers.tick;
+							} else {
+								x -= dx*(t+10);  //at least 10 milliseconds beyond closest point
+								y -= dy*(t+10);
 							}
+							d1 = Math.sqrt(x*x+y*y);
+							cos_t = x/d1; //cos theta where theta angle of normal to x axis
+							sin_t = y/d1; //sin theta where theta angle of normal to x axis
+							if (d2 < 94) {
+								d2 = 2*(94-d2);
+								this.puck.x += d2*cos_t;
+								this.puck.y += d2*sin_t;
+							}
+							var mvn = this.myMallet.dx*cos_t + this.myMallet.dy * sin_t;  //mallet velocity along normal
+							pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
+							pvt = this.puck.dx*sin_t + this.puck.dy*cos_t;  //puck velicity tangent
+
+							var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
+							this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
+							this.puck.dy = pvn2*sin_t + pvt*cos_t;
+							// send model details as they are after the collision
+							this.links.opponent.hit(this.myMallet,this.puck,this.time);
+							this.links.scoreboard.status('');
 						}
 					}
-				} else {
-					this.ontable = false;
 				}
 			} else {
 				this.ontable = false;
-				this.links.match.tFoul('Mallet past centre line');
 			}
 		}
 	},
@@ -223,7 +232,7 @@ var myMallet = new Class({
 			var setMalletPosition = function(e) {
 				that.mp.x = e.page.x*4 - that.table.x;
 				that.mp.y = e.page.y*4 - that.table.y;
-				if (that.mp.x < 0 || that.mp.y < 1147) {
+				if (that.mp.x < 0 || that.mp.y < 0) {
 					return false;
 				} else {
 					if (that.mp.x > 1120 || that.mp.y > 2400) {
@@ -328,8 +337,8 @@ var SimplePuck = new Class({
 							this.dx = - (this.dx*0.96);
 							m *= -1.0416667; // = 1/0.96
 						} else {
-							x = (2318 -c)/m;
-							if (x > 339 && x < 699) {
+							x = this.x + (this.y-2359)/m
+							if (x > 380 && x < 740) {
 								t = 6; //goal scored
 								hit = false; //no need to carry on
 							}
@@ -371,8 +380,8 @@ var SimplePuck = new Class({
 								m *= -1.0416667; // = 1/0.96
 								c= y - m*1038;
 							} else {
-								x = (2318 -c)/m;
-								if (x > 339 && x < 699) {
+								x = this.x + (this.y-2359)/m
+								if (x > 380 && x < 740) {
 									t = 6; //goal scored
 									hit = false; //no need to carry on
 								}
@@ -400,8 +409,8 @@ var SimplePuck = new Class({
 						if (this.y > 2359) {
 							hit = true;
 							t=2;
-							x = (2318 -c)/m;
-							if (x > 339 && x < 699) {
+							x = this.x + (this.y-2359)/m
+							if (x > 380 && x < 740) {
 								t = 6; //goal scored
 								hit = false; //no need to carry on
 							}
