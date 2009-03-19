@@ -185,8 +185,10 @@ MBahladder = function() {
 		pollReq.post(ropt);
 	};
 	var durationID;
-	var duration = function() {
-		$$('match').each(function(match) { formatDuration(match);});
+	var durationUpdate = function() {
+		$$('.match').each(function(m) {
+			formatDuration(m);
+		});
 	};
 	var personalState;
 	return {
@@ -233,7 +235,7 @@ MBahladder = function() {
 				window.location.assign('/forum/index.php');
 			});
 			pollerID = poll.periodical(polldelay);
-			durationID = duration.periodical(1000);
+			durationID = durationUpdate.periodical(1000);
 		},
 		logout: function () {
 			stateReq.post($merge(ropt,{state:0})); //say going offline
