@@ -289,8 +289,47 @@ body, td, th
 	width:230px;
 	padding:0;
 	margin:10px;
-	background-color:white;
+	background-color:#FFFF99;
+	color:black;
 	border:2px solid black;
+}
+
+#ladderheader {
+width:222px;
+height:18px;
+padding:2px 4px;
+font-size:11px;
+font-weight:bold;
+background-color:black;
+color:white;
+text-align:center;
+}
+
+.ladderentry {
+	border:1px solid black;
+	width:224px;
+	height:22px;
+	margin:3px;
+	background-color:white;
+}
+
+.ladder {
+width:160px;
+float:left;
+padding:3px;
+margin:0 3px;
+border-right:1px solid black;
+font-size:11px;
+overflow:hidden;
+}
+
+.ranking	{
+	float:right;
+	padding:2px 3px;
+	width:30px;
+	height:14px;
+	font-size:12px;
+	font-weight:bold;
 }
 
 #master, #slave {

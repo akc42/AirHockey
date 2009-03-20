@@ -218,6 +218,15 @@ while($row=dbFetch($result)) {
 }
 dbFree($result);
 ?>	</div>
+	<div id="ladder">
+		<div id="ladderheader">Ladder (by Ranking)</div>
+<?php
+$result = dbQuery('SELECT name, score FROM player_rating ORDER BY score DESC;');
+while($row = dbFetch($result)) {
+?>		<div class="ladderentry" ><div class="ladder"><?php echo $row['name'] ; ?></div><div class="ranking"><?php echo (int) $row['score'] ;?></div></div>
+<?php
+}
+?>	</div>
 	<div style="clear:both"></div>
 	<div id="copyright">Air Hockey <span id="version">php:<?php include('version.php');?> js:</span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
 </div>

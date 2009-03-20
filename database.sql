@@ -130,7 +130,7 @@ CREATE TABLE player (
     name character varying NOT NULL,
     mu real DEFAULT 50 NOT NULL,
     sigma real DEFAULT 16.6666666667 NOT NULL,
-    last_match bigint DEFAULT date_part('epoch'::text, now()) NOT NULL,
+    last_match bigint,
     iid integer DEFAULT 0 NOT NULL,
     last_poll bigint DEFAULT date_part('epoch'::text, now()) NOT NULL,
     state smallint DEFAULT 0 NOT NULL,
@@ -239,6 +239,33 @@ ALTER TABLE public.match_mid_seq OWNER TO melindas_air;
 
 ALTER SEQUENCE match_mid_seq OWNED BY match.mid;
 
+
+--
+-- Name: player_sigma; Type: VIEW; Schema: public; Owner: melindas_air
+--
+
+CREATE VIEW player_sigma AS
+    SELECT player.pid, player.name, player.last_match, player.mu, player.sigma, CASE WHEN (player.last_match IS NULL) THEN (350)::double precision WHEN ((|/ (((player.sigma)::double precision ^ (2)::double precision) + ((666)::double precision * ((date_part('epoch'::text, now()) - (player.last_match)::double precision) / (86400)::double precision)))) < (30)::double precision) THEN (30)::double precision WHEN ((|/ (((player.sigma)::double precision ^ (2)::double precision) + ((666)::double precision * ((date_part('epoch'::text, now()) - (player.last_match)::double precision) / (86400)::double precision)))) > (350)::double precision) THEN (350)::double precision ELSE (|/ (((player.sigma)::double precision ^ (2)::double precision) + ((666)::double precision * ((date_part('epoch'::text, now()) - (player.last_match)::double precision) / (86400)::double precision)))) END AS new_sigma FROM player;
+
+
+ALTER TABLE public.player_sigma OWNER TO melindas_air;
+
+--
+-- Name: VIEW player_sigma; Type: COMMENT; Schema: public; Owner: melindas_air
+--
+
+COMMENT ON VIEW player_sigma IS 'allows calculation of new sigma';
+
+
+--
+-- Name: player_rating; Type: VIEW; Schema: public; Owner: melindas_air
+--
+
+CREATE VIEW player_rating AS
+    SELECT player_sigma.pid, player_sigma.name, player_sigma.mu, player_sigma.sigma, player_sigma.new_sigma, (player_sigma.mu - ((3)::double precision * player_sigma.new_sigma)) AS score FROM player_sigma;
+
+
+ALTER TABLE public.player_rating OWNER TO melindas_air;
 
 --
 -- Name: eid; Type: DEFAULT; Schema: public; Owner: melindas_air
