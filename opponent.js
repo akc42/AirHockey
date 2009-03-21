@@ -226,7 +226,7 @@ var Comms = new Class({
 				if (that.func) {
 					that.func(r.time,r.msg);
 					if(r.msg2) {
-						that.els.message.appendText('%%%');
+that.els.message.appendText('%%%');
 						that.func(r.time,r.msg2);
 					}
 				}
