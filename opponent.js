@@ -67,6 +67,7 @@ var Opponent = new Class({
 		var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
 			if (response ) {
 				if (Math.abs(response.error) < timers.tick/3) achievedCloseOffset = true;
+that.els.message.appendText('('+response.error+')');
 				if(achievedCloseOffset) {
 					that.timeOffset += response.error/2;
 				} else {
@@ -233,7 +234,7 @@ var Comms = new Class({
 		this.timeout = null;
 		this.aopt = {uid:me.uid,oid:oid};
 		this.ropt = {oid:oid};
-		this.sopt = {uid:me.uid,msg:'',t:0};
+		this.sopt = {uid:me.uid,msg:''};
 		this.commsFailed = false;
 		this.fail = function(reason) {
 			if(!that.commsFailed) {
@@ -274,7 +275,6 @@ that.els.message.appendText('$$$');
 	},
 	write: function (msg) {
 		if(this.commsFailed) return;
-		this.sopt.t = new Date().getTime() + this.offset;
 		this.sopt.msg = msg;
 		this.sendReq.post(this.sopt);
 	},

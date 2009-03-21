@@ -17,7 +17,7 @@ var Table = new Class({
 				if (mp.x < 41) mp.x = 41; //make sure puck is on the table
 				if (mp.y < 41) mp.y = 41;
 				if (mp.x > 1079) mp.x = 1079;
-				if (mp.y > 2359) mp.y = 1259;
+				if (mp.y > 2359) mp.y = 2359;
 				that.place(mp);
 				that.myServe = false;
 				that.links.match.served(that.puck);
@@ -64,6 +64,9 @@ var Table = new Class({
 						if (this.puck.y < 1159 && this.opmallet.y < 1147 || this.myMallet.y < 1094) {
 							this.links.match.tFoul('Invalid Hit - wrong side');
 						} else {
+if(this.myMallet.dy ==0) {
+	var zzz = 1;
+}
 							d2 = Math.sqrt(x*x+y*y); //keep earlier distance
 							if (t <= 0 || t > timeSince) {
 								x -= dx*this.timers.tick;  //step back to previous tick (in case centres have passed)
@@ -82,11 +85,11 @@ var Table = new Class({
 							}
 							var mvn = this.myMallet.dx*cos_t + this.myMallet.dy * sin_t;  //mallet velocity along normal
 							pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
-							pvt = this.puck.dx*sin_t + this.puck.dy*cos_t;  //puck velicity tangent
+							pvt = this.puck.dx*sin_t - this.puck.dy*cos_t;  //puck velicity tangent
 
 							var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
 							this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
-							this.puck.dy = pvn2*sin_t + pvt*cos_t;
+							this.puck.dy = pvn2*sin_t - pvt*cos_t;
 							// send model details as they are after the collision
 							this.links.opponent.hit(this.myMallet,this.puck,this.time);
 							this.links.scoreboard.status('');
@@ -132,9 +135,9 @@ var Table = new Class({
 				return ;//defense against problem with its size.
 			}
 			if (timeBehind > 0) {
-		  		p.tick(timeBehind);
-	  		}
-	  		if (firm) {
+				p.tick(timeBehind);
+			}
+			if (firm) {
 		  		this.puck.set(p);
 				this.puck.update();
 				this.ontable = true;
@@ -159,10 +162,6 @@ var Table = new Class({
 					this.puck.dy *= hm;
 					this.puck.dx += p.dx;
 			  		this.puck.dy += p.dy; 
-/*					this.puck.x = (this.puck.x+ p.x)/2;
-					this.puck.y = (this.puck.y+p.y)/2;
-					this.puck.dx = (this.puck.dx+p.dx)/2;
-					this.puck.dy = (this.puck.dy+p.dy)/2; */
 			  		this.puck.update();
 				}
 			}
@@ -298,12 +297,16 @@ var SimplePuck = new Class({
 		this.dy = p.dy;
 	},
 	tick: function(n) {
+		var that = this;
+		var m = function() {
+			return that.dy/that.dx;
+		};
+		var c = function() {
+			return (that.y-41)-m()*(that.x-41);
+		};
 		var x,y;
 		var t = 0;
 		var dn = (n==1)?1:Math.pow(0.9995,n-1);
-		//store equation y=mx+c of line made by puck but in a coordinate space where the zero is 41 in from the table
-		var m = this.dy/this.dx;
-		var c = (this.y-41)-m*(this.x-41);
 		var s = false;
 		if(this.dx !=0) {
 			this.x += n*dn*this.dx;
@@ -318,58 +321,47 @@ var SimplePuck = new Class({
 				hit=true;
 				t = 2;
 				if (this.y < 41) {
-					if ( c > 0) {
+					if ( c() > 0) {
 						//we hit the side first
 						this.x = 82-this.x;
 						this.dx = - (this.dx*0.96);
-						m *= -1.0416667; // = 1/0.96
 					} else {
 						this.y = 82 - this.y;
 						this.dy = - (this.dy*0.96);
-						m *= -0.96;
-						c *= -0.96;
 					}
 				} else {
 					if (this.y > 2359) {
-						if (c < 2318) {
+						if (c() < 2318) {
 							//hit the side first
 							this.x = 82-this.x;
 							this.dx = - (this.dx*0.96);
-							m *= -1.0416667; // = 1/0.96
 						} else {
-							x = this.x + (this.y-2359)/m
+							x = this.x - (this.y-2359)/m();
 							if (x > 380 && x < 740) {
 								t = 6; //goal scored
 								hit = false; //no need to carry on
 							}
 							this.y= 4718 - this.y;
 							this.dy = -(this.dy * 0.96);
-							m *= -0.96;
-							c = 4543.28 - c*0.96;
 						}
 					} else {
 						this.x = 82-this.x;
 						this.dx = - (this.dx*0.96);
-						m *= -1.0416667; // = 1/0.96
 					}
 				}
 			} else {
 				if(this.x > 1079) {
 					hit = true;
 					t=2;
-					y = m*1038+c; //where it meets the side
+					y = m()*1038+c(); //where it meets the side
 					if(this.y < 41) {
 						if (y > 0) {
 							//hit the side first
 							this.x= 2158 - this.x;
 							this.dx = -(this.dx * 0.96);
-							m *= -1.0416667; // = 1/0.96
-							c= y - m*1038;
 						} else {
 							this.y = 82 - this.y;
 							this.dy = - (this.dy*0.96);
-							m *= -0.96;
-							c *= -0.96;
 						}
 					} else {
 						if ( this.y > 2359) {
@@ -377,25 +369,18 @@ var SimplePuck = new Class({
 								//hit the side first
 								this.x= 2158 - this.x;
 								this.dx = -(this.dx * 0.96);
-								m *= -1.0416667; // = 1/0.96
-								c= y - m*1038;
 							} else {
-								x = this.x + (this.y-2359)/m
+								x = this.x - (this.y-2359)/m();
 								if (x > 380 && x < 740) {
 									t = 6; //goal scored
 									hit = false; //no need to carry on
 								}
 								this.y= 4718 - this.y;
 								this.dy = -(this.dy * 0.96);
-								m *= -0.96;
-								c = 4543.28 - c*0.96;
 							}
 						} else { 	
 							this.x= 2158 - this.x;
-							this.dx = -(this.dx * 0.96);
-							m *= -1.0416667; // = 1/0.96
-							c= y - m*1038;
-						}
+							this.dx = -(this.dx * 0.96);						}
 					}
 				} else {
 					if (this.y < 41) {
@@ -403,21 +388,17 @@ var SimplePuck = new Class({
 						t=2;
 						this.y = 82 - this.y;
 						this.dy = - (this.dy*0.96);
-						m *= -0.96;
-						c *= -0.96;
 					} else {
 						if (this.y > 2359) {
 							hit = true;
 							t=2;
-							x = this.x + (this.y-2359)/m
+							x = this.x - (this.y-2359)/m();
 							if (x > 380 && x < 740) {
 								t = 6; //goal scored
 								hit = false; //no need to carry on
 							}
 							this.y= 4718 - this.y;
 							this.dy = -(this.dy * 0.96);
-							m *= -0.96;
-							c = 4543.28 - c*0.96;
 						}
 					}
 				}
