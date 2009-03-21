@@ -19,7 +19,7 @@ define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 $p =(($_GET['p'] == 'a')?'ack':'msg').$_GET['u'];
 
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.$p,'r+'); //unlock any write waiting to go
-sleep(1);
+fwrite($sendpipe,'X');
 fclose($sendpipe);
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
