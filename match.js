@@ -12,11 +12,9 @@ var Match = new Class({
 				that.links.scoreboard.faceoff(me);
 			},
 			score: function(me) {
-that.els.message.appendText('|');
 				that.links.scoreboard.score(me);
 			},
 			game: function(me) {
-that.els.message.appendText('||');
 				that.links.scoreboard.score(me);
 				that.links.scoreboard.newGame();
 			},

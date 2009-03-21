@@ -14,15 +14,19 @@ define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['oid'],'r+'); //Say I am ready for a send from the other end
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r');
 fclose($sendpipe);//this tells other end it may now write to the pipe
-$response=fread($readpipe,200);
+$response=fread($readpipe,400);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
 fclose($readpipe);
 
 if(strlen($response) > 0) {
-	$r = strchr($response,'$');
-	if ($r) {
-		echo '{"time":'.$time.',"msg":"'.substr($r,1).'"}';
+	$r = explode('$',$response);
+	if(strlen($r[0]) == 0) { //expect first item to be empty as $ should be first character
+		echo '{"time":'.$time.',"msg":"'.$r[1].'"';
+		if(count($r) != 2) {//normal mode = single message as $r[1] but might have one in $r[2]
+			echo ',"msg2":"'.$r[2].'"';
+		}
+		echo '}';
 	}
 }
 
