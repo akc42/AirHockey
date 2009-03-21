@@ -7,7 +7,7 @@
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1 ");
 
-if(!(isset($_GET['u']) && isset($_POST['p'])))
+if(!(isset($_GET['u']) && isset($_GET['p'])))
 	die('Log - Hacking attempt - wrong parameters');
 // Show all errors:
 error_reporting(E_ALL);
