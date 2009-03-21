@@ -13,6 +13,7 @@ var Opponent = new Class({
 		this.timeout = timers.timeout;
 		this.timeOffset = 0;
 		this.pending = false;
+		this.aC = '';
 		var awaitOpponent = function() {
 			if (master) {
 				that.comms.set(startMatchM,timers.opponent);
@@ -93,15 +94,19 @@ var Opponent = new Class({
 		this.comms.die.delay(1000,this.comms); //need to wait for last message to have gone
 	},
 	faceoff: function() {
+		this.aC = 'N';
 		if(this.inSync) this.send('O');
 	},
 	goal: function () {
+		this.aC = 'H';
 		if(this.inSync) this.send('G');
 	},
 	foul: function (msg) {
+		this.aC = 'E';
 		if(this.inSync) this.send('F:'+msg);
 	},
 	serve: function (p) {
+		this.aC = 'T';
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
 	send: function(msg) {
@@ -109,6 +114,7 @@ var Opponent = new Class({
 		this.comms.write(msg);
 	},
 	poll : function() {
+		if(this.aC) return; //don't do any polls whilst waiting from confirmation of goal, foul or faceoff
 	  var reply = this.links.table.getUpdate();
 	  if(reply.puck) {
 	    //puck is on table
@@ -129,6 +135,7 @@ var Opponent = new Class({
 		var firm = false;
 		switch (splitMsg[0]) {
 			case 'N' :
+				if(this.aC == 'N') this.aC = '';
 				this.pending = false;
 				this.links.match.faceoffConfirmed();
 				break;
@@ -136,6 +143,7 @@ var Opponent = new Class({
 				if(!(this.pending && this.master)){
 					this.comms.write('N');
 				} else {
+					this.comms.write('X:N');
 this.els.message.appendText('[X--n]');
 				}
 				this.links.match.faceoff()
@@ -144,15 +152,18 @@ this.els.message.appendText('[X--n]');
 				if(!(this.pending && this.master)){
 					this.comms.write('T');
 				} else {
+					this.comms.write('X:T');
 this.els.message.appendText('[X--t]');
 				}
 				this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
 				break;
 			case 'T' :
+				if(this.aC == 'T') this.aC = '';
 				this.pending = false;
 				this.links.match.serveConfirmed();
 				break;
 			case 'E' :
+				if(this.aC == 'E') this.aC = '';
 				this.pending = false;
 				this.links.match.foulConfirmed(splitMsg[1]);
 				break;
@@ -160,6 +171,7 @@ this.els.message.appendText('[X--t]');
 				if (!(this.pending && this.master)) {
 					this.comms.write('E:'+splitMsg[1]); //confirm
 				} else {
+					this.comms.write('X:E');
 this.els.message.appendText('[X--e]');
 				}
 				this.links.match.foul();
@@ -168,11 +180,13 @@ this.els.message.appendText('[X--e]');
 				if ( !(this.pending && this.master)) {
 					this.comms.write('H'); //confirm
 				} else {
+					this.comms.write('X:H');
 this.els.message.appendText('[X--h]');
 				}
 				this.links.match.goal();
 				break;
 			case 'H' :
+				if(this.aC == 'H') this.aC = '';
 				this.pending = false;
 				this.links.match.goalConfirmed();
 				break;
@@ -189,6 +203,8 @@ this.els.message.appendText('[X--h]');
 			case 'M' :
 				this.links.table.update(false,{x:splitMsg[1].toFloat(),y:2400 - splitMsg[2].toFloat()},null,null);
 				break;
+			case 'X' :
+				if(splitMsg[1] == this.aC) this.aC = '';
 			default :
 				this.els.message.appendText('Invalid Message:'+msg);
 		}
