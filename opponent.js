@@ -95,18 +95,22 @@ var Opponent = new Class({
 	},
 	faceoff: function() {
 		this.aC = 'N';
+this.els.message.appendText('[N]');
 		if(this.inSync) this.send('O');
 	},
 	goal: function () {
 		this.aC = 'H';
+this.els.message.appendText('[H]');
 		if(this.inSync) this.send('G');
 	},
 	foul: function (msg) {
 		this.aC = 'E';
+this.els.message.appendText('[E]');
 		if(this.inSync) this.send('F:'+msg);
 	},
 	serve: function (p) {
 		this.aC = 'T';
+this.els.message.appendText('[T]');
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
 	send: function(msg) {
@@ -135,6 +139,7 @@ var Opponent = new Class({
 		var firm = false;
 		switch (splitMsg[0]) {
 			case 'N' :
+this.els.message.appendText('[n]');
 				if(this.aC == 'N') this.aC = '';
 				this.pending = false;
 				this.links.match.faceoffConfirmed();
@@ -158,11 +163,13 @@ this.els.message.appendText('[X--t]');
 				this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
 				break;
 			case 'T' :
+this.els.message.appendText('[t]');
 				if(this.aC == 'T') this.aC = '';
 				this.pending = false;
 				this.links.match.serveConfirmed();
 				break;
 			case 'E' :
+this.els.message.appendText('[e]');
 				if(this.aC == 'E') this.aC = '';
 				this.pending = false;
 				this.links.match.foulConfirmed(splitMsg[1]);
@@ -186,6 +193,7 @@ this.els.message.appendText('[X--h]');
 				this.links.match.goal();
 				break;
 			case 'H' :
+this.els.message.appendText('[h]');
 				if(this.aC == 'H') this.aC = '';
 				this.pending = false;
 				this.links.match.goalConfirmed();
@@ -204,6 +212,7 @@ this.els.message.appendText('[X--h]');
 				this.links.table.update(false,{x:splitMsg[1].toFloat(),y:2400 - splitMsg[2].toFloat()},null,null);
 				break;
 			case 'X' :
+this.els.message.appendText('[x:'+splitMsg[1]+']');
 				if(splitMsg[1] == this.aC) this.aC = '';
 			default :
 				this.els.message.appendText('Invalid Message:'+msg);

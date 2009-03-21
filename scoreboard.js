@@ -104,7 +104,6 @@ var Scoreboard = new Class({
 				this.els.countdown.set('text',this.n);
 				if (this.n == 0) {
 					this.play('start');
-this.els.message.appendText('}');
 					callback();
 				} else {
 					this.play('count');
@@ -115,13 +114,11 @@ this.els.message.appendText('}');
 		this.n = n;
 		this.countdown = counter.periodical(1000,this);
 		this.els.countdown.set('text',this.n);
-this.els.message.appendText('{');
 	},
 	cancel: function() {
 		this.countdown = $clear(this.countdown);
 		this.n = -1;
 		this.els.countdown.set('text','');
-this.els.message.appendText('}');
 	}
 });
 
