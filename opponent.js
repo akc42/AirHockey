@@ -98,11 +98,12 @@ var Opponent = new Class({
 		if(this.inSync) this.send('O');
 	},
 	goal: function () {
+		if( this.aC > 3) return;  //I've already detected a goal and am awaiting response
 		this.aC = 4;
 		if(this.inSync) this.send('G');
 	},
 	foul: function (msg) {
-		if(this.aC > 3) return;
+		if(this.aC > 2) return; //I've already reported a something and am awaiting a response
 		this.aC = 3;
 		if(this.inSync) this.send('F:'+msg);
 	},
