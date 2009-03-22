@@ -148,7 +148,8 @@ if(this.myMallet.dy ==0) {
 	  		} else {
 		  		if (this.ontable) {
 		  		// lets work out a percentage of contribution from each of us
-					hm=(this.puck.y+p.y)/4800;
+					var mid = (this.puck.y + p.y)/2;
+					hm=(mid>1400)?Math.exp((1900-mid)/600)/10:Math.exp((mid-500)/200)/10;
 			  		ho=1-hm;
 			  		p.x *= ho;
 			  		p.y *= ho;
