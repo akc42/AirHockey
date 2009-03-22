@@ -118,7 +118,7 @@ this.els.message.appendText('['+this.echoTime()+':3:F]');
 	serve: function (p) {
 		if(this.aC >1) return;
 		this.aC = 2;
-this.els.message.appendText('['+this.echoTime()+':1:S]');
+this.els.message.appendText('['+this.echoTime()+':2:S]');
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
 	send: function(msg) {
