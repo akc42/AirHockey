@@ -6,7 +6,6 @@ var Match = new Class({
 		this.els = els;
 		var that = this
 		this.matchInProgress = true;
-		this.inPlay = false;
 		this.scorer = new Scorer({
 			faceoff: function (me) {
 				that.links.scoreboard.faceoff(me);
@@ -46,6 +45,7 @@ var Match = new Class({
 		this.links.scoreboard.foul(false);
 	},
 	served: function (position) {
+		this.links.scoreboard.cancel(); //stop any serve timeout
 		this.links.opponent.serve(position);
 	},
 	serveConfirmed: function() {
@@ -54,7 +54,6 @@ var Match = new Class({
 			that.links.table.inPlay();
 			that.links.table.transition();
 		};
-		this.links.scoreboard.cancel(); //stop any serve timeout
 		this.links.scoreboard.set(this.timers.inplay, setInPlay);
 		this.links.scoreboard.serve(false);
 	},
@@ -72,32 +71,29 @@ var Match = new Class({
 		return true;
 	},
 	tFoul: function(msg) {
-		this.links.opponent.foul(msg);
-	},
-	oFoul: function(msg) {
-		this.links.scoreboard.cancel(); //prevent countdown whilst we get confirmation
+		this.links.scoreboard.cancel();
+		this.links.table.halt();
 		this.links.opponent.foul(msg);
 	},
 	foulConfirmed: function (msg) {
-		this.links.table.halt();
 		this.links.play('foul');
-		this.links.scoreboard.cancel();
 		this.links.scoreboard.status(msg);
 		this.links.scoreboard.foul(true);
 	},
 	foul: function() {
-		this.inPlay = false;
 		this.links.table.halt();
+		this.links.scoreboard.cancel();
 		this.links.play('foul');
 		this.links.scoreboard.status('Opponent Foul');
 		this.requestServe();
 	},
 	goalAgainst: function() {
+		this.links.table.halt();
+		this.links.scoreboard.cancel();
+		this.links.play('goal');
 		this.links.opponent.goal();
 	},
 	goalConfirmed: function() {
-		this.links.table.halt();
-		this.links.play('goal');
 		this.links.scoreboard.status('Opponent Scored');
 		if(this.scorer.goalAgainst()) {
 			this.requestServe();
@@ -105,6 +101,7 @@ var Match = new Class({
 	},		
 	goal: function() {
 		this.links.table.halt();
+		this.links.scoreboard.cancel();
 		this.links.play('goal');
 		this.links.scoreboard.status('GOAL !!!!!!');
 		if(this.scorer.goalFor()) {
@@ -116,7 +113,7 @@ var Match = new Class({
 		this.links.scoreboard.serve(true);
 		this.links.scoreboard.set(this.timers.restart,function () {
 			that.links.scoreboard.serve(false);
-			that.oFoul('You took too long to serve');
+			that.tFoul('You took too long to serve');
 		});
 		this.links.table.serve();
 	},

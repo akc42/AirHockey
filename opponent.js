@@ -12,8 +12,7 @@ var Opponent = new Class({
 		this.inSync = false;
 		this.timeout = timers.timeout;
 		this.timeOffset = 0;
-		this.pending = false;
-		this.aC = '';
+		this.aC = 0;
 		var awaitOpponent = function() {
 			if (master) {
 				that.comms.set(startMatchM,timers.opponent);
@@ -67,7 +66,6 @@ var Opponent = new Class({
 		var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
 			if (response ) {
 				if (Math.abs(response.error) < timers.tick/3) achievedCloseOffset = true;
-that.els.message.appendText('('+response.error+')');
 				if(achievedCloseOffset) {
 					that.timeOffset += response.error/2;
 				} else {
@@ -95,40 +93,38 @@ that.els.message.appendText('('+response.error+')');
 		this.comms.die.delay(1000,this.comms); //need to wait for last message to have gone
 	},
 	faceoff: function() {
-		this.aC = 'N';
-this.els.message.appendText('[N]');
+		if(this.aC) return; //Anything underway right now then ignore
+		this.aC = 1;
 		if(this.inSync) this.send('O');
 	},
 	goal: function () {
-		this.aC = 'H';
-this.els.message.appendText('[H]');
+		this.aC = 4;
 		if(this.inSync) this.send('G');
 	},
 	foul: function (msg) {
-		this.aC = 'E';
-this.els.message.appendText('[E]');
+		if(this.aC > 3) return;
+		this.aC = 3;
 		if(this.inSync) this.send('F:'+msg);
 	},
 	serve: function (p) {
-		this.aC = 'T';
-this.els.message.appendText('[T]');
+		if(this.aC >1) return;
+		this.aC = 1;
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
 	send: function(msg) {
-		this.pending = true;
 		this.comms.write(msg);
 	},
 	poll : function() {
-		if(this.aC) return; //don't do any polls whilst waiting from confirmation of goal, foul or faceoff
-	  var reply = this.links.table.getUpdate();
-	  if(reply.puck) {
-	    //puck is on table
-	    this.comms.write('P:'+reply.mallet.x+':'+reply.mallet.y
+		if(this.aC > 2) return; //don't do any polls whilst waiting from confirmation of goal, or foul
+		var reply = this.links.table.getUpdate();
+		if(reply.puck) {
+			//puck is on table
+			this.comms.write('P:'+reply.mallet.x+':'+reply.mallet.y
 				+':'+reply.puck.x+':'+reply.puck.y+':'+reply.puck.dx+':'+reply.puck.dy
 				+':'+(reply.time+this.timeOffset));
-	  } else {
-	    this.comms.write('M:'+reply.mallet.x+':'+reply.mallet.y);
-	  }
+		} else {
+			this.comms.write('M:'+reply.mallet.x+':'+reply.mallet.y);
+		}
 	},
 	eventReceived : function (time,msg) {
 		this.comms.read();
@@ -140,63 +136,57 @@ this.els.message.appendText('[T]');
 		var firm = false;
 		switch (splitMsg[0]) {
 			case 'N' :
-this.els.message.appendText('[n]');
-				if(this.aC == 'N') this.aC = '';
-				this.pending = false;
-				this.links.match.faceoffConfirmed();
+				if(this.aC < 2) {
+					this.aC = 0;
+					this.links.match.faceoffConfirmed();
+				}
 				break;
 			case 'O':
-				if(!(this.pending && this.master)){
+				if(this.aC < 1 || (!this.master && this.aC ==1)) {
 					this.comms.write('N');
+					this.links.match.faceoff()
 				} else {
-					this.comms.write('X:N');
-this.els.message.appendText('[X--n]');
+					this.comms.write('X:1');
 				}
-				this.links.match.faceoff()
 				break;
 			case 'S' :
-				if(!(this.pending && this.master)){
+				if(this.aC < 2 || (!this.master && this.aC ==2)) {
 					this.comms.write('T');
+					this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
 				} else {
-					this.comms.write('X:T');
-this.els.message.appendText('[X--t]');
+					this.comms.write('X:2');
 				}
-				this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
 				break;
 			case 'T' :
-this.els.message.appendText('[t]');
-				if(this.aC == 'T') this.aC = '';
-				this.pending = false;
-				this.links.match.serveConfirmed();
+				if(this.aC < 3) {
+					this.aC = 0;
+					this.links.match.serveConfirmed();
+				}
 				break;
 			case 'E' :
-this.els.message.appendText('[e]');
-				if(this.aC == 'E') this.aC = '';
-				this.pending = false;
-				this.links.match.foulConfirmed(splitMsg[1]);
+				if(this.aC < 4) {
+					this.aC = 0;
+					this.links.match.foulConfirmed(splitMsg[1]);
+				}
 				break;
 			case 'F' :
-				if (!(this.pending && this.master)) {
+				if(this.aC < 3 || (!this.master && this.aC ==3)) {
 					this.comms.write('E:'+splitMsg[1]); //confirm
+					this.links.match.foul();
 				} else {
-					this.comms.write('X:E');
-this.els.message.appendText('[X--e]');
+					this.comms.write('X:3');
 				}
-				this.links.match.foul();
 				break;
 			case 'G' :
-				if ( !(this.pending && this.master)) {
+				if(this.aC < 4 || (!this.master && this.aC ==4)) {
 					this.comms.write('H'); //confirm
+					this.links.match.goal();
 				} else {
-					this.comms.write('X:H');
-this.els.message.appendText('[X--h]');
+					this.comms.write('X:4');
 				}
-				this.links.match.goal();
 				break;
 			case 'H' :
-this.els.message.appendText('[h]');
-				if(this.aC == 'H') this.aC = '';
-				this.pending = false;
+				this.aC = 0;
 				this.links.match.goalConfirmed();
 				break;
 			case 'C' :
@@ -213,8 +203,8 @@ this.els.message.appendText('[h]');
 				this.links.table.update(false,{x:splitMsg[1].toFloat(),y:2400 - splitMsg[2].toFloat()},null,null);
 				break;
 			case 'X' :
-this.els.message.appendText('[x:'+splitMsg[1]+']');
-				if(splitMsg[1] == this.aC) this.aC = '';
+				if(splitMsg[1] == this.aC) this.aC = 0;
+				break;
 			default :
 				this.els.message.appendText('Invalid Message:'+msg);
 		}

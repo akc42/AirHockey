@@ -59,7 +59,7 @@ var Table = new Class({
 					// Collision Occurred
 					if (!this.inP) {
 							// we hit the puck before we were supposed to
-							this.links.match.oFoul('Puck played too early');
+							this.links.match.tFoul('Puck played too early');
 					} else {
 						if (this.puck.y < 1159 && this.opmallet.y < 1147 || this.myMallet.y < 1094) {
 							this.links.match.tFoul('Invalid Hit - wrong side');
