@@ -103,6 +103,7 @@ var Match = new Class({
 		this.links.table.halt();
 		this.links.scoreboard.cancel();
 		this.links.play('goal');
+		this.links.scoreboard.foul(false); //clear foul if it was there
 		this.links.scoreboard.status('GOAL !!!!!!');
 		if(this.scorer.goalFor()) {
 			this.requestServe();

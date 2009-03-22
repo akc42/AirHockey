@@ -171,7 +171,7 @@ var Opponent = new Class({
 				}
 				break;
 			case 'F' :
-				if(this.aC < 3 || (!this.master && this.aC ==3)) {
+				if(this.aC != 3 || (!this.master && this.aC ==3)) {
 					this.comms.write('E:'+splitMsg[1]); //confirm
 					this.links.match.foul();
 				} else {
@@ -179,7 +179,7 @@ var Opponent = new Class({
 				}
 				break;
 			case 'G' :
-				if(this.aC < 4 || (!this.master && this.aC ==4)) {
+				if(this.aC < 3 || (!this.master && this.aC ==4)) {
 					this.comms.write('H'); //confirm
 					this.links.match.goal();
 				} else {
