@@ -83,6 +83,7 @@ var Opponent = new Class({
 		timeReq();
 	},
 	hit: function(mallet,puck,time) {
+		if(this.aC > 2) return;  //shouldn't get this but just to be safe
 		if(this.inSync) this.comms.write('C:'+mallet.x+':'+mallet.y
 			+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
 			+':'+(time+this.timeOffset));
@@ -96,9 +97,10 @@ var Opponent = new Class({
 		if(this.aC) return; //Anything underway right now then ignore
 		this.aC = 1;
 		if(this.inSync) this.send('O');
+		return true;
 	},
 	goal: function () {
-		if( this.aC > 3) return;  //I've already detected a goal and am awaiting response
+		if( this.aC > 2)return;  //I've already detected an off table event and am awaiting response
 		this.aC = 4;
 		if(this.inSync) this.send('G');
 	},
@@ -160,13 +162,13 @@ var Opponent = new Class({
 				break;
 			case 'T' :
 				if(this.aC < 3) {
-					this.aC = 0;
+					if(this.aC == 2) this.aC = 0;
 					this.links.match.serveConfirmed();
 				}
 				break;
 			case 'E' :
 				if(this.aC < 4) {
-					this.aC = 0;
+					if (this.aC == 3) this.aC = 0;
 					this.links.match.foulConfirmed(splitMsg[1]);
 				}
 				break;
@@ -187,7 +189,7 @@ var Opponent = new Class({
 				}
 				break;
 			case 'H' :
-				this.aC = 0;
+				if(this.aC == 4) this.aC = 0;
 				this.links.match.goalConfirmed();
 				break;
 			case 'C' :

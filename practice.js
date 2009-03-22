@@ -26,6 +26,7 @@ var Practice = new Class({
 			this.d1=this.myserve.delay(3000,this);
 		}
 		this.links.match.goalConfirmed();
+		
 	},
 	foul: function (msg) {
 		$clear(this.ontable);
@@ -34,8 +35,8 @@ var Practice = new Class({
 		this.links.match.foulConfirmed(msg);
 	},
 	serve: function (puck) {
-		this.links.match.serveConfirmed();
 		this.ontable=this.myside.periodical(5000,this);
+		this.links.match.serveConfirmed();
 	},
 	faceoff: function () {
 		this.scorer.faceoffOp();

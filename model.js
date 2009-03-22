@@ -64,9 +64,6 @@ var Table = new Class({
 						if (this.puck.y < 1159 && this.opmallet.y < 1147 || this.myMallet.y < 1094) {
 							this.links.match.tFoul('Invalid Hit - wrong side');
 						} else {
-if(this.myMallet.dy ==0) {
-	var zzz = 1;
-}
 							d2 = Math.sqrt(x*x+y*y); //keep earlier distance
 							if (t <= 0 || t > timeSince) {
 								x -= dx*this.timers.tick;  //step back to previous tick (in case centres have passed)

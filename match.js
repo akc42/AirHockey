@@ -90,7 +90,6 @@ var Match = new Class({
 	goalAgainst: function() {
 		this.links.table.halt();
 		this.links.scoreboard.cancel();
-		this.links.play('goal');
 		this.links.opponent.goal();
 	},
 	goalConfirmed: function() {
@@ -98,16 +97,17 @@ var Match = new Class({
 		if(this.scorer.goalAgainst()) {
 			this.requestServe();
 		}
+		this.links.play('goal');
 	},		
 	goal: function() {
 		this.links.table.halt();
 		this.links.scoreboard.cancel();
-		this.links.play('goal');
 		this.links.scoreboard.foul(false); //clear foul if it was there
 		this.links.scoreboard.status('GOAL !!!!!!');
 		if(this.scorer.goalFor()) {
 			this.requestServe();
 		}
+		this.links.play('goal');
 	},
 	requestServe: function() {
 		var that = this;
