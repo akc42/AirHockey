@@ -60,9 +60,6 @@ require('timeout.php');
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Melinda's Backups Air Hockey Ladder</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<!--[if lt IE 7]>
-		<link rel="stylesheet" type="text/css" href="airh-ie.css"/>
-	<![endif]-->
 	<script src="/static/scripts/mootools-1.2.1-core-ac.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="version.js" type="text/javascript" charset="UTF-8"></script>
