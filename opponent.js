@@ -243,7 +243,7 @@ var Comms = new Class({
 		this.timeout = null;
 		this.aopt = {uid:me.uid,oid:oid};
 		this.ropt = {oid:oid};
-		this.sopt = {uid:me.uid,msg:''};
+		this.sopt = {uid:me.uid};
 		this.commsFailed = false;
 		this.fail = function(reason) {
 			if(!that.commsFailed) {
@@ -284,8 +284,7 @@ that.els.message.appendText('$$$');
 	},
 	write: function (msg) {
 		if(this.commsFailed) return;
-		this.sopt.msg = msg;
-		this.sendReq.post(this.sopt);
+		this.sendReq.post($merge(this.sopt,{msg:msg}));
 	},
 	die: function () {
 		this.commsFailed = true;
