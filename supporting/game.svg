@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   width="1133"
+   height="664"
+   version="1.0"
+   sodipodi:docname="game.svg"
+   style="display:inline"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs5">
+    <marker
+       inkscape:stockid="Arrow2Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lstart"
+       style="overflow:visible">
+      <path
+         id="path3187"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z"
+         transform="matrix(1.1,0,0,1.1,1.1,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lend"
+       style="overflow:visible">
+      <path
+         id="path3190"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z"
+         transform="matrix(-1.1,0,0,-1.1,-1.1,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path3172"
+         d="M 0,0 L 5,-5 L -12.5,0 L 5,5 L 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective9" />
+  </defs>
+  <sodipodi:namedview
+     inkscape:window-height="480"
+     inkscape:window-width="640"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     showgrid="false" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="background"
+     style="display:inline" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="objects"
+     style="display:inline">
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot14531"
+       style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"><flowRegion
+         id="flowRegion14533"><rect
+           id="rect14535"
+           width="82.8125"
+           height="40.625"
+           x="-114.0625"
+           y="231.1875"
+           style="font-size:18px" /></flowRegion><flowPara
+         id="flowPara14537">Centerline</flowPara></flowRoot>    <g
+       id="g16857"
+       inkscape:export-filename="/home/alan/dev/mb.com/airhock/supporting/game.png"
+       inkscape:export-xdpi="100"
+       inkscape:export-ydpi="100">
+      <rect
+         y="-82.875"
+         x="-132.8125"
+         height="812.5"
+         width="1328.125"
+         id="rect2385"
+         style="fill:#d5d5d5;fill-opacity:1;stroke:none;stroke-width:14.17322826;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
+      <image
+         y="-0.81250119"
+         x="-25.875"
+         id="image11"
+         height="664"
+         width="1133"
+         sodipodi:absref="/home/alan/dev/mb.com/airhock/supporting/game.jpg"
+         xlink:href="game.jpg"
+         style="display:inline" />
+      <path
+         id="path3164"
+         d="M 634.09907,-27.911574 L 487.77593,36.218581"
+         style="fill:none;fill-rule:evenodd;stroke:#be0d0d;stroke-width:1.55185521px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         style="font-size:20px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot3944"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3946"><rect
+             style="font-size:20px"
+             y="-50.062504"
+             x="632.8125"
+             height="39.0625"
+             width="225"
+             id="rect3948" /></flowRegion><flowPara
+           id="flowPara3950">Message Area</flowPara></flowRoot>      <path
+         id="path3952"
+         d="M 175,-23.500002 L 342.1875,67.124998"
+         style="fill:none;fill-rule:evenodd;stroke:#930000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(171.875,4.6875)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot4469"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4471"><rect
+             style="font-size:18px"
+             y="-51.625004"
+             x="-39.0625"
+             height="45.3125"
+             width="200"
+             id="rect4473" /></flowRegion><flowPara
+           id="flowPara4475">Your Serve Indicator</flowPara></flowRoot>      <path
+         id="path4477"
+         d="M 951.44682,-10.884324 L 725.11568,42.00932"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.23135662px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(107.8125,27.1875)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot4994"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4996"><rect
+             style="font-size:18px"
+             y="-56.312504"
+             x="850"
+             height="45.3125"
+             width="228.125"
+             id="rect4998" /></flowRegion><flowPara
+           id="flowPara5000">Countdown Timer</flowPara></flowRoot>      <path
+         id="path5006"
+         d="M 842.12462,259.24962 L 453.18788,153.17568"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.12575424px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(-57.8125,21.875)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#fdf892;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot5523"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5525"><rect
+             style="font-size:18px;fill:#fdf892;fill-opacity:1"
+             y="234.3125"
+             x="854.6875"
+             height="81.25"
+             width="168.75"
+             id="rect5527" /></flowRegion><flowPara
+           id="flowPara5529">Opponent's Name</flowPara></flowRoot>      <path
+         transform="matrix(0.1510144,0,0,0.5050515,455.22921,102.06814)"
+         d="M 671.875,48.375 A 204.6875,87.5 0 1 1 262.5,48.375 A 204.6875,87.5 0 1 1 671.875,48.375 z"
+         sodipodi:ry="87.5"
+         sodipodi:rx="204.6875"
+         sodipodi:cy="48.375"
+         sodipodi:cx="467.1875"
+         id="path5531"
+         style="fill:none;fill-opacity:1;stroke:#830e0e;stroke-width:14.17322826;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         sodipodi:type="arc" />
+      <path
+         id="path5533"
+         d="M 867.1875,98.374998 L 556.25,128.0625"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(25.073245,-161.7791)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#fdf892;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot6050"
+         xml:space="preserve"><flowRegion
+           id="flowRegion6052"><rect
+             style="font-size:18px;fill:#fdf892;fill-opacity:1"
+             y="234.3125"
+             x="854.6875"
+             height="81.25"
+             width="168.75"
+             id="rect6054" /></flowRegion><flowPara
+           id="flowPara6056">Latest Game Scores</flowPara></flowRoot>      <path
+         transform="matrix(0.2334565,0,0,0.1889785,487.0258,59.545662)"
+         d="M 671.875,48.375 A 204.6875,87.5 0 1 1 262.5,48.375 A 204.6875,87.5 0 1 1 671.875,48.375 z"
+         sodipodi:ry="87.5"
+         sodipodi:rx="204.6875"
+         sodipodi:cy="48.375"
+         sodipodi:cx="467.1875"
+         id="path6058"
+         style="fill:none;fill-opacity:1;stroke:#830e0e;stroke-width:14.17322826;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         sodipodi:type="arc" />
+      <path
+         id="path6060"
+         d="M 821.875,-42.250002 L 639.0625,59.312498"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot6577"
+         xml:space="preserve"><flowRegion
+           id="flowRegion6579"><rect
+             style="font-size:18px"
+             y="-61.000004"
+             x="831.25"
+             height="25"
+             width="220.3125"
+             id="rect6581" /></flowRegion><flowPara
+           id="flowPara6583">Faceoff Result</flowPara></flowRoot>      <path
+         id="path6585"
+         d="M -65.606118,162.41862 C 328.41155,103.08218 323.36004,104.64367 323.36004,104.64367"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.03776455px;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Lstart);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(4.6875,10.9375)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot7102"
+         xml:space="preserve"><flowRegion
+           id="flowRegion7104"><rect
+             style="font-size:18px"
+             y="148.375"
+             x="-85.9375"
+             height="50"
+             width="48.4375"
+             id="rect7106" /></flowRegion><flowPara
+           id="flowPara7108">You</flowPara></flowRoot>      <path
+         id="path7110"
+         d="M 90.717292,-56.220211 L 138.97021,67.032706 L 138.97021,67.032706 L 138.97021,67.032706"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.18458307px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1;display:inline" />
+      <flowRoot
+         transform="translate(76.5625,-17.1875)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline;font-family:Bitstream Vera Sans"
+         id="flowRoot7627"
+         xml:space="preserve"><flowRegion
+           id="flowRegion7629"><rect
+             style="font-size:18px"
+             y="-59.437504"
+             x="-106.25"
+             height="35.9375"
+             width="212.5"
+             id="rect7631" /></flowRegion><flowPara
+           id="flowPara7633">Opponents Mallet</flowPara></flowRoot>      <path
+         id="path11317"
+         d="M 304.6875,704.625 L 207.8125,617.125"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(-34.375,23.4375)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot11846"
+         xml:space="preserve"><flowRegion
+           id="flowRegion11848"><rect
+             style="font-size:18px"
+             y="681.1875"
+             x="312.5"
+             height="48.4375"
+             width="207.8125"
+             id="rect11850" /></flowRegion><flowPara
+           id="flowPara11852">Your Mallet</flowPara></flowRoot>      <path
+         id="path11854"
+         d="M 59.375,706.1875 L 123.4375,637.4375"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(100,9.375)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot12383"
+         xml:space="preserve"><flowRegion
+           id="flowRegion12385"><rect
+             style="font-size:18px"
+             y="695.25"
+             x="-95.3125"
+             height="37.5"
+             width="160.9375"
+             id="rect12387" /></flowRegion><flowPara
+           id="flowPara12389">Your Goal</flowPara></flowRoot>      <path
+         id="path12391"
+         d="M 750,681.1875 L 353.125,199.9375"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot12920"
+         xml:space="preserve"><flowRegion
+           id="flowRegion12922"><rect
+             style="font-size:18px"
+             y="682.75"
+             x="709.375"
+             height="46.875"
+             width="173.4375"
+             id="rect12924" /></flowRegion><flowPara
+           id="flowPara12926">Diagnostic Information</flowPara></flowRoot>      <path
+         id="path12928"
+         d="M 439.0625,678.0625 L 400,545.25 L 401.5625,546.8125"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <flowRoot
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot13457"
+         xml:space="preserve"><flowRegion
+           id="flowRegion13459"><rect
+             style="font-size:18px"
+             y="684.3125"
+             x="401.5625"
+             height="48.4375"
+             width="215.625"
+             id="rect13461" /></flowRegion><flowPara
+           id="flowPara13463">Exit to Matches Summary Page</flowPara></flowRoot>      <path
+         id="path13465"
+         d="M 929.6875,689 L 542.1875,340.5625"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <flowRoot
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot13994"
+         xml:space="preserve"><flowRegion
+           id="flowRegion13996"><rect
+             style="font-size:18px"
+             y="674.9375"
+             x="939.0625"
+             height="51.5625"
+             width="145.3125"
+             id="rect13998" /></flowRegion><flowPara
+           id="flowPara14000">Diagnostic Message Area</flowPara></flowRoot>      <path
+         id="path14002"
+         d="M -39.0625,270.25 L 76.5625,332.75"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(18.75,23.4375)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot14540"
+         xml:space="preserve"><flowRegion
+           id="flowRegion14542"><rect
+             style="font-size:18px"
+             y="210.875"
+             x="-112.5"
+             height="92.1875"
+             width="78.125"
+             id="rect14544" /></flowRegion><flowPara
+           id="flowPara14546">Center Line</flowPara></flowRoot>      <path
+         id="path14548"
+         d="M 890.625,173.375 L 746.875,170.25"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <flowRoot
+         transform="translate(43.868167,-78.758869)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#fdf892;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline;font-family:Bitstream Vera Sans"
+         id="flowRoot15077"
+         xml:space="preserve"><flowRegion
+           id="flowRegion15079"><rect
+             style="font-size:18px;fill:#fdf892;fill-opacity:1"
+             y="234.3125"
+             x="854.6875"
+             height="81.25"
+             width="168.75"
+             id="rect15081" /></flowRegion><flowPara
+           id="flowPara15083">Match Duration</flowPara></flowRoot>      <path
+         id="path15246"
+         d="M -45.3125,432.75 L 278.125,407.75"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Lend)" />
+      <flowRoot
+         transform="translate(25,40.625)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot15775"
+         xml:space="preserve"><flowRegion
+           id="flowRegion15777"><rect
+             style="font-size:18px"
+             y="367.125"
+             x="-109.375"
+             height="85.9375"
+             width="81.25"
+             id="rect15779" /></flowRegion><flowPara
+           id="flowPara15781">Table Edge</flowPara></flowRoot>      <path
+         id="path15783"
+         d="M 59.375,-17.250002 L 109.375,26.499998"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Lend)" />
+      <flowRoot
+         transform="translate(46.875,15.625)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot16312"
+         xml:space="preserve"><flowRegion
+           id="flowRegion16314"><rect
+             style="font-size:18px"
+             y="-54.750004"
+             x="-118.75"
+             height="53.125"
+             width="173.4375"
+             id="rect16316" /></flowRegion><flowPara
+           id="flowPara16318">Opponents Goal</flowPara></flowRoot>      <path
+         id="path16320"
+         d="M -39.0625,532.75 L 143.75,492.125"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Lend)" />
+      <flowRoot
+         transform="translate(32.8125,43.75)"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         id="flowRoot16849"
+         xml:space="preserve"><flowRegion
+           id="flowRegion16851"><rect
+             style="font-size:18px"
+             y="473.375"
+             x="-129.6875"
+             height="81.25"
+             width="96.875"
+             id="rect16853" /></flowRegion><flowPara
+           id="flowPara16855">Table Surface</flowPara></flowRoot>    </g>
+  </g>
+</svg>
