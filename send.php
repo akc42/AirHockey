@@ -13,10 +13,9 @@ define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
 
 list($utime,$now) = explode(" ",microtime());
 $now .= substr($utime,2,3);
-
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r'); //This waits until an read request is outstanding
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['uid'],'r+');
-$r=fread($readpipe,10); //not reading, but syncronising with other end
+$r=fread($readpipe,10); //not reading, but syncronising with other end (this will be satisfied as EOF as other side closes)
 fclose($readpipe);
 fwrite($sendpipe,"$".$_POST['msg']);
 fclose($sendpipe);
