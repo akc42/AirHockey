@@ -13,7 +13,11 @@ define ('AIRH',1);   //defined so we can control access to some of the files.
 require_once('db.php');
 require('timeout.php');
 // Set up a user record with type = spectator
-$result=dbQuery('SELECT * FROM player WHERE state <> '.OFFLINE.' ;');
-echo '{ "count":'.dbNumRows($result).' }';
+$result=dbQuery('SELECT count(*) as players FROM player WHERE state <> '.OFFLINE.' ;');
+if ($row=dbFetch($result)) {
+    echo $row['players'];
+} else {
+    echo '0';
+}
 dbFree($result);
 ?>
