@@ -46,6 +46,7 @@ MBahladder = function() {
 			}
 		}
 	};
+	var doingExitToForum;
 	var requestresponse = function(response,errorstr) {
 		if(response) {
 			if(response.t) {
@@ -164,9 +165,11 @@ MBahladder = function() {
 			}
 			if (response.state) {
 				if(response.state == 5) {
+				    doingExitToForum = false;
 					window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass+'&mid='+response.mid);
 				} else {
 					if(response.state == 6) {
+					    doingExitToForum = false;
 						window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass);
 					}
 				}
@@ -193,6 +196,7 @@ MBahladder = function() {
 	var personalState;
 	return {
 		init: function (param,initialstate,polldelay) {
+		    doingExitToForum = true;
 			$('version').appendText(version); //output version variable supplied by git
 			ropt = param;  //save request options
 			timeOffset = new Date().getTime()/1000 - ropt.t;
@@ -231,14 +235,13 @@ MBahladder = function() {
 			$$('.inviteTo').each(addCpoint);
 			$$('.inviteFrom').each(addCpoint);
 			$('exittoforum').addEvent('click',function(e) {
-				MBahladder.logout();
-				window.location.assign('/forum/index.php');
+   				window.location.assign('/forum/index.php');
 			});
 			pollerID = poll.periodical(polldelay);
 			durationID = durationUpdate.periodical(1000);
 		},
 		logout: function () {
-			stateReq.post($merge(ropt,{state:0})); //say going offline
+		    if (doingExitToForum) stateReq.post($merge(ropt,{state:0})); //say going offline
 			$clear(pollerID); //stop poller
 			$clear(durationID);
 		}

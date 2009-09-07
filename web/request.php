@@ -46,7 +46,7 @@ if(!($user=dbFetch($result))) {
 dbFree($result);
 
 $state = $user['state'];
-if($state == OFFLINE || $state == MATCH || $state == PRACTICE) {
+if($state == MATCH || $state == PRACTICE) {
 	$state = SPECTATOR ;
 	$user['last_state'] = $now;
 }
@@ -137,7 +137,6 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 		}
 	}
 }
-
 dbQuery('UPDATE player SET state = '.dbPostSafe($state).', last_state = '.dbPostSafe($user['last_state'])
 		.', iid = '.dbMakeSafe($user['iid']).', last_poll = '.dbPostSafe($now).' WHERE pid = '.dbMakeSafe($uid).';');
 dbQuery('COMMIT;');

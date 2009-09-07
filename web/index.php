@@ -60,7 +60,7 @@ require('timeout.php');
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Melinda's Backups Air Hockey Ladder</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/static/scripts/mootools-1.2.1-core-ac.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="/static/scripts/mootools-1.2.3-core-yc.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="version.js" type="text/javascript" charset="UTF-8"></script>
 </head>
@@ -83,7 +83,7 @@ window.addEvent('domready', function() {
 		<?php echo SPECTATOR; ?>,<?php echo AIR_HOCKEY_POLL; ?>);
 });
 window.addEvent('unload', function() {
-	MBahladder.logout(<?php echo OFFLINE; ?>);
+	MBahladder.logout();
 	
 });
 	// -->
