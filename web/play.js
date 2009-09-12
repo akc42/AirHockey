@@ -3,7 +3,6 @@ var Play = new Class({
 		var play = function(sound) {
 			if(soundReady) soundManager.play(sound);
 		};
-		els.version.appendText(version);
 if(master) {
 	els.message.appendText('MASTER:');
 } else {
