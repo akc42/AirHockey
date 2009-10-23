@@ -67,7 +67,7 @@ dbFree($result);
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Melinda's Backups Air Hockey Game</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/static/scripts/mootools-1.2.3-core-yc.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="/static/scripts/mootools-1.2.4-core-yc.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="/static/scripts/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
