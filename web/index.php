@@ -17,7 +17,7 @@ define('AIR_HOCKEY_POLL',				10000);  //milliseconds delay between polls for new
 require_once(AIR_HOCKEY_PATH.'../forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
 if($user_info['is_guest']) {
-	header( 'Location: /static/airhockey.html' ) ;
+	header( 'Location: airhockey.html' ) ;
 	exit;
 };
 $uid = $ID_MEMBER;
