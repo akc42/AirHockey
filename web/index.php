@@ -20,7 +20,11 @@ if($user_info['is_guest']) {
 	header( 'Location: airhockey.html' ) ;
 	exit;
 };
-$uid = $ID_MEMBER;
+if(isset($user_info['id'])) { //check if this is SMFv2
+    $uid =& $user_info['id'];
+} else {
+    $uid = $ID_MEMBER;
+}
 $name = &$user_info['name'];
 
 $old_umask = umask(0007);
