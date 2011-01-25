@@ -1,6 +1,24 @@
 <?php
-if (!defined('AIRH'))
-	die('Hacking attempt...');
+/*
+ 	Copyright (c) 2009-2011 Alan Chandler
+    This file is part of AirHockey, an real time simulation of Air Hockey
+    for playing over the internet.
+
+    AirHockey is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    AirHockey is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with AirHockey (file supporting/COPYING.txt).  If not, 
+    see <http://www.gnu.org/licenses/>.
+
+*/
 
 define('AIR_HOCKEY_OFFLINE_USER',	5); //No of minutes before online user goes offline through lack of activity
 define('AIR_HOCKEY_MATCH_ABANDON', 10); //No of minutes before lack of match action assumes match to be abandoned

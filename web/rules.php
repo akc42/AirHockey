@@ -1,46 +1,45 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<title>Melinda's Backups Air Hockey Ladder</title>
+<?php
+/*
+ 	Copyright (c) 2009-2011 Alan Chandler
+    This file is part of AirHockey, an real time simulation of Air Hockey
+    for playing over the internet.
+
+    AirHockey is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    AirHockey is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with AirHockey (file supporting/COPYING.txt).  If not, 
+    see <http://www.gnu.org/licenses/>.
+
+*/
+
+function head_content() {
+?>	<title>Melinda's Backups Air Hockey Ladder Rules</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
 	<!--[if lt IE 7]>
 		<link rel="stylesheet" type="text/css" href="airh-ie.css"/>
 	<![endif]-->
-</head>
-<body>
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-xxxxxxx-1");
-pageTracker._trackPageview();
-} catch(err) {}</script>
+<?php
+}
 
-<table id="header" align="center" border="0" cellpadding="0" cellspacing="0" width="100%" >
-<tbody>
-	<tr>
-	<td align="left" width="30" class="topbg_l" height="70">&nbsp;</td>
-	<td align="left" colspan="2" class="topbg_r" valign="top"><a href="/" alt="Main Site Home Page">
-		<img  style="margin-top: 24px;" src="/static/images/mb-logo-community.gif" alt="Melinda's Backups Community" border="0" /></a>	
-		</td>
-	<td align="right" width="400" class="topbg" valign="top">
-	<span style="font-family: tahoma, sans-serif; margin-left: 5px;">Melinda's Backups Community</span>
-	</td>
-		<td align="right" width="25" class="topbg_r2" valign="top">
-		<div id="nameContainer">
-			<h1>Air Hockey Rules</h1>
-		</div>
-		<!-- blank -->
-		</td>
-	</tr>
-</tbody>
-</table>
-<div id="content">
-	<a href="index.php"><img id="exittoindex" src="/static/images/exit.gif" alt="exit to matches summary page"/></a>
-	<div id="rules">
+function content_title() {
+	echo 'Air Hockey Rules';
+}
+
+function menu_items() {
+?>	<a href="index.php"><img id="exittoforum" src="exit.gif" alt="exit to matches summary page"/></a>
+<?php
+}
+
+function content() {
+?><div id="rules">
 		<h1>The Rules of Online Air Hockey</h1>
 		<h2>Introduction</h2>
 			<p>Welcome to the Melinda's Backups Online AirHockey System.  This system provides a mechanism for playing, over the 
@@ -164,7 +163,12 @@ remain in the list for about 10 minutes before they are removed.
 			<h3>Background</h3>
 			<a href="http://math.bu.edu/people/mg/glicko/glicko.doc/glicko.html">The Glick System</a>
 	</div>
-	<div id="copyright">Air Hockey <span id="version"><?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
-</div>
-</body>
-</html>
+<?php
+}
+
+function foot_content () {
+?>	<div id="copyright">Air Hockey <span id="version">php:<?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>
+<?php
+}
+require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
+?>

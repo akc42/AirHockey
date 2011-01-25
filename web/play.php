@@ -1,8 +1,23 @@
 <?php
-  /*
-    Air Hockey -Play module
-	Copyright (c) 2009 Alan Chandler
-	Licenced under the GPL
+/*
+ 	Copyright (c) 2009-2011 Alan Chandler
+    This file is part of AirHockey, an real time simulation of Air Hockey
+    for playing over the internet.
+
+    AirHockey is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    AirHockey is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with AirHockey (file supporting/COPYING.txt).  If not, 
+    see <http://www.gnu.org/licenses/>.
+
 */
 if(!(isset($_GET['user']) && isset($_GET['pass'])))
 	die('Log - Hacking attempt - wrong parameters');
@@ -21,8 +36,7 @@ define('AIR_HOCKEY_RESTART_DELAY',		10);  //Seconds you have after foul or goal 
 define('AIR_HOCKEY_CONTROL_DELAY',		2000); //Milliseconds to have puck on your side to be "in Control" of it
 define('AIR_HOCKEY_INPLAY_DELAY',		2); //Seconds after puck server that he is allowed to hit it
 		
-define ('AIRH',1);   //defined so we can control access to some of the files.
-require_once('db.php');
+require_once('./db.inc');
 
 if (isset($_GET['mid'])) {
 	$mid = $_GET['mid'];
@@ -61,14 +75,12 @@ if (isset($_GET['mid'])) {
 	$startTime = time();
 }
 dbFree($result);
-?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<title>Melinda's Backups Air Hockey Game</title>
+
+function head_content() {
+	global $mid,$startTime,$uid,$oid,$isMaster;
+?>	<title>Melinda's Backups Air Hockey Game Play Screen</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/static/scripts/mootools-1.2.4-core-yc.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="/static/scripts/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scorer.js" type="text/javascript" charset="UTF-8"></script>
@@ -76,9 +88,7 @@ dbFree($result);
 	<script src="match.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="opponent.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
-</head>
-<body>
-<script type="text/javascript">
+	<script type="text/javascript">
 	<!--
 var MBahplay;
 
@@ -123,7 +133,7 @@ window.addEvent('unload', function() {
 	
 });
 var soundReady = false;
-soundManager.url = '/static/scripts/';
+soundManager.url = '';
 soundManager.debugMode = false;
 soundManager.onload = function() {
 	soundManager.createSound({
@@ -168,14 +178,25 @@ soundManager.onload = function() {
 
 	// -->
 </script>
-
-<div id="content">
-	<div id="surround">
 <?php
-if ($mid != 0) {
+}
+function content_title() {
+	echo 'Air Hockey Match';
+}
+
+function menu_items() {
+?>		<a href="index.php" alt="abandon match"><img id="exittoforum" src="/static/images/exit.gif" alt="abandonmatch" /></a>
+<?php
+}
+
+function content() {
+	global $mid,$myName,$opName,$oid, $row;
+?>	<div id="surround">
+<?php
+	if ($mid != 0) {
 ?>		<div id="opgoal"></div>
 <?php
-}			
+	}			
 ?>		<div id="table">
 			<img id="puck" src="puck.gif"/>
 			<img id="opmallet" src="mallet.gif" />
@@ -190,10 +211,10 @@ if ($mid != 0) {
 		<div style="clear:both"></div>
 		<div class="match">
 <?php
-if ($oid && !is_null($row['eid'])) {
+	if ($oid && !is_null($row['eid'])) {
 ?>			<div class="eventtitle"><?php echo $row['title'] ; ?></div>
 <?php
-}
+	}
 ?>			<div class="players">
 				<div class="user"><?php echo $myName ; ?></div>
 				<div class="user"><?php echo $opName ; ?></div>
@@ -206,11 +227,13 @@ if ($oid && !is_null($row['eid'])) {
 
 		</div>
 		<div id="message"></div>
-		<img id="abandon" src="/static/images/exit.gif" alt="abandonmatch" />
 	</div>
-	<div id="copyright">Air Hockey <span id="version">php:<?php include('version.php');?></span> &copy; 2009 Alan Chandler.  Licenced under the GPL</div>
-</div>
-</body>
+<?php
+}
 
-</html>
-
+function foot_content () {
+?>	<div id="copyright">Air Hockey <span id="version">php:<?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>
+<?php
+}
+require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
+?>

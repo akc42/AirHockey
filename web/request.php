@@ -1,4 +1,24 @@
 <?php
+/*
+ 	Copyright (c) 2009-2011 Alan Chandler
+    This file is part of AirHockey, an real time simulation of Air Hockey
+    for playing over the internet.
+
+    AirHockey is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    AirHockey is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with AirHockey (file supporting/COPYING.txt).  If not, 
+    see <http://www.gnu.org/licenses/>.
+
+*/
   /*
     Air Hockey - Request  module
 		Handles all requests from main index page to update
@@ -12,12 +32,9 @@
  		cmd - set if trying to tell opponent something ('I' = invite opponent, 'A' = accept opponents invite)
 		oid - the opponent we are trying to tell - if cmd is set
 
-	Copyright (c) 2009 Alan Chandler
-	Licenced under the GPL
 */
-
-define('AIR_HOCKEY_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
-define('AIR_HOCKEY_PIPE_PATH',	AIR_HOCKEY_PATH.'pipes/');
+/* copied from index.php */
+define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 
 if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['t'])))
 	die('Log - Hacking attempt - wrong parameters');
@@ -27,9 +44,8 @@ if ($_POST['pass'] != sha1("Air".$uid))
 
 // Show all errors:
 error_reporting(E_ALL);
-// Path to the air hockety directory:
-define ('AIRH',1);   //defined so we can control access to some of the files.
-require_once('db.php');
+
+require_once('./db.inc');
 
 $last = dbMakeSafe($_POST['t']);
 $now = time();
@@ -142,7 +158,7 @@ dbQuery('UPDATE player SET state = '.dbPostSafe($state).', last_state = '.dbPost
 dbQuery('COMMIT;');
 
 //Timeout users who are supposed to be on line, but haven't contacted for a while and old matches.
-require('timeout.php');
+require('./timeout.inc');
 
 if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 
