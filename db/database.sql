@@ -55,8 +55,8 @@ CREATE TABLE match (
 CREATE TABLE player (
     pid integer PRIMARY KEY, --user id from forum
     name character varying NOT NULL, -- display name from forum
-    mu real DEFAULT 50 NOT NULL, -- ladder scoring param
-    sigma double precision DEFAULT 16.6666666667 NOT NULL, -- ladder scoring param
+    mu real DEFAULT 1500.0 NOT NULL, -- ladder scoring param
+    sigma double precision DEFAULT 350.0 NOT NULL, -- ladder scoring param
     last_match bigint, --time of last match completed (needed in calculation of sigma)
     iid integer DEFAULT 0 NOT NULL, -- if not null uid of person being invited
     last_poll bigint DEFAULT (strftime('%s','now')) NOT NULL, --marks time online but not in a match
