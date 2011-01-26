@@ -58,7 +58,7 @@ $db->beginTransaction();
 $pstmt->bindValue(1,$uid,PDO::PARAM_INT);
 $pstmt->execute();
 
-if(!($user=$pstmt->fetch(PDO_FETCH_ASSOC))) {
+if(!($user=$pstmt->fetch(PDO::FETCH_ASSOC))) {
 	$db->rollBack();
 	die('Database Error - cannot find user '.$uid);
 }
@@ -93,7 +93,7 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 	if(isset($_POST['state'])) {
 		if($_POST['state'] == ANYONE) {
 			//If I go to 'Anyone' state, I can immediately start a match with anyone else in that state - finding person longest in that state
-			$astmt = $db->prepare("SELECT pid FROM player WHERE state = ".ANYONE." AND pid <> ? ORDER BY last_state;")
+			$astmt = $db->prepare("SELECT pid FROM player WHERE state = ".ANYONE." AND pid <> ? ORDER BY last_state;");
 			$astmt->bindValue(1,$uid,PDO::PARAM_INT);
 			$astmt->execute();
 			if($pid = $astmt->fetchColumn()) {
@@ -106,7 +106,7 @@ if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] ==
 				$ustmt->bindValue(1,$mid,PDO::PARAM_INT);
 				$ustmt->bindValue(2,$pid,PDO::PARAM_INT);
 				$ustmt->execute();
-				$ustmt->closeCursor():
+				$ustmt->closeCursor();
 				$state = MATCH ;
 				echo '{"state":'.MATCH.',"mid":'.$mid.'}';
 			} else {
@@ -219,7 +219,7 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 	}
 	if($matches) echo '],';
 	$mstmt->closeCursor();
-	$pstmt->execute()
+	$pstmt->execute();
 	$users = false;
 	while($row=$pstmt->fetch(PDO::FETCH_ASSOC)) {
 		if($users) {

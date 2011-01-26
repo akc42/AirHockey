@@ -39,8 +39,6 @@ define('AIR_HOCKEY_MATCH_POLL',			60000); //Milliseconds between polls whilst in
 		
 require_once('./db.inc');
 
-$match = $db->prepare("SELECT * FROM full_match WHERE mid = ?");
-$match->bindValue(1,$mid,PDO::PARAM_INT);
 $player = $db->prepare("SELECT name FROM player WHERE pid = ?");
 $player->bindValue(1,$uid,PDO::PARAM_INT);
 
@@ -49,6 +47,8 @@ $db->beginTransaction();
 if (isset($_GET['mid'])) {
 	$mid = $_GET['mid'];
 	//If a mid is set this is match rather than a practice
+	$match = $db->prepare("SELECT * FROM full_match WHERE mid = ?");
+	$match->bindValue(1,$mid,PDO::PARAM_INT);
 	$match->execute();
 	if($row = $match->fetch(PDO::FETCH_ASSOC)) {
 		if($uid == $row['hid']) {
@@ -76,7 +76,6 @@ if (isset($_GET['mid'])) {
 	$isMaster = true;
 	$opName = '&nbsp;' ;
 	$player->execute();
-	$result = dbQuery('SELECT name FROM player WHERE pid = '.dbMakeSafe($uid).';');
 	if(!($myName=$player->fetchColumn())) die('Something wrong - I don\'t appear on the database');
 	$startTime = time();
 	$player->closeCursor();

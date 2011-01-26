@@ -66,7 +66,7 @@ $abandon->closeCursor();
 $mremove->execute(); //remove stale matches
 $mremove->closeCursor();
 $premove->execute(); //remove stale users
-$premove->clostCursor();
+$premove->closeCursor();
 
 $db->commit();
 ?>

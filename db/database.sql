@@ -73,5 +73,5 @@ CREATE VIEW full_match AS
 END TRANSACTION;
 
 -- set it all up as Write Ahead Log for max performance and minimum contention with other users (if available_.
-PRAGMA journal_mode=WAL;
+--PRAGMA journal_mode=WAL;
 

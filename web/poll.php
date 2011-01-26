@@ -27,9 +27,9 @@
 		pass - password to protect
 
 */
-if(!(isset($_POST['user'])  && isset($_POST['pass'])))
+if(!(isset($_POST['uid'])  && isset($_POST['pass'])))
 	die('Log - Hacking attempt - wrong parameters');
-$uid = $_POST['user']; //extra security 
+$uid = $_POST['uid']; //extra security 
 if ($_POST['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_POST['pass'].' expected: '.sha1("Air".$uid));
 

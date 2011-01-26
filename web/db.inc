@@ -19,14 +19,16 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-define('AIR_HOCKEY_DATABASE','/home/alan/dev/airhock/db/airhock.db');
+define('AIR_HOCKEY_DATABASE','/home/alan/dev/airhock/db/');
 
-if(!file_exists(AIR_HOCKEY_DATABASE)) {
-	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE);
-    $db->exec(file_get_contents(database.sql));
+if(!file_exists(AIR_HOCKEY_DATABASE.'airhock.db')) {
+	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.'airhock.db');
+    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'database.sql'));
 } else {
-	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE);
+	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.'airhock.db');
 }
+$db->setAttribute(PDO::ATTR_TIMEOUT,25);  //set 25 second timeout on obtaining a lock
+$db->exec("PRAGMA foreign_keys = ON");
 
 //This is a convenient place to force everything we output to not be cached
 
