@@ -45,10 +45,16 @@ if(master) {
 		} else {
 			this.links.opponent = new Opponent(this.links,me,oid,master,timers,els);
 		}
+		var pollReq = new Request({url:'poll.php',link:'chain'})
+		var poller = function() {
+			pollReq.post(me);
+		}
+		var pollerID = poller.periodical(timers.poll);
 		var that = this;
 		els.abandon.addEvent('click', function(e) {
 			e.stop();
 			that.links.match.end();
+			$clear(pollerID); //stop poller
 			window.location.assign('index.php');
 		});
 	},

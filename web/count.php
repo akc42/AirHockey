@@ -19,17 +19,14 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-// Link to SMF forum as this is only for logged in members
-// Show all errors:
-error_reporting(E_ALL);
 require_once('./db.inc');
 require('./timeout.inc');
 // Set up a user record with type = spectator
-$result=dbQuery('SELECT count(*) as players FROM player WHERE state <> '.OFFLINE.' ;');
-if ($row=dbFetch($result)) {
-    echo $row['players'];
+$result=$db->query('SELECT count(*) as players FROM player WHERE state <> '.OFFLINE.' ;');
+if ($count=$result->fetchColumn()) {
+    echo $count;
 } else {
     echo '0';
 }
-dbFree($result);
+$result->closeCursor();
 ?>

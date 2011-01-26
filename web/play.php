@@ -35,14 +35,22 @@ define('AIR_HOCKEY_OFFSET_COUNT',		10);	//how many measurements of time offset d
 define('AIR_HOCKEY_RESTART_DELAY',		10);  //Seconds you have after foul or goal to place puck
 define('AIR_HOCKEY_CONTROL_DELAY',		2000); //Milliseconds to have puck on your side to be "in Control" of it
 define('AIR_HOCKEY_INPLAY_DELAY',		2); //Seconds after puck server that he is allowed to hit it
+define('AIR_HOCKEY_MATCH_POLL',			60000); //Milliseconds between polls whilst in match to show still here
 		
 require_once('./db.inc');
+
+$match = $db->prepare("SELECT * FROM full_match WHERE mid = ?");
+$match->bindValue(1,$mid,PDO::PARAM_INT);
+$player = $db->prepare("SELECT name FROM player WHERE pid = ?");
+$player->bindValue(1,$uid,PDO::PARAM_INT);
+
+$db->beginTransaction();
 
 if (isset($_GET['mid'])) {
 	$mid = $_GET['mid'];
 	//If a mid is set this is match rather than a practice
-	$result = dbQuery('SELECT * FROM full_match WHERE mid = '.dbMakeSafe($mid).';');
-	if($row = dbFetch($result)) {
+	$match->execute();
+	if($row = $match->fetch(PDO::FETCH_ASSOC)) {
 		if($uid == $row['hid']) {
 			//I had my invite accepted, so therefore I am master
 			$isMaster = true;
@@ -61,20 +69,19 @@ if (isset($_GET['mid'])) {
 	} else {
 		die('Invalid Match Id = '.$mid);
 	}
+	$match->closeCursor();
 } else {
 	$mid = 0; //No opponent, so say am practicing
 	$oid = 0;
 	$isMaster = true;
 	$opName = '&nbsp;' ;
+	$player->execute();
 	$result = dbQuery('SELECT name FROM player WHERE pid = '.dbMakeSafe($uid).';');
-	if($row=dbFetch($result)) {
-		$myName = $row['name'];
-	} else {
-		die('Something wrong - I don\'t appear on the database');
-	}
+	if(!($myName=$player->fetchColumn())) die('Something wrong - I don\'t appear on the database');
 	$startTime = time();
+	$player->closeCursor();
 }
-dbFree($result);
+$db->rollBack();
 
 function head_content() {
 	global $mid,$startTime,$uid,$oid,$isMaster;
@@ -109,7 +116,8 @@ window.addEvent('domready', function() {
 				count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>,
 				restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>,
 				control:<?php echo AIR_HOCKEY_CONTROL_DELAY ;?>,
-				inplay:<?php echo AIR_HOCKEY_INPLAY_DELAY ; ?> 
+				inplay:<?php echo AIR_HOCKEY_INPLAY_DELAY ; ?>,
+				poll:<?php echo AIR_HOCKEY_MATCH_POLL ;?> 
 			},
 			{
 				table:$('table'),
@@ -123,7 +131,7 @@ window.addEvent('domready', function() {
 				faceoff:$('faceoff'),
 				firstgame:$('firstgame'),
 				duration:$('duration'),
-				abandon:$('abandon'),
+				abandon:$('exittoforum'),
 				freeze:$('freeze'),
 				message:$('message')
 			});
@@ -185,7 +193,7 @@ function content_title() {
 }
 
 function menu_items() {
-?>		<a href="index.php" alt="abandon match"><img id="exittoforum" src="/static/images/exit.gif" alt="abandonmatch" /></a>
+?>		<img id="exittoforum" src="/static/images/exit.gif" alt="abandonmatch" />
 <?php
 }
 

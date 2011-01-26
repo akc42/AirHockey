@@ -26,6 +26,7 @@ error_reporting(E_ALL);
 Path to the pipe directory.  If you change it here, also change it in abort.php read.php, request.php and send.php 
 */
 define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
+
 define('AIR_HOCKEY_MAX_MATCHLIST_SIZE',		10);
 define('AIR_HOCKEY_POLL',				10000);  //milliseconds delay between polls for new info
 
@@ -58,18 +59,16 @@ fclose($pipe);
 require_once('./db.inc');
 $time = time();
 
-// Set up a user record with type = spectator
-dbQuery('BEGIN;');
-$result=dbQuery('SELECT * FROM player WHERE pid = '.dbMakeSafe($uid).';');
-if(dbNumRows($result) > 0) {
-	dbQuery('UPDATE player SET last_poll = '.dbPostSafe($time).' , name = '
-			.dbPostSafe($name).', state = '.SPECTATOR.', last_state = '.dbPostSafe($time).', iid = \'0\' WHERE pid = '.dbMakeSafe($uid).';');
-} else {
-	dbQuery('INSERT INTO player (pid,name,last_poll, state, last_state, mu, sigma, iid) VALUES ('
-			.dbMakeSafe($uid).','.dbPostSafe($name).', '.dbPostSafe($time).','.SPECTATOR.','.dbPostSafe($time).', DEFAULT,DEFAULT,DEFAULT);');
-}
-dbQuery('COMMIT;');
-dbFree($result);
+$user = $db->prepare("INSERT OR REPLACE INTO player(pid,state,name) VALUES (?,".SPECTATOR.",?)");
+$user->bindValue(1,$uid,PDO::PARAM_INT);
+$user->bindValue(2,$name);
+
+$db->beginTransaction();
+
+$user->execute();
+$user->closeCursor();
+$db->commit();
+
 //Timeout users who are supposed to be on line, but haven't contacted for a while
 require('./timeout.inc');
 
@@ -102,46 +101,16 @@ function menu_items() {
 }
 
 function content() {
-	global $uid,$name;
+	global $db,$uid,$name;
+	$db->beginTransaction();
 ?>
 	<p> An explanation of how to play can be found <b><a href="rules.php">here</a></b></p>
 	<div id="matchlist">
 		<div id="matchlistheader">Recent and Current Matches</div>
 <?php
-$nomatches = 0;
-$result = dbQuery('SELECT * FROM full_match WHERE end_time IS NULL ORDER BY start_time DESC;');
-while ($row=dbFetch($result)) {
-	$nomatches++;
-?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
-<?php
-	if (!is_null($row['eid'])) {
-?>			<div class="eventtitle"><?php echo $row['title'] ; ?></div>
-<?php
-	}
-?>			<div class="players">
-				<div class="user"><?php echo $row['hname'] ; ?></div>
-				<div class="user"><?php echo $row['aname'] ; ?></div>
-			</div>
-<?php
-	for ($i=1;$i <= 7;$i++) {
-		if (!is_null($row['h'.$i])) {
-?>			<div class="game">
-				<div class="score"><?php echo $row['h'.$i] ; ?></div>
-				<div class="score"><?php echo $row['a'.$i] ; ?></div>
-			</div>
-<?php
-		}
-	}
-?>			<div class="duration"><?php echo $row['start_time'] ; ?></div>
-		</div>
-<?php
-}
-dbFree($result);
-
-if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
-	$result = dbQuery('SELECT * FROM full_match WHERE end_time IS NOT NULL ORDER BY start_time DESC LIMIT '
-							.dbMakeSafe(AIR_HOCKEY_MAX_MATCHLIST_SIZE - $nomatches).';');
-	while ($row=dbFetch($result)) {
+	$nomatches = 0;
+	$result = $db->query('SELECT * FROM full_match WHERE end_time IS NULL ORDER BY start_time DESC;');
+	while ($row=$result->fetch(PDO::FETCH_ASSOC)) {
 		$nomatches++;
 ?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
 <?php
@@ -163,12 +132,43 @@ if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
 <?php
 			}
 		}
-?>			<div class="endmatch"><?php echo $row['end_time'] ; ?></div>
+?>			<div class="duration"><?php echo $row['start_time'] ; ?></div>
 		</div>
 <?php
 	}
-	dbFree($result);
-}
+	$result->closeCursor();
+
+	if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
+		$result = $db->query('SELECT * FROM full_match WHERE end_time IS NOT NULL ORDER BY start_time DESC LIMIT '
+								.(AIR_HOCKEY_MAX_MATCHLIST_SIZE - $nomatches));
+		while ($row=$result->fetch(PDO::FETCH_ASSOC)) {
+			$nomatches++;
+?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
+<?php
+			if (!is_null($row['eid'])) {
+?>			<div class="eventtitle"><?php echo $row['title'] ; ?></div>
+<?php
+			}
+?>			<div class="players">
+				<div class="user"><?php echo $row['hname'] ; ?></div>
+				<div class="user"><?php echo $row['aname'] ; ?></div>
+			</div>
+<?php
+			for ($i=1;$i <= 7;$i++) {
+				if (!is_null($row['h'.$i])) {
+?>			<div class="game">
+				<div class="score"><?php echo $row['h'.$i] ; ?></div>
+				<div class="score"><?php echo $row['a'.$i] ; ?></div>
+			</div>
+<?php
+				}
+			}
+?>			<div class="endmatch"><?php echo $row['end_time'] ; ?></div>
+		</div>
+<?php
+		}
+		$result->closeCursor();
+	}
 ?>	</div>
 		
 	<div id="online">
@@ -184,43 +184,49 @@ if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
 		</div>
 		<div id="onlineListHeader">Others Online</div>
 <?php
-$result=dbQuery('SELECT * FROM player WHERE state != 0 AND pid != '.dbMakeSafe($uid).' ORDER BY last_state DESC;');
-while($row=dbFetch($result)) {
+	$result=$db->prepare('SELECT * FROM player WHERE state <> '.OFFLINE.' AND pid <> ? ORDER BY last_state DESC;');
+	$result->bindValue(1,$uid,PDO::PARAM_INT);
+	$result->execute();
+	while($row=$result->fetch(PDO::FETCH_ASSOC)) {
 ?>		<div id="<?php echo 'U'.$row['pid']; ?>" class="onlineUser"><div class="ouser"><?php echo $row['name'] ; ?></div><?php
-	$state = $row['state'];
-	if($state == ACCEPTED || $state == MATCH || $state == PRACTICE) {
+		$state = $row['state'];
+		if($state == ACCEPTED || $state == MATCH || $state == PRACTICE) {
 ?><div class="inmatch"><?php echo (($state == PRACTICE)?"P":"M") ; ?></div><?php
-	} else {
-		if ($state == ANYONE) {
-?><div class="free">A</div><?php
 		} else {
-			if ($state == INVITE) {
-				if ($row['iid'] == $uid) {
-?><div class="inviteFrom">T</div><?php
-				} else {
-?><div class="byInvite">I</div><?php
-				}
+			if ($state == ANYONE) {
+?><div class="free">A</div><?php
 			} else {
+				if ($state == INVITE) {
+					if ($row['iid'] == $uid) {
+?><div class="inviteFrom">T</div><?php
+					} else {
+?><div class="byInvite">I</div><?php
+					}
+				} else {
 ?><div>&nbsp;</div><?php
+				}
 			}
 		}
-	}
 ?></div>
 <?php
-}
-dbFree($result);
+	}
+	$result->closeCursor();
 ?>	</div>
 	<div id="ladder">
 		<div id="ladderheader">Ladder (by Ranking)</div>
 <?php
-$result = dbQuery('SELECT name, score FROM player_rating ORDER BY score DESC;');
-while($row = dbFetch($result)) {
+	$result = $db->prepare("SELECT name, (mu - 3 * sigma) AS score FROM player WHERE last_state > ? ORDER BY score DESC");
+	$result->bindValue(1,time() - 86400*60,PDO::PARAM_INT);
+	$result->execute();
+	while($row = $result->fetch(PDO::FETCH_ASSOC)) {
 ?>		<div class="ladderentry" ><div class="ladder"><?php echo $row['name'] ; ?></div><div class="ranking"><?php echo (int) $row['score'] ;?></div></div>
 <?php
-}
+	}
+	$result->closeCursor();
 ?>	</div>
 	<div style="clear:both"></div>
 <?php
+	$db->rollBack();
 }
 function foot_content () {
 ?>	<div id="copyright">Air Hockey <span id="version">php:<?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>

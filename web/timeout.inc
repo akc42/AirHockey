@@ -21,24 +21,52 @@
 */
 
 define('AIR_HOCKEY_OFFLINE_USER',	5); //No of minutes before online user goes offline through lack of activity
-define('AIR_HOCKEY_MATCH_ABANDON', 10); //No of minutes before lack of match action assumes match to be abandoned
-define('AIR_HOCKEY_MATCH_REMOVE', 100000); //Approx two months after match we remove friendlies (tournament matches are kept forever);
+define('AIR_HOCKEY_MATCH_ABANDON',30); //No of minutes before abandon matches are removed
+define('AIR_HOCKEY_MATCH_REMOVE', 60); //No of days after match we remove friendlies (tournament matches are kept forever);
+define('AIR_HOCKEY_PLAYER_REMOVE',300); //No of days we remove players with no activity (unless they are in a match being kept)
 
-$rightnow = dbMakeSafe(time());
-$offline=dbMakeSafe(time() - 60*AIR_HOCKEY_OFFLINE_USER);  //calculate when the last poll should have been
-$abandon = dbMakeSafe(time() - 60*AIR_HOCKEY_MATCH_ABANDON);
-$remove = dbMakeSafe(time() - 60*AIR_HOCKEY_MATCH_REMOVE);
-dbQuery('BEGIN;');
-$result = dbQuery('SELECT mid,hid,aid, start_time, end_time, last_activity FROM match WHERE last_activity < '.$abandon
-		.' AND end_time IS NULL ;');
-while ($row = dbFetch($result)) {
-	dbQuery('UPDATE player SET state = '.OFFLINE.', last_state = '.$rightnow.' WHERE state = '.MATCH
-			.' AND (pid = '.dbMakeSafe($row['hid']).' OR pid = '.dbMakeSafe($row['aid']).') ;');
-	dbQuery('UPDATE match SET abandon = \'A\', last_activity = '.$rightnow.', end_time = '.$rightnow.' WHERE mid = '.dbMakeSafe($row['mid']).';');
-}
-dbQuery('UPDATE player SET state = '.OFFLINE.' , last_state = '.$rightnow
-		.' WHERE ( last_poll < '.$offline.' AND state BETWEEN '.SPECTATOR.' AND '.INVITE.' )'
-		.' OR ( last_poll < '.$abandon.' AND state BETWEEN '.MATCH.' AND '.PRACTICE.' );');
-dbQuery('DELETE FROM match WHERE (start_time < '.$remove.' AND eid IS NULL) OR (abandon IS NOT NULL AND end_time < '.$abandon.') ;');
-dbQuery('COMMIT;');
+$players = $db->prepare("UPDATE player SET state = ".OFFLINE." WHERE last_poll < ? ");
+$players->bindValue(1,time() - 60*AIR_HOCKEY_OFFLINE_USER,PDO::PARAM_INT);
+
+$abandon = $db->prepare(" 
+UPDATE match SET abandon = 'A', last_activity = (strftime('%s','now')), end_time = (strftime('%s','now')) 
+WHERE mid IN (
+	SELECT mid 
+	FROM match 
+	JOIN player h ON match.hid = h.pid
+	JOIN player a ON match.aid = a.pid
+	WHERE
+		end_time IS NULL
+		AND h.state = ".OFFLINE."
+		AND a.state = ".OFFLINE."
+)");
+
+$mremove = $db->prepare("DELETE FROM match WHERE (start_time < ? AND  eid IS NULL) OR (abandon IS NOT NULL AND end_time < ? )");
+$mremove->bindValue(1,time() - 86400*AIR_HOCKEY_MATCH_REMOVE,PDO::PARAM_INT);
+$mremove->bindValue(2,time() - 60*AIR_HOCKEY_MATCH_ABANDON,PDO::PARAM_INT);
+
+$premove = $db->prepare("
+DELETE FROM player 
+WHERE 
+	last_poll < ? 
+	AND pid NOT IN (
+		SELECT hid AS pid FROM match h
+		UNION 
+		SELECT aid AS pid FROM match a
+	)
+");
+$premove->bindValue(1,time() - 86400*AIR_HOCKEY_PLAYER_REMOVE,PDO::PARAM_INT);
+
+$db->beginTransaction();
+
+$players->execute(); //Mark all players with no polling going on for a while as OFFLINE
+$players->closeCursor();
+$abandon->execute();  //abandon matches they had not already finished and both players are offline
+$abandon->closeCursor();
+$mremove->execute(); //remove stale matches
+$mremove->closeCursor();
+$premove->execute(); //remove stale users
+$premove->clostCursor();
+
+$db->commit();
 ?>
