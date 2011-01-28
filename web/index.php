@@ -59,16 +59,17 @@ fclose($pipe);
 require_once('./db.inc');
 $time = time();  //We need to set time BEFORE this following INSERT happens so its state change is seen.
 
+$db->exec("PRAGMA foreign_keys = OFF");
+
 $user = $db->prepare("INSERT OR REPLACE INTO player(pid,name) VALUES (?,?)");
 $user->bindValue(1,$uid,PDO::PARAM_INT);
 $user->bindValue(2,$name);
 
 $db->beginTransaction();
-$db->exec("PRAGMA foreign_keys = OFF");
 $user->execute();
 $user->closeCursor();
-$db->exec("PRAGMA foreign_keys = ON");
 $db->commit();
+$db->exec("PRAGMA foreign_keys = ON");
 
 
 //Timeout users who are supposed to be on line, but haven't contacted for a while
