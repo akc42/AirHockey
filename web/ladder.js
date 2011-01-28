@@ -50,19 +50,29 @@ MBahladder = function() {
 	var userclick = function(e) {
 		e.stop();
 		var oid = this.get('id').substr(1).toInt(); //he will be my opponent
+		var changedState = false;
 		if(personalState.get('id') != 'S3') {
 			var pstext = personalState.get('text');
-			personalState.set('html',pstext);
-			personalState = $('S3');
+			personalState.set('html',pstext);  //removes tick image
+			personalState = $('S3');  //we set ourselves into invite mode
 			pstext = personalState.get('text');
 			personalState.set('html', pstext+'<img src="tick.gif" alt="selected" />') ;
+			ropt.state = 3;  //set ourselves into invite mode
+			changedState = true;
 		}
 		var statediv = this.getFirst().getNext();
 		if(statediv.hasClass('free') || statediv.hasClass('inviteFrom')) {
-			cmdReq.post($merge(ropt,{cmd:'A',oid:oid}));
+			stateReq.post($merge(ropt,{cmd:'A',oid:oid})); //accept an invite
 		} else {
 			if(statediv.hasClass('byInvite') || statediv.hasClass('inviteTo')) {
-				cmdReq.post($merge(ropt,{cmd:'I',oid:oid}));
+				stateReq.post($merge(ropt,{cmd:'I',oid:oid})); // send an invite
+			} else {
+				if(changedState) {
+					/* even though the person we clicked on was not eligable to be invited, our
+					attempt to invite him implies that we want to be in invite mode so set that mode
+					anyway */
+					stateReq.post(ropt);  
+				}
 			}
 		}
 	};
@@ -83,7 +93,7 @@ MBahladder = function() {
 								el.getChildren().destroy(); //clear out all children
 							} else {
 								el = new Element('div',{'class':'match','id':'M'+match.mid});
-								el.store('start',match.stime+timeOffset);  //save the start time
+								el.store('start',match.stime);  //save the start time
 								var injected = false;
 								$$('.match').each(function(item) {
 									if(!injected && match.stime < item.retrieve('start')) {
@@ -200,12 +210,10 @@ MBahladder = function() {
 		}
 	};
 	var ropt;
-	var stateReq = new Request.JSON({url:'request.php?var=1',link:'chain',onComplete:requestresponse});
-	var pollReq = new Request.JSON({url:'request.php?var=2',link:'chain',onComplete:requestresponse});
-	var cmdReq = new Request.JSON({url:'request.php?var=3',link:'chain',onComplete:requestresponse});
+	var stateReq = new Request.JSON({url:'request.php',link:'chain',onComplete:requestresponse});
 	var pollerID;
 	var poll = function() {
-		pollReq.post(ropt);
+		stateReq.post(ropt);
 	};
 	var durationID;
 	var durationUpdate = function() {
@@ -218,8 +226,10 @@ MBahladder = function() {
 		init: function (param,initialstate,polldelay) {
 		    doingExitToForum = true;
 			ropt = param;  //save request options
+			ropt.state = initialstate;
 			timeOffset = new Date().getTime()/1000 - ropt.t;
 			personalState = $('S'+initialstate);
+			stateReq.post(ropt); //tell underlying system state to go to
 			$$('.ps').addEvent('click',function(e) {
 				e.stop();
 				var pstext = personalState.get('text');
@@ -228,7 +238,8 @@ MBahladder = function() {
 				pstext = this.get('text');
 				this.set('html', pstext+'<img src="tick.gif" alt="selected" />') ;
 				//only do something if now checked
-				stateReq.post($merge(ropt,{state: this.get('id').substr(1).toInt()}));
+				ropt.state = this.get('id').substr(1).toInt();
+				stateReq.post(ropt);
 			});
 			//Go through matches and set the durations up, and then kick of regular update
 			$$('.match').each(function(match) {
@@ -257,7 +268,7 @@ MBahladder = function() {
 			durationID = durationUpdate.periodical(1000);
 		},
 		logout: function () {
-		    if (doingExitToForum) stateReq.post($merge(ropt,{state:0})); //say going offline
+		    if (doingExitToForum) stateReq.post($merge(ropt,{state:0})); //say going offline (except when going to match or practice)
 			$clear(pollerID); //stop poller
 			$clear(durationID);
 		}

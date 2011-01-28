@@ -37,7 +37,7 @@
 /* copied from index.php */
 define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 
-if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['t'])))
+if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['t'])  && isset($_POST['state'])) || (isset($_POST['cmd']) && !isset($_POST['oid'])))
 	die('Log - Hacking attempt - wrong parameters');
 $uid = $_POST['user']; //extra security 
 if ($_POST['pass'] != sha1("Air".$uid))
@@ -46,16 +46,14 @@ if ($_POST['pass'] != sha1("Air".$uid))
 require_once('./db.inc');
 
 $last = $_POST['t'];
-$now = time();
-$invitechange = false;
-$oldiid = 0;
-$oid = 0;
+
+$state = $_POST['state'];
+$opponent = 0;
 
 $pstmt = $db->prepare("SELECT * FROM player WHERE pid = ?");
-$pustmt = $db->prepare("UPDATE player SET state = ?, last_state = ?, iid = ?, last_poll = (strftime('%s','now')) WHERE pid = ?");
+$pstmt->bindValue(1,$uid,PDO::PARAM_INT);
 
 $db->beginTransaction();
-$pstmt->bindValue(1,$uid,PDO::PARAM_INT);
 $pstmt->execute();
 
 if(!($user=$pstmt->fetch(PDO::FETCH_ASSOC))) {
@@ -64,112 +62,103 @@ if(!($user=$pstmt->fetch(PDO::FETCH_ASSOC))) {
 }
 $pstmt->closeCursor();
 
-$state = $user['state'];
-if($state == MATCH || $state == PRACTICE) {
-	$state = SPECTATOR ;
-	$user['last_state'] = $now;
-}
+//lets echo this now - then we have a time set that is before all other actions
+echo '{"t":'.time();
 
-// First check if supposed to be joining a match
-if($state == ACCEPTED) {
-	//If I was going offline, or expecting to practice, I can't join match and must tell other end to abandon
-	if(isset($_POST['state']) && ($_POST['state'] == OFFLINE || $_POST['state'] == PRACTICE)) {
+if ($user['state'] == ACCEPTED) {
+	//someone accepted us - we need to deal with this
+	if($state == INVITE || $state == ANYONE) {
+		// I go to this match
+		$state = MATCH ; //we will now be in a match
+		echo ',"state":'.MATCH.',"mid":'.$user['iid'];
+	} else {
+		// I am not able to accept so we must abandon things
 		//Other end will be sitting reading my msg pipe
 
 		$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$uid,'r+');
 		fwrite($sendpipe,"$Abandon"); //Send the abandon
 		fclose($sendpipe);
-		$state = $_POST['state'];
-		echo '{"state":"'.$state.'"}';
-	} else {
-		$state = MATCH ; //we will now be in a match
-		echo '{"state":'.MATCH.',"mid":'.$user['iid'].'}';
+		echo ',"state":'.$state ;
 	}
-	$user['last_state'] = $now;
-} 
-if ($user['state'] == SPECTATOR || $user['state'] == ANYONE || $user['state'] == INVITE) {
-	$mstmt = $db->prepare("INSERT INTO match (hid,aid,start_time,last_activity) VALUES ( ?,?,(strftime('%s','now')),(strftime('%s','now')))");
-	$ustmt = $db->prepare("UPDATE player SET state = ".ACCEPTED.", iid = ?, last_state = (strftime('%s','now')) WHERE pid = ?");
-	if(isset($_POST['state'])) {
-		if($_POST['state'] == ANYONE) {
-			//If I go to 'Anyone' state, I can immediately start a match with anyone else in that state - finding person longest in that state
-			$astmt = $db->prepare("SELECT pid FROM player WHERE state = ".ANYONE." AND pid <> ? ORDER BY last_state;");
-			$astmt->bindValue(1,$uid,PDO::PARAM_INT);
-			$astmt->execute();
-			if($pid = $astmt->fetchColumn()) {
-				//OK found someone, so create a match and put him into the R state.
-				$mstmt->bindValue(1,$pid,PDO::PARAM_INT);
-				$mstmt->bindValue(2,$uid,PDO::PARAM_INT);
-				$mstmt->execute();
-				$mid = $db->lastInsertId();
-				$mstmt->closeCursor();
-				$ustmt->bindValue(1,$mid,PDO::PARAM_INT);
-				$ustmt->bindValue(2,$pid,PDO::PARAM_INT);
-				$ustmt->execute();
-				$ustmt->closeCursor();
-				$state = MATCH ;
-				echo '{"state":'.MATCH.',"mid":'.$mid.'}';
-			} else {
-				$state = ANYONE ;
-			}
-			$astmt->closeCursor();
-		} else {
-			$state = $_POST['state'];
-		}
-		$user['last_state'] = $now;
+} else {
+	$oid = false;  //No player to play with at the moment
+	if ($state == ANYONE) {
+		//See if anyone to play with
+		$anyone = $db->prepare("
+			SELECT pid 
+			FROM player 
+			WHERE pid <> ?  AND (state = ".ANYONE." OR (state = ".INVITE." AND iid = ? ))
+			ORDER BY state DESC, last_state ASC"
+		);
+		$anyone->bindValue(1,$uid,PDO::PARAM_INT);
+		$anyone->bindValue(2,$uid,PDO::PARAM_INT);
+		$anyone->execute();
+		$oid = $anyone->fetchColumn();
+		$anyone->closeCursor();
 	} else {
-		if(isset($_POST['cmd'])) {
-			if(!isset($_POST['oid'])) {
-				$db->rollBack();
-				die('Incorrect parameters - missing oid');
-			}
-			$pstmt->bindValue(1,$_POST['oid'],PDO::PARAM_INT);
-			$pstmt->execute();
-			if(!($row = $pstmt->fetch(PDO::FETCH_ASSOC))){
-				$db->rollBack();
-				die('Database Error - missing opponent '.$_POST['oid']);
-			}
-			//Check whether this user is still available to accept this command
-			if($row['state'] == INVITE || $row['state'] == ANYONE) {
-				//Yes opponent is in a state to receive a command
-				$oid = $_POST['oid'];
-				if($_POST['cmd'] == "I") {
-					//To invite an opponent we just add his id into our user record
-					$oldiid = $user['iid'];
-					if($oldiid == $oid) {
-						$user['iid'] = 0; //uninvite him if we had previously invited him
-						$oid = 0;
-					} else {
-						$user['iid'] = $oid;
-					}
-					$state = INVITE;     //if user wasin't in invite mode, they are now.
-					$user['last_state'] = $now;
+		if ($state == INVITE) {
+			if(isset($_POST['cmd'])) {
+				if ($_POST['cmd'] == 'A') {
+					$oid = $_POST['oid']; 
 				} else {
-					if($_POST['cmd'] == "A") {
-						$mstmt->bindValue(1,$oid,PDO::PARAM_INT);
-						$mstmt->bindValue(2,$uid,PDO::PARAM_INT);
-						$mstmt->execute();
-						$mid = $db->lastInsertId();
-						$mstmt->closeCursor();
-						$ustmt->bindValue(1,$mid,PDO::PARAM_INT);
-						$ustmt->bindValue(2,$oid,PDO::PARAM_INT);
-						$ustmt->execute();
-						$ustmt->closeCursor();
-						$state = MATCH ;
-						$user['last_state'] = $now;
-						echo '{"state":'.MATCH.',"mid":'.$mid.'}';
+					$opponent = $_POST['oid'];
+					//reuse old statement to go find the other guy
+					$pstmt->bindValue(1,$opponent,PDO::PARAM_INT);
+					$pstmt->execute();
+					if($row = $pstmt->fetch(PDO::FETCH_ASSOC)){
+						//we found him, so now we need to check he can accept invites.
+						if($row['state'] == INVITE || $row['state'] == ANYONE) {
+							//To invite an opponent we just add his id into our user record
+							if($user['iid'] == $opponent) {
+								$user['iid'] = 0; //uninvite him if we had previously invited him
+							} else {
+								$user['iid'] = $opponent;
+							}
+						} else {
+							$user['iid'] = 0;  //can't invite him if he won't allow it
+						}
+					} else {
+						$user['iid'] = 0;
 					}
+					$user['state'] = 0; //Force an update to this player record
 				}
 			}
-		}
+		} 
+	}
+	if($oid) {
+		//OK found someone, so create a match and put him into the Master Satestate.
+		$newmatch = $db->prepare("INSERT INTO match (hid,aid,start_time,last_activity) VALUES ( ?,?,(strftime('%s','now')),(strftime('%s','now')))");
+		$newmatch->bindValue(1,$oid,PDO::PARAM_INT);
+		$newmatch->bindValue(2,$uid,PDO::PARAM_INT);
+		$newmatch->execute();
+		$mid = $db->lastInsertId();
+		$newmatch->closeCursor();
+		//mark him as accepted
+		$newmatch = $db->prepare("UPDATE player SET state = ".ACCEPTED.", iid = ?, last_state = (strftime('%s','now')) WHERE pid = ?");
+		$newmatch->bindValue(1,$mid,PDO::PARAM_INT);
+		$newmatch->bindValue(2,$oid,PDO::PARAM_INT);
+		$newmatch->execute();
+		$newmatch->closeCursor();
+		$state = MATCH ;
+		$user['iid'] = 0;  //going to set my mid too
+		echo ',"state":'.MATCH.',"mid":'.$mid;
+	} else {
+		echo ',"state":'.$state;
 	}
 }
-$pustmt->bindValue(1,$state,PDO::PARAM_INT);
-$pustmt->bindValue(2,$user['last_state'],PDO::PARAM_INT);
-$pustmt->bindValue(3,$user['iid'],PDO::PARAM_INT);
-$pustmt->bindValue(4,$uid,PDO::PARAM_INT);
-$pustmt->execute();
-$pustmt->closeCursor();
+if ($state != $user['state'] ) {
+	//mark state change
+	$newstate = $db->prepare("
+		UPDATE player SET state = ?, last_state = (strftime('%s','now')), iid = ?, last_poll = (strftime('%s','now')) WHERE pid = ?
+	");
+	$newstate->bindValue(1,$state,PDO::PARAM_INT);
+	$newstate->bindValue(2,$user['iid'],PDO::PARAM_INT);
+	$newstate->bindValue(3,$uid,PDO::PARAM_INT);
+	$newstate->execute();
+	$newstate->closeCursor();
+	
+}
+
 $db->commit();
 //Timeout users who are supposed to be on line, but haven't contacted for a while and old matches.
 require('./timeout.inc');
@@ -182,17 +171,13 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 	$pstmt->bindValue(1,$_POST['t'],PDO::PARAM_INT);
 	$pstmt->bindValue(2,$uid,PDO::PARAM_INT);
 	$db->beginTransaction();
-	echo '{';
-	if ($state != $user['state']) {
-		echo '"state":'.$state.',';
-	}
 	$mstmt->execute();
 	$matches = false;
 	while($row = $mstmt->fetch(PDO::FETCH_ASSOC)) {
 		if($matches) {
 			echo ',';
 		} else {
-			echo '"matches":[' ;
+			echo ',"matches":[' ;
 			$matches = true;
 		}
 		echo '{"mid":'.$row['mid'] ;
@@ -204,7 +189,7 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 			echo ',"stime":'.$row['start_time'] ;
 			if (!is_null($row['end_time'])) echo ',"etime":'.$row['end_time'];
 			if (!is_null($row['h1'])) {
-				echo ',"games" ;[['.$row['h1'].','.$row['a1'].']';
+				echo ',"games":[['.$row['h1'].','.$row['a1'].']';
 				for ($i=2;$i<=7;$i++) {
 					if(!is_null($row['h'.$i])) {
 						echo ',['.$row['h'.$i].','.$row['a'.$i].']';
@@ -217,7 +202,7 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 			echo '}';
 		}
 	}
-	if($matches) echo '],';
+	if($matches) echo ']';
 	$mstmt->closeCursor();
 	$pstmt->execute();
 	$users = false;
@@ -225,56 +210,42 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 		if($users) {
 			echo ',';
 		} else {
-			echo '"users":[' ;
+			echo ',"users":[' ;
 			$users = true;
 		}
 		$pid = $row['pid']; 
 		echo '{"pid":'.$pid.',"name":"'.$row['name'].'","state":'.$row['state'] ;
-		if ($pid == $oid ) {
-			$oid = 0; // indicate that iid has been dealt with
+		if ($pid == $user['iid'] && $state == INVITE ) {
 			echo ',"invite":"T"}';
 		} else {
-			if ($row['iid'] == $uid) {
+			if ($row['iid'] == $uid && $row['state'] == INVITE) {
 				//he has invited me so say so
 				echo ',"invite":"F"}';
 			} else {
-				if($pid == $user['iid']) {
-					echo ',"invite":"T"}'; // this is not new
-				} else {
-					echo '}';
-				}
+				echo '}';
 			}
 		}
-		if ($pid == $oldiid) $oldiid = 0; //say dealt with old iid
+		if($pid == $opponent)  $opponent = 0;
 	}
 
-	if ($oldiid != 0 ) {
-		//There was no change to the user record we removed invite from so remove it now
+	if ($opponent != 0 ) {
+		//This user hasn't appeared in the above list, but we just changed the invite state
 		if ($users) {
 			echo ',';
 		} else {
-			echo '"users":[' ;
+			echo ',"users":[' ;
 			$users = true;
 		}
-		echo '{"pid":'.$oldiid.', "state":3}';
+		echo '{"pid":'.$opponent.', "state":3';
+		if ($state = INVITE && $user['iid'] != 0 ) echo ', "invite":"T"';
+		echo '}';
 	}
-	if ($oid !=0) {
-		//No change to record we invited so include now
-		if ($users) {
-			echo ',';
-		} else {
-			echo '"users":[' ;
-			$users = true;
-		}
-		echo '{"pid":'.$oid.',"state":3, "invite":"T"}';
-	}
-	if($users) echo '],';
+	if($users) echo ']';
 	$pstmt->closeCursor();
-	echo  '"t":'.$now.'}';
 	$db->rollBack();
-} else {
-	if($state == PRACTICE ) {
-		echo '{"state":'.PRACTICE.'}';
-	}
 }
-?>
+
+// last thing to do is close off the json response
+
+echo '}' ;
+

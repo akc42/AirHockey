@@ -68,7 +68,7 @@ CREATE INDEX index_invite ON player(iid);
 
 -- match including event title and players names
 CREATE VIEW full_match AS
-    SELECT m.hid, m.aid, m.start_time, m.end_time, m.last_activity, m.mid, m.eid, e.title, m.h1, m.h2, m.h3, m.h4, m.h5, m.h6, m.h7, m.a1, m.a2, m.a3, m.a4, m.a5, m.a6, m.a7, h.name AS hname, a.name AS aname, m.abandon FROM (((match m JOIN player h ON ((m.hid = h.pid))) JOIN player a ON ((m.aid = a.pid))) LEFT JOIN event e USING (eid));
+    SELECT hid, aid, start_time, end_time, last_activity, mid, m.eid AS eid, title, h1, h2, h3, h4, h5, h6, h7, a1, a2, a3, a4, a5, a6, a7, h.name AS hname, a.name AS aname, abandon FROM match m JOIN player h ON m.hid = h.pid JOIN player a ON m.aid = a.pid LEFT JOIN event e ON m.eid = e.eid;
 
 END TRANSACTION;
 

@@ -45,7 +45,7 @@ if($match->fetchColumn() == 1) {
 	if($g > 0) {
 		$score = $db->prepare("UPDATE match SET last_activity = (strftime('%s','now')), h".$g." = ?, a".$g." = ? WHERE mid = ?");
 		$score->bindValue(1,$_POST['h'],PDO::PARAM_INT);
-		$score->bindValue(2,$_POST['a'].PDO::PARAM_INT);
+		$score->bindValue(2,$_POST['a'],PDO::PARAM_INT);
 		$score->bindValue(3,$mid,PDO::PARAM_INT);
 		$score->execute();
 		$score->closeCursor();
@@ -100,7 +100,9 @@ if($match->fetchColumn() == 1) {
 			$update->execute();
 			$update->closeCursor();
 		} else {
-			$abandon->prepate("UPDATE match SET  last_activity = (strftime('%s','now')), end_time = (strftime('%s','now')), abandon = 'A' WHERE mid = ?");
+			$abandon= $db->prepare("
+				UPDATE match SET  last_activity = (strftime('%s','now')), end_time = (strftime('%s','now')), abandon = 'A' WHERE mid = ?
+			");
 			$abandon->bindValue(1,$mid,PDO::PARAM_INT);
 			$abandon->execute();
 			$abandon->closeCursor();

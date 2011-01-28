@@ -57,30 +57,32 @@ $pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+');
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
 require_once('./db.inc');
-$time = time();
+$time = time();  //We need to set time BEFORE this following INSERT happens so its state change is seen.
 
-$user = $db->prepare("INSERT OR REPLACE INTO player(pid,state,name) VALUES (?,".SPECTATOR.",?)");
+$user = $db->prepare("INSERT OR REPLACE INTO player(pid,name) VALUES (?,?)");
 $user->bindValue(1,$uid,PDO::PARAM_INT);
 $user->bindValue(2,$name);
 
 $db->beginTransaction();
-
+$db->exec("PRAGMA foreign_keys = OFF");
 $user->execute();
 $user->closeCursor();
+$db->exec("PRAGMA foreign_keys = ON");
 $db->commit();
+
 
 //Timeout users who are supposed to be on line, but haven't contacted for a while
 require('./timeout.inc');
 
 function head_content() {
-	global $time,$uid;
+	global $uid,$time;
 ?>   <title>Melinda's Backups Air Hockey Ladder</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 <script type="text/javascript">
 	<!--
 window.addEvent('domready', function() {
-	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ?>},
+	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>},
 		<?php echo SPECTATOR; ?>,<?php echo AIR_HOCKEY_POLL; ?>);
 });
 window.addEvent('unload', function() {
@@ -139,7 +141,7 @@ function content() {
 	$result->closeCursor();
 
 	if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
-		$result = $db->query('SELECT * FROM full_match WHERE end_time IS NOT NULL ORDER BY start_time DESC LIMIT '
+		$result = $db->query('SELECT * FROM full_match WHERE end_time IS NOT NULL AND abandon is NULL ORDER BY start_time DESC LIMIT '
 								.(AIR_HOCKEY_MAX_MATCHLIST_SIZE - $nomatches));
 		while ($row=$result->fetch(PDO::FETCH_ASSOC)) {
 			$nomatches++;

@@ -69,4 +69,5 @@ $premove->execute(); //remove stale users
 $premove->closeCursor();
 
 $db->commit();
+
 ?>
