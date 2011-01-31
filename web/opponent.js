@@ -19,7 +19,7 @@
 
 */
 var Opponent = new Class({
-	initialize: function(links,me,oid,master,timers,els) {
+	initialize: function(links,me,oid,master,timers,els,positions) {
 		var that = this;
 		var myfail = function(reason) {
 			that.poller = $clear(that.poller);

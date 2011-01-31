@@ -144,6 +144,9 @@ ul#menu {
 	content:"Match finished at: ";
 	font-weight:bold;
 }
+.abandon {
+	color:#F6311F;
+}
 
 #online {
 	float:left;
@@ -277,7 +280,7 @@ overflow:hidden;
 	font-size:12px;
 	font-weight:bold;
 }
-
+/*  Not sure this is used
 #master, #slave {
 	font-size:large;
 	font-weight:bold;
@@ -291,25 +294,36 @@ overflow:hidden;
 }
 
 #master:hover, #master:active, #slave:hover,#slave:active {border-style:inset;}
-
+*/
+/* Play area definition starts here */ 
 #surround {
-	padding:5px 10px;
+	position:relative;
+	padding:10px;
 	background-color:#99FF33;
-	width:282px;
-	float:left;
+	width:602px;
 	margin:10px;
 }
 #opgoal, #mygoal {
 	background-color:#FF0000;
-	width:90px;
-	height:10px;
-	margin-left:96px;
+	width:10px;
+	height:90px;
+	position:absolute;
+	top:106px;
 }
+
+#mygoal {
+	left:0;
+}
+
+#opgoal {
+	right:0;
+}
+
 #table {
 	background:url(table.gif);
 	border:1px solid black;
-	width:280px;
-	height:600px;
+	width:600px;
+	height:280px;
 	position:relative;
 }
 #myarea {
@@ -317,21 +331,21 @@ overflow:hidden;
 	position:absolute;
 	left:14px;
 	bottom:14px;
-	width:252px;
-	height:300px;
+	width:300px;
+	height:252px;
 }
 #opmallet {
 	position:absolute;
-	left:126px;
-	top:25px;
+	right:25px;
+	top:126px;
 	width:28px;
 	height:28px;
 }
 
 #mymallet {
 	position:absolute;
-	left:112px;
-	top:235px;
+	right:547px;
+	top:112px;
 	width:28px;
 	height:28px;
 }
@@ -339,8 +353,8 @@ overflow:hidden;
 
 #puck {
 	position:absolute;
-	left:130px;
-	top:290px;
+	right:290px;
+	top:130px;
 	width:20px;
 	height:20px;
 }
@@ -350,8 +364,11 @@ overflow:hidden;
 	color:black;
 	border:1px solid black;
 	width:462px;
-	margin:10px;
-	float:left;	
+	margin:10px 10px 10px 89px;
+}
+
+#info .match {
+	margin-top:45px;
 }
 
 #state {
@@ -395,9 +412,16 @@ overflow:hidden;
 	background-image:url("serve.gif");
 }
 
+#msgframe {
+	float:right;
+	background-color:yellow;
+	border:1px solid black;
+}
 #message {
 	background-color:white;
-	border:1px solid black;
+	color:black;
+	border:2px solid black;
+	width:250px;
 	height:300px;
 	margin:5px;
 	padding:2px;
@@ -428,3 +452,9 @@ a:link, a:visited, a:active {color:white}
 
 
 #rules a:link, #rules a:visited, #rules a:active {color:black}
+
+
+#rules img {
+	margin:5px;
+}
+

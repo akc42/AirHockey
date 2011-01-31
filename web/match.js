@@ -19,11 +19,10 @@
 
 */
 var Match = new Class({
-	initialize: function(links,timers,els) {
+	initialize: function(links,timers) {
 		this.links = links;
 		links.scoreboard.status('Please wait ...');
 		this.timers = timers;
-		this.els = els;
 		var that = this
 		this.matchInProgress = true;
 		this.scorer = new Scorer({
@@ -148,6 +147,7 @@ var Match = new Class({
 			this.matchInProgress=false;
 		}
 		this.links.opponent.end();
+		this.links.table.stop();
 	}
 });
 

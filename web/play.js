@@ -19,7 +19,7 @@
 
 */
 var Play = new Class({
-	initialize: function(mid,startTime,me,oid,master,timers,els) {
+	initialize: function(mid,startTime,me,oid,master,timers,els,positions) {
 		var play = function(sound) {
 			if(soundReady) soundManager.play(sound);
 		};
@@ -35,16 +35,12 @@ if(master) {
    			scoreboard:new Scoreboard(mid,startTime,me,master,els,play),
 	  		play:play
 		};
-		this.links.match = new Match(this.links,timers,els);
-		this.links.table = new Table(this.links,timers,els,play);
+		this.links.match = new Match(this.links,timers);
+		this.links.table = new Table(this.links,timers,els,positions);
+
 		//this needs to be last, as it starts everything off - the rest has to be set up before it
-		if (mid == 0) {
-			//this is a practice
-			this.links.opponent = new Practice(this.links,timers);
-			els.opmallet.addClass('hidden'); // hide other mallet
-		} else {
-			this.links.opponent = new Opponent(this.links,me,oid,master,timers,els);
-		}
+		this.links.opponent = new Opponent(this.links,me,oid,master,timers,els,positions);
+
 		var pollReq = new Request({url:'poll.php',link:'chain'})
 		var poller = function() {
 			pollReq.post(me);
@@ -53,13 +49,13 @@ if(master) {
 		var that = this;
 		els.abandon.addEvent('click', function(e) {
 			e.stop();
-			that.links.match.end();
+			that.links.match.end(); //abandons match if not already ended
 			$clear(pollerID); //stop poller
 			window.location.assign('index.php');
 		});
 	},
 	end: function() {
-		this.links.match.end();
+		this.links.match.end();  //kills it if necessary
 	}
 });
 

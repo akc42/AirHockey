@@ -142,7 +142,7 @@ function content() {
 	$result->closeCursor();
 
 	if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
-		$result = $db->query('SELECT * FROM full_match WHERE end_time IS NOT NULL AND abandon is NULL ORDER BY start_time DESC LIMIT '
+		$result = $db->query("SELECT * FROM full_match WHERE end_time IS NOT NULL AND abandon <> 'D' ORDER BY start_time DESC LIMIT "
 								.(AIR_HOCKEY_MAX_MATCHLIST_SIZE - $nomatches));
 		while ($row=$result->fetch(PDO::FETCH_ASSOC)) {
 			$nomatches++;
@@ -166,7 +166,7 @@ function content() {
 <?php
 				}
 			}
-?>			<div class="endmatch"><?php echo $row['end_time'] ; ?></div>
+?>			<div class="endmatch<? if(!is_null($row['abandon'])) echo ' abandon'; ?>"><?php echo $row['end_time'] ; ?></div>
 		</div>
 <?php
 		}

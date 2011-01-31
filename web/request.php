@@ -182,25 +182,29 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 		}
 		echo '{"mid":'.$row['mid'] ;
 		if (!is_null($row['abandon'])) {
-			echo ',"abandon":true}' ;
-		} else {
-			if (!is_null($row['eid'])) echo ',"event":"'.$row['title'].'"';
-			echo ',"hname":"'.$row['hname'].'","aname":"'.$row['aname'].'"';
-			echo ',"stime":'.$row['start_time'] ;
-			if (!is_null($row['end_time'])) echo ',"etime":'.$row['end_time'];
-			if (!is_null($row['h1'])) {
-				echo ',"games":[['.$row['h1'].','.$row['a1'].']';
-				for ($i=2;$i<=7;$i++) {
-					if(!is_null($row['h'.$i])) {
-						echo ',['.$row['h'.$i].','.$row['a'.$i].']';
-					} else {
-						break;
-					}
-				}
-				echo ']';
+			if($row['abandon'] == 'A') {
+				echo ',"abandon":true' ;
+			} else {
+				echo ',"deletion":true';
 			}
-			echo '}';
+		} 
+		if (!is_null($row['eid'])) echo ',"event":"'.$row['title'].'"';
+		echo ',"hname":"'.$row['hname'].'","aname":"'.$row['aname'].'"';
+		echo ',"stime":'.$row['start_time'] ;
+		if (!is_null($row['end_time'])) echo ',"etime":'.$row['end_time'];
+		if (!is_null($row['h1'])) {
+			echo ',"games":[['.$row['h1'].','.$row['a1'].']';
+			for ($i=2;$i<=7;$i++) {
+				if(!is_null($row['h'.$i])) {
+					echo ',['.$row['h'.$i].','.$row['a'.$i].']';
+				} else {
+					break;
+				}
+			}
+			echo ']';
 		}
+		echo '}';
+		
 	}
 	if($matches) echo ']';
 	$mstmt->closeCursor();

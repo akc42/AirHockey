@@ -41,9 +41,12 @@ WHERE mid IN (
 		AND a.state = ".OFFLINE."
 )");
 
-$mremove = $db->prepare("DELETE FROM match WHERE (start_time < ? AND  eid IS NULL) OR (abandon IS NOT NULL AND end_time < ? )");
+$setdelete = $db->prepare("UPDATE match SET abandon = 'D', last_activity = (strftime('%s','now')) WHERE abandon = 'A' AND end_time < ?");
+$setdelete->bindValue(1,time() - 60*AIR_HOCKEY_MATCH_ABANDON,PDO::PARAM_INT);
+
+$mremove = $db->prepare("DELETE FROM match WHERE (start_time < ? AND  eid IS NULL) OR (abandon = 'D' AND end_time < ? )");
 $mremove->bindValue(1,time() - 86400*AIR_HOCKEY_MATCH_REMOVE,PDO::PARAM_INT);
-$mremove->bindValue(2,time() - 60*AIR_HOCKEY_MATCH_ABANDON,PDO::PARAM_INT);
+$mremove->bindValue(2,time() - 2*60*AIR_HOCKEY_MATCH_ABANDON,PDO::PARAM_INT);
 
 $premove = $db->prepare("
 DELETE FROM player 
@@ -61,13 +64,20 @@ $db->beginTransaction();
 
 $players->execute(); //Mark all players with no polling going on for a while as OFFLINE
 $players->closeCursor();
+unset($players);
 $abandon->execute();  //abandon matches they had not already finished and both players are offline
 $abandon->closeCursor();
+unset($abandon);
 $mremove->execute(); //remove stale matches
 $mremove->closeCursor();
+unset($mremove);
+$setdelete->execute(); //set abandon matches ready for deletion if time has passed in abandon state
+$setdelete->closeCursor();
+unset($setdelete);
 $premove->execute(); //remove stale users
 $premove->closeCursor();
-
+unset($premove);
 $db->commit();
+
 
 ?>

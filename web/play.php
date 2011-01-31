@@ -36,6 +36,18 @@ define('AIR_HOCKEY_RESTART_DELAY',		10);  //Seconds you have after foul or goal 
 define('AIR_HOCKEY_CONTROL_DELAY',		2000); //Milliseconds to have puck on your side to be "in Control" of it
 define('AIR_HOCKEY_INPLAY_DELAY',		2); //Seconds after puck server that he is allowed to hit it
 define('AIR_HOCKEY_MATCH_POLL',			60000); //Milliseconds between polls whilst in match to show still here
+define('AIR_HOCKEY_MALLET_POSITION', 148);  //Mallet starting position measured in model coordinate from goal (table length = 2400)
+/*
+	The following definition is a javascript object containing all the starting parameters for the opponent simulation
+	that runs in practice mode.  It is easy to be confused with the coordinate systems because the main game runs on the assumption
+	that "My" end is the high values of y and the Opponent runs with low values of y.  However, although we are the opponent here,
+	the internal simulation it runs to decide what to do pretends it is playing a game in which it is the "My" end (ie all the
+	coordinates are reversed.  It has an internal copy of the match (with a dummy scoreboard) and table (with associated pucks and 
+	mallets) objects with everything reversed.
+	
+	These parameters refer to the values of the internal model.  That is they should have high y values
+*/   
+define('AIR_HOCKEY_PRACTICE_PARAMS', '{delay:2500,tick:50,c:{x:560,y:2006},r:200,d:10,s:{x:560,y:1290},ran:40}');  
 		
 require_once('./db.inc');
 
@@ -74,7 +86,7 @@ if (isset($_GET['mid'])) {
 	$mid = 0; //No opponent, so say am practicing
 	$oid = 0;
 	$isMaster = true;
-	$opName = '&nbsp;' ;
+	$opName = 'My Computer (Practice)' ;
 	$player->execute();
 	if(!($myName=$player->fetchColumn())) die('Something wrong - I don\'t appear on the database');
 	$startTime = time();
@@ -88,12 +100,17 @@ function head_content() {
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
 	<script src="soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scorer.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="practice.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="match.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="opponent.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
+<? if($mid == 0) {
+?>	<script src="practice.js" type="text/javascript" charset="UTF-8"></script>
+<?php
+	} else {
+?>	<script src="opponent.js" type="text/javascript" charset="UTF-8"></script>
+<?php
+	}
+?>	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
 	<script type="text/javascript">
 	<!--
 var MBahplay;
@@ -133,7 +150,18 @@ window.addEvent('domready', function() {
 				abandon:$('exittoforum'),
 				freeze:$('freeze'),
 				message:$('message')
-			});
+			},
+			{
+				mymallet:{x:560,y:<?php echo 2400 - AIR_HOCKEY_MALLET_POSITION ; ?>},
+				opmallet:{x:560,y:<?php echo AIR_HOCKEY_MALLET_POSITION ;?>}
+<?php
+	if($mid == 0) {
+?>				,practice: <?php echo AIR_HOCKEY_PRACTICE_PARAMS ;?>
+<?php
+}
+?>			
+			}
+		);
 });
 window.addEvent('unload', function() {
 	MBahplay.end();
@@ -198,24 +226,11 @@ function menu_items() {
 
 function content() {
 	global $mid,$myName,$opName,$oid, $row;
-?>	<div id="surround">
-<?php
-	if ($mid != 0) {
-?>		<div id="opgoal"></div>
-<?php
-	}			
-?>		<div id="table">
-			<img id="puck" src="puck.gif"/>
-			<img id="opmallet" src="mallet.gif" />
-			<img id="mymallet" src="mallet.gif"/>
-		</div>
-		<div id="mygoal"></div>	
-	</div>
+?>	<div id="msgframe"><div id="message"></div></div>
 	<div id="info">
 		<div id="countdown"></div>
 		<div id="state"></div>
 		<div id="server" ></div><div id="faceoff"></div>
-		<div style="clear:both"></div>
 		<div class="match">
 <?php
 	if ($oid && !is_null($row['eid'])) {
@@ -233,7 +248,15 @@ function content() {
 			<div id="duration" class="duration">0:00:00</div>
 
 		</div>
-		<div id="message"></div>
+	</div>
+	<div id="surround">
+		<div id="mygoal"></div>	
+		<div id="table">
+			<img id="puck" src="puck.gif"/>
+			<img id="opmallet" src="mallet.gif" />
+			<img id="mymallet" src="mallet.gif"/>
+		</div>
+		<div id="opgoal"></div>
 	</div>
 <?php
 }

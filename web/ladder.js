@@ -84,7 +84,7 @@ MBahladder = function() {
 				if (response.matches) {
 					response.matches.each(function(match) {
 						var el = $('M'+match.mid);  //see of match already has a record
-						if (match.abandon) {
+						if (match.deletion) {
 							if(el) el.destroy();
 						} else {
 							var d,p;
@@ -124,6 +124,7 @@ MBahladder = function() {
 							if(match.etime) {
 								//match is ended so set end time in place
 								d = new Element('div',{'class':'endmatch','text':formatDate(match.etime)}).inject(el);
+								if(match.abandon) d.addClass('abandon');
 							} else {		
 								el.store('start',match.stime);
 								d = new Element('div',{'class':'duration'}).inject(el);

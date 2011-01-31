@@ -19,28 +19,29 @@
 
 */
 var Table = new Class({
-	initialize: function(links,timers,els) {
+	initialize: function(links,timers,els,positions) {
 		var that = this;
 		this.els = els;
 		this.links = links;
-		this.opmallet = new opMallet(els.opmallet,{x:560,y:148});
+		this.opmallet = new opMallet(els.opmallet,positions.opmallet);
 		this.puck = new ComplexPuck({
 			goalAgainst:function() {that.links.match.goalAgainst();},
 			transition:function() {that.transition();},
 			play:function(sound) {that.links.play(sound);}
 		},els.puck,{x:560,y:1200,dx:0,dy:0});
-		this.myMallet = new myMallet(els,{x:560,y:2252});
-		els.table.addEvent('click',function(e) {
+		this.myMallet = new myMallet(els,positions.mymallet);
+		if(els.table) els.table.addEvent('click',function(e) {
 			e.stop();
 			if(that.myServe) {
-				var mp ={x: (e.page.x - els.table.getPosition().x)*4,y:(e.page.y - els.table.getPosition().y)*4}; // convert to internal co-ordinates
-				if (mp.x < 41) mp.x = 41; //make sure puck is on the table
-				if (mp.y < 41) mp.y = 41;
-				if (mp.x > 1079) mp.x = 1079;
-				if (mp.y > 2359) mp.y = 2359;
-				that.place(mp);
-				that.myServe = false;
-				that.links.match.served(that.puck);
+				var mp ={y: 2400-(e.page.x - els.table.getPosition().x)*4,x:(e.page.y - els.table.getPosition().y)*4}; // convert to internal co-ordinates
+				if(mp.y > 1200) {
+				//Make sure we are on the table and on my side				
+					mp.x = Math.max(41,Math.min(mp.x,1079));
+					mp.y = Math.max(1241,Math.min(mp.y,2359));
+					that.place(mp);
+					that.myServe = false;
+					that.links.match.served(that.puck);
+				}
 			}
 		});
 		this.timers = timers;
@@ -50,6 +51,9 @@ var Table = new Class({
 	start: function () {
 		this.time = new Date().getTime();
 		this.tickId = this.tick.periodical(this.timers.tick,this);
+	},
+	stop: function () {
+		this.tickId = $clear(this.tickId);
 	},
 	tick: function () {
 		var now = new Date().getTime();
@@ -93,8 +97,13 @@ var Table = new Class({
 								y -= dy*(t+10);
 							}
 							d1 = Math.sqrt(x*x+y*y);
-							cos_t = x/d1; //cos theta where theta angle of normal to x axis
-							sin_t = y/d1; //sin theta where theta angle of normal to x axis
+							if(d1 != 0) {
+								cos_t = x/d1; //cos theta where theta angle of normal to x axis
+								sin_t = y/d1; //sin theta where theta angle of normal to x axis
+							} else {
+								cos_t = 1; //got to assume something - 
+								sin_t = 0;
+							}
 							if (d2 < 94) {
 								d2 = 2*(94-d2);
 								this.puck.x += d2*cos_t;
@@ -226,7 +235,7 @@ var opMallet = new Class ({
 			this.x = d.x;
 			this.y = d.y;
 		}
-		this.el.setStyles({'left':this.x/4 - 14,'top':this.y/4 -14});
+		if (this.el) this.el.setStyles({'top':this.x/4 - 14,'right':this.y/4 -14});
 		return this;
 	}
 });
@@ -236,18 +245,16 @@ var myMallet = new Class({
 	initialize: function(els,position) {
 		var that = this;
 		this.parent(els.mymallet,position);
-		this.table = els.table.getPosition();
-		this.table.x *= 4;
-		this.table.y *= 4;
+		if(els.table) this.table = els.table.getPosition();
 		this.serve = false;
 		this.held = false;
 		this.mp.x = this.x;
 		this.mp.y = this.y;
 		this.els = els;
-		this.el.addEvent('mouseover',function(e) {
+		if(this.el) this.el.addEvent('mouseover',function(e) {
 			var setMalletPosition = function(e) {
-				that.mp.x = e.page.x*4 - that.table.x;
-				that.mp.y = e.page.y*4 - that.table.y;
+				that.mp.x = (e.page.y - that.table.y)*4;
+				that.mp.y = 2400-(e.page.x - that.table.x)*4;
 				if (that.mp.x < 0 || that.mp.y < 0) {
 					return false;
 				} else {
@@ -255,10 +262,8 @@ var myMallet = new Class({
 						return false;
 					}
 				}
-				if(that.mp.x < 53) that.mp.x = 53;
-				if(that.mp.x > 1067) that.mp.x = 1067;
-				if(that.mp.y < 53) that.mp.y = 53;
-				if(that.mp.y > 2347) that.mp.y = 2347;
+				that.mp.x=Math.max(53,Math.min(that.mp.x,1067));
+				that.mp.y=Math.max(53,Math.min(that.mp.y,2347));
 				return true;
 			}
 			e.stop();
@@ -282,14 +287,18 @@ var myMallet = new Class({
 	mp: {},
 	tick: function(time) {
 		if(this.held) {
-			this.dx = (this.mp.x - this.x)/time; //set velocity from movement over the period
-			this.dy = (this.mp.y - this.y)/time;
+			if(time != 0) {
+				this.dx = (this.mp.x - this.x)/time; //set velocity from movement over the period
+				this.dy = (this.mp.y - this.y)/time;
+			} else {
+				var x = 1;
+			}
 			this.update(this.mp); //update position from where mouse moved it to
 		}
 	},
  	drop: function() {
 		this.held = false;
-		this.els.surround.removeEvents('mousemove');
+		if(this.els.surround) this.els.surround.removeEvents('mousemove');
 		this.serve = true;  //say can't pick up until served.
 	},
 	hold: function () {
@@ -438,7 +447,7 @@ var ComplexPuck = new Class({
 		var that = this;
 		this.parent(p);
 		this.el = el;
-		el.removeClass('hidden'); //Make Sure
+		if (el) el.removeClass('hidden'); //Make Sure
 		this.links = links;
 		this.update();
 	},
@@ -469,15 +478,21 @@ var ComplexPuck = new Class({
 		position.dx = 0;
 		this.set(position);
 		this.side = (this.y > 1200)?1:(this.y<1200)?-1:0;
-		this.el.removeClass('hidden');
+		if(this.el) this.el.removeClass('hidden');
 		this.update();
 		this.links.play('mallet'); //mallet sound as place on table (or will get this from comms saying hit occurred)
 	},
 	remove: function() {
-		this.el.addClass('hidden');
+		if(this.el) this.el.addClass('hidden');
 	},
 	update: function() {
-		this.el.setStyles({'left':this.x/4 - 10,'top':this.y/4 -10});
+		if (isNaN(this.x) || isNaN(this.y) ) {
+			this.x = 560;
+			this.y = 1200;
+			this.dx = 0;
+			this.dy = 0;
+		}
+		if(this.el) this.el.setStyles({'top':this.x/4 - 10,'right':this.y/4 -10});
 	}
 	
 });
