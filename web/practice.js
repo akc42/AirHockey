@@ -160,6 +160,22 @@ var Opponent = new Class({
 					this.model.state = 1;
 				} else {
 					d = 2*this.model.d/Math.sqrt(x*x + y*y);
+					if(y > 0) {	
+						//pack is already past us - speed up
+						d *= 2;
+						y +=67;
+						if(this.computer.table.puck.x > 380 && x < 740) { //aim off to the side if we are in line already
+							// try and avoid hitting puck into goal
+							if (x > 0 && x< 94) {
+								x += 67; 
+							} else {
+								if (x < 0 && x > -94) {
+									x -=67;
+								}
+							}
+						}
+						
+					} 
 					m = x * d;			//can go as far as allowed in that direction - deltas are same ratio in x and y
 					n = y * d;
 					//avoid going off the table	or off to the other side		
@@ -238,7 +254,7 @@ var Opponent = new Class({
 		reply = this.computer.table.getUpdate();		
 		if(reply.puck) {
 			//puck is on table
-			if(reply.puck.y > 1159 && Math.abs(reply.puck.dy) < 0.2 && !this.inServeMode) {
+			if(!this.inServeMode && ((reply.puck.y > 1159 && Math.abs(reply.puck.dy) < 0.2) || reply.puck.y > 1300  )) {
 				//puck is my side and going slowly I need to try and hit it, on its back side
 				this.model.state = 3;  		//tell model to move towards puck
 			} else {
