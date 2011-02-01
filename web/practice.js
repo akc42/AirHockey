@@ -113,6 +113,10 @@ var Opponent = new Class({
 			var my = this.computer.table.myMallet.y;
 			x = mx - this.model.centre.x;
 			y = my - this.model.centre.y;
+			var now = new Date().getTime();
+			var timeSince = now - this.time;
+			this.time = now;
+			var dd = this.model.d * timeSince;
 			switch (this.model.state) {
 			case 1:
 				// Moving towards the circles edge calculate how far away it is
@@ -120,9 +124,9 @@ var Opponent = new Class({
 				if (Math.abs(d) > 2) {
 					//not there, so have to move closer
 					if (d > 0) {
-						if ( d > this.model.d) d = this.model.d;
+						if ( d > dd) d = dd;
 					} else {
-						if ( -d > this.model.d) d = -this.model.d;		
+						if ( -d > dd) d = -dd;		
 					}
 					if (x > 0) {
 						m = mx + (d/Math.sqrt(1 + ((y*y)/(x*x))));
@@ -139,7 +143,7 @@ var Opponent = new Class({
 				this.model.state = 2; //fall into circling state below
 			case 2:
 				//circling
-				d = this.model.d*this.model.d; //calculate d2
+				d = dd*dd; //calculate d2
 				c = (x*x*d*d) - ((x*x)+(y*y))*((d*d)-(4*y*y*d));
 				if(c < 0) {
 					c = 0;
@@ -159,20 +163,16 @@ var Opponent = new Class({
 				if(isNaN(x) || isNaN(y)) {
 					this.model.state = 1;
 				} else {
-					d = 2*this.model.d/Math.sqrt(x*x + y*y);
-					if(y > 0) {	
-						//pack is already past us - speed up
-						d *= 2;
-						y +=67;
-						if(this.computer.table.puck.x > 380 && x < 740) { //aim off to the side if we are in line already
+					d = 1.5*dd/Math.sqrt(x*x + y*y);
+					if(this.computer.table.puck.dy > this.model.d) {	
+						//pack is already faster than us
+						d *= 1+ 0.5*this.computer.table.puck.dy/this.model.d;
+						if(this.computer.table.puck.x >560) { //aim off to the side if we are in line already
 							// try and avoid hitting puck into goal
-							if (x > 0 && x< 94) {
-								x += 67; 
-							} else {
-								if (x < 0 && x > -94) {
-									x -=67;
-								}
-							}
+							x -= 41; //aim low side to push towards the edge 
+						} else {
+							x +=41;  //aim high side to push towards edge
+					
 						}
 						
 					} 
@@ -193,6 +193,7 @@ var Opponent = new Class({
 			
 		}
 		function StartMouse () {
+			this.time = new Date().getTime();
 			this.mouseId = Mouse.periodical(positions.practice.tick,this);
 			this.model.state = 1;
 			this.computer.table.myMallet.held = true; //say I am holding the mallet

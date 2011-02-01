@@ -29,13 +29,13 @@ var Scoreboard = new Class({
 		this.play = play;
 		var updateDuration = function() {
 			var myDate = new Date(new Date().getTime() - this.startTime*1000);
-			var min = myDate.getMinutes();
+			var min = myDate.getUTCMinutes();
 			min = min + "";
 			min = (min.length == 1)?'0'+min:min;
-			var secs = myDate.getSeconds();
+			var secs = myDate.getUTCSeconds();
 			secs = secs + "";
 			secs = (secs.length == 1)?'0'+secs:secs;
-			this.els.duration.set('text',myDate.getHours()+':'+min+':'+secs);
+			this.els.duration.set('text',myDate.getUTCHours()+':'+min+':'+secs);
 		};
 		this.duration = updateDuration.periodical(1000,this);
 		if(mid != 0) {

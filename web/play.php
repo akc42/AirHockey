@@ -47,7 +47,7 @@ define('AIR_HOCKEY_MALLET_POSITION', 148);  //Mallet starting position measured 
 	
 	These parameters refer to the values of the internal model.  That is they should have high y values
 */   
-define('AIR_HOCKEY_PRACTICE_PARAMS', '{delay:2500,tick:50,c:{x:560,y:2006},r:200,d:10,s:{x:560,y:1290},ran:40}');  
+define('AIR_HOCKEY_PRACTICE_PARAMS', '{delay:2500,tick:50,c:{x:560,y:2006},r:200,d:0.3,s:{x:560,y:1290},ran:40}');  
 		
 require_once('./db.inc');
 
