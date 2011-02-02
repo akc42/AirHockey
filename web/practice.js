@@ -205,7 +205,8 @@ var Opponent = new Class({
 			StartMouse.delay(800+that.startDelay,that);	//and out control of our mallet
 			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
-		startMatch.delay(2000); //say opponent is there is 5 secs
+		startMatch.delay(2000); //say opponent is there is 2 secs
+		
 
 	},
 	hit: function(mallet,puck,time) {
@@ -301,7 +302,7 @@ var DummyScoreboard = new Class({
 		}
 		if(s) {
 			//Scoreboard has told me to serve, so now I need to
-			placePuck.delay(1000,this);
+			placePuck.delay(4000,this);
 			this.links.opponent.setServeMode();
 		}
 	},

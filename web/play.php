@@ -28,6 +28,7 @@ if ($_GET['pass'] != sha1("Air".$uid))
 define('AIR_HOCKEY_MODEL_TICK',			33);	//milliseconds between calculating new table layout
 define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30000);  //Milliseconds to wait until assume opponent has not come (approx 30 secs)
 define('AIR_HOCKEY_MODEL_TIMEOUT', 		5000);  //Milliseconds to wait until assume comms running the model have died (approx 2 secs)
+define('AIR_HOCKEY_MODEL_MAX_SPEED',	3.5);		//Max distance puck can travel in a millisecond
 define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have synchronised
 define('AIR_HOCKEY_MALLET_DELAY',		1000);   // Millisecs between when mallet positions get sent
 define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
@@ -53,6 +54,9 @@ require_once('./db.inc');
 
 $player = $db->prepare("SELECT name FROM player WHERE pid = ?");
 $player->bindValue(1,$uid,PDO::PARAM_INT);
+$practice = $db->prepare("INSERT INTO match (hid,aid,abandon) VALUES ( ?,NULL,'P')");
+$practice->bindValue(1,$uid,PDO::PARAM_INT);
+
 
 $db->beginTransaction();
 
@@ -83,7 +87,6 @@ if (isset($_GET['mid'])) {
 	}
 	$match->closeCursor();
 } else {
-	$mid = 0; //No opponent, so say am practicing
 	$oid = 0;
 	$isMaster = true;
 	$opName = 'My Computer (Practice)' ;
@@ -91,8 +94,10 @@ if (isset($_GET['mid'])) {
 	if(!($myName=$player->fetchColumn())) die('Something wrong - I don\'t appear on the database');
 	$startTime = time();
 	$player->closeCursor();
+	$practice->execute(); //create practice match
+	$mid = $db->lastInsertId();
 }
-$db->rollBack();
+$db->commit();
 
 function head_content() {
 	global $mid,$startTime,$uid,$oid,$isMaster;
@@ -103,7 +108,7 @@ function head_content() {
 	<script src="scorer.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="match.js" type="text/javascript" charset="UTF-8"></script>
-<? if($mid == 0) {
+<? if(!isset($_GET['mid'])) {
 ?>	<script src="practice.js" type="text/javascript" charset="UTF-8"></script>
 <?php
 	} else {
@@ -126,6 +131,7 @@ window.addEvent('domready', function() {
 				tick:<?php echo AIR_HOCKEY_MODEL_TICK ;?>,
 				opponent:<?php echo AIR_HOCKEY_OPPONENT_TIMEOUT ; ?>,
 				timeout:<?php echo AIR_HOCKEY_MODEL_TIMEOUT ; ?>,
+				maxspeed:<?php echo AIR_HOCKEY_MODEL_MAX_SPEED ; ?>,
 				startup:<?php echo AIR_HOCKEY_START_DELAY ; ?>,
 				mallet: <?php echo AIR_HOCKEY_MALLET_DELAY ; ?>,
 				myside: <?php echo AIR_HOCKEY_MYSIDE_TIMEOUT ; ?>,
@@ -155,7 +161,7 @@ window.addEvent('domready', function() {
 				mymallet:{x:560,y:<?php echo 2400 - AIR_HOCKEY_MALLET_POSITION ; ?>},
 				opmallet:{x:560,y:<?php echo AIR_HOCKEY_MALLET_POSITION ;?>}
 <?php
-	if($mid == 0) {
+	if(!isset($_GET['mid'])) {
 ?>				,practice: <?php echo AIR_HOCKEY_PRACTICE_PARAMS ;?>
 <?php
 }

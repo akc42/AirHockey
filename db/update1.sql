@@ -1,5 +1,5 @@
 
--- 	Copyright (c) 2009-2011 Alan Chandler
+-- 	Copyright (c) 2011 Alan Chandler
 --    This file is part of AirHockey, an real time simulation of Air Hockey
 --    for playing over the internet.
 
@@ -18,20 +18,16 @@
 --    see <http://www.gnu.org/licenses/>.
 
 
+-- updates database to version 2 from version 1
 
 BEGIN;
-
 CREATE TABLE config (
 	name text PRIMARY_KEY,
 	value text
 );
 INSERT INTO config(name,value) VALUES('version','2');
 
-
-CREATE TABLE event (
-    eid integer PRIMARY KEY,
-    title character varying
-);
+ALTER TABLE match RENAME TO tmpmatch;
 
 CREATE TABLE match (
     mid integer PRIMARY KEY,
@@ -58,26 +54,15 @@ CREATE TABLE match (
     abandon character(1) --Set Non Null to indicate abandoned match  A= abandoned P = finished practice D= may be deleted
 );
 
-CREATE TABLE player (
-    pid integer PRIMARY KEY, --user id from forum
-    name character varying NOT NULL, -- display name from forum
-    mu real DEFAULT 1500.0 NOT NULL, -- ladder scoring param
-    sigma double precision DEFAULT 350.0 NOT NULL, -- ladder scoring param
-    last_match bigint, --time of last match completed (needed in calculation of sigma)
-    iid integer DEFAULT 0 NOT NULL, -- if not null uid of person being invited
-    last_poll bigint DEFAULT (strftime('%s','now')) NOT NULL, --marks time online but not in a match
-    state smallint DEFAULT 0 NOT NULL, -- 0= offline, 1=spectator, 2 = play anyone, 3 = invite only, 4 = invite accepted, 5 = in match, 6 = in practice
-    last_state bigint DEFAULT (strftime('%s','now')) -- time of last state change, or score in a match
-);
-CREATE INDEX index_invite ON player(iid);
 
+INSERT INTO match SELECT * FROM tmpmatch;
+DROP TABLE tmpmatch;
 
 -- match including event title and players names
+DROP VIEW full_match;
+
 CREATE VIEW full_match AS
     SELECT hid, aid, start_time, end_time, last_activity, mid, m.eid AS eid, title, h1, h2, h3, h4, h5, h6, h7, a1, a2, a3, a4, a5, a6, a7, h.name AS hname, a.name AS aname, abandon FROM match m JOIN player h ON m.hid = h.pid LEFT JOIN player a ON m.aid = a.pid LEFT JOIN event e ON m.eid = e.eid;
 
 END TRANSACTION;
-
--- set it all up as Write Ahead Log for max performance and minimum contention with other users (if available_.
---PRAGMA journal_mode=WAL;
 

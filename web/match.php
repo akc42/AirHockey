@@ -36,11 +36,11 @@ require_once('./db.inc');
 
 $g = $_POST['g'];
 
-$match = $db->prepare("SELECT count(*) FROM match WHERE mid = ?");
+$match = $db->prepare("SELECT hid,aid FROM match WHERE mid = ?");
 $match->bindValue(1,$mid,PDO::PARAM_INT);
 $db->beginTransaction();
 $match->execute();
-if($match->fetchColumn() == 1) {
+if($row = $match->fetch(PDO::FETCH_ASSOC)) {
 	$match->closeCursor();
 	if($g > 0) {
 		$score = $db->prepare("UPDATE match SET last_activity = (strftime('%s','now')), h".$g." = ?, a".$g." = ? WHERE mid = ?");
@@ -55,50 +55,52 @@ if($match->fetchColumn() == 1) {
 			$endmatch->bindValue(1,$mid,PDO::PARAM_INT);
 			$endmatch->execute();
 			$endmatch->closeCursor();
+			if(!is_null($row['aid'])) { //not a practice match
 // so we need to update the players results 
-			if($_POST['h'] == 7) {
-				//winner was home player
-				$winner = $row['hid'];
-				$loser = $row['aid'];
-			} else {
-				$winner = $row['aid'];
-				$loser= $row['hid'];
-			}
-			$musigma = $db->prepare("SELECT mu,sigma,last_match FROM player WHERE pid = ?");
-			$musigma->bindValue(1,$winner,PDO::PARAM_INT);
-			$musigma->execute();
-			$w = $musigma->fetch(PDO::FETCH_ASSOC);
-			$musigma->closeCursor();
-			$musigma->bindValue(1,$loser,PDA::PARAM_INT);
-			$musigma->execute();
-			$l = $musigma->fetch(PDO::FETCH_ASSOC);
-			$musigma->closeCursor();
-			//use glicko method to update mu and sigma http://math.bu.edu/people/mg/glicko/glicko.doc/glicko.html
-			$wns = max(30,min(sqrt(pow($w['sigma'],2) - (666*(time()-$w['last_match']))/864000),350));
-			$lns = max(30,min(sqrt(pow($l['sigma'],2) - (666*(time()-$l['last_match']))/864000),350));
-			$q=0.0057565;
-			$wg = 1/sqrt(1+(3*$q*$q*pow($w['sigma'],2)/(2*M_PI)));
-			$lg = 1/sqrt(1+(3*$q*$q*pow($l['sigma'],2)/(2*M_PI)));
-			$wE = 1/(1+pow(10,-$lg*($w['mu']-$l['mu'])/400));
-			$lE = 1/(1+pow(10,-$wg*($l['mu']-$w['mu'])/400));
-			$wd2 = 1/($q*$q*$lg*$lg*$wE*(1-$wE));
-			$ld2 = 1/($q*$q*$wg*$wg*$lE*(1-$lE));
-			$w['mu'] += ($q/(1/($wns*$wns)+1/$wd2))*$lg*(1-$wE);
-			$l['mu'] -= ($q/(1/($lns*$lns)+1/$ld2))*$lg*$lE;
-			$w['sigma'] = sqrt(1/(1/($wns*$wns) + 1/$wd2));
-			$l['sigma'] = sqrt(1/(1/($lns*$lns) + 1/$ld2));
-			$update = $db->prepare("UPDATE player SET mu = ?, sigma = ? last_match = (strftime('%s','now')) WHERE pid = ?");
-			$update->bindValue(1,$w['mu']);
-			$update->bindValue(2,$w['sigma']);
-			$update->bindvalue(3,$winner,PDO::PARAM_INT);
-			$update->execute();
-			$update->closeCursor();
+				if($_POST['h'] == 7) {
+					//winner was home player
+					$winner = $row['hid'];
+					$loser = $row['aid'];
+				} else {
+					$winner = $row['aid'];
+					$loser= $row['hid'];
+				}
+				$musigma = $db->prepare("SELECT mu,sigma,last_match FROM player WHERE pid = ?");
+				$musigma->bindValue(1,$winner,PDO::PARAM_INT);
+				$musigma->execute();
+				$w = $musigma->fetch(PDO::FETCH_ASSOC);
+				$musigma->closeCursor();
+				$musigma->bindValue(1,$loser,PDA::PARAM_INT);
+				$musigma->execute();
+				$l = $musigma->fetch(PDO::FETCH_ASSOC);
+				$musigma->closeCursor();
+				//use glicko method to update mu and sigma http://math.bu.edu/people/mg/glicko/glicko.doc/glicko.html
+				$wns = max(30,min(sqrt(pow($w['sigma'],2) - (666*(time()-$w['last_match']))/864000),350));
+				$lns = max(30,min(sqrt(pow($l['sigma'],2) - (666*(time()-$l['last_match']))/864000),350));
+				$q=0.0057565;
+				$wg = 1/sqrt(1+(3*$q*$q*pow($w['sigma'],2)/(2*M_PI)));
+				$lg = 1/sqrt(1+(3*$q*$q*pow($l['sigma'],2)/(2*M_PI)));
+				$wE = 1/(1+pow(10,-$lg*($w['mu']-$l['mu'])/400));
+				$lE = 1/(1+pow(10,-$wg*($l['mu']-$w['mu'])/400));
+				$wd2 = 1/($q*$q*$lg*$lg*$wE*(1-$wE));
+				$ld2 = 1/($q*$q*$wg*$wg*$lE*(1-$lE));
+				$w['mu'] += ($q/(1/($wns*$wns)+1/$wd2))*$lg*(1-$wE);
+				$l['mu'] -= ($q/(1/($lns*$lns)+1/$ld2))*$lg*$lE;
+				$w['sigma'] = sqrt(1/(1/($wns*$wns) + 1/$wd2));
+				$l['sigma'] = sqrt(1/(1/($lns*$lns) + 1/$ld2));
+				$update = $db->prepare("UPDATE player SET mu = ?, sigma = ? last_match = (strftime('%s','now')) WHERE pid = ?");
+				$update->bindValue(1,$w['mu']);
+				$update->bindValue(2,$w['sigma']);
+				$update->bindvalue(3,$winner,PDO::PARAM_INT);
+				$update->execute();
+				$update->closeCursor();
 			
-			$update->bindValue(1,$l['mu']);
-			$update->bindValue(2,$l['sigma']);
-			$update->bindvalue(3,$loser,PDO::PARAM_INT);
-			$update->execute();
-			$update->closeCursor();
+				$update->bindValue(1,$l['mu']);
+				$update->bindValue(2,$l['sigma']);
+				$update->bindvalue(3,$loser,PDO::PARAM_INT);
+				$update->execute();
+				$update->closeCursor();
+			}
 		} else {
 			$abandon= $db->prepare("
 				UPDATE match SET  last_activity = (strftime('%s','now')), end_time = (strftime('%s','now')), abandon = 'A' WHERE mid = ?

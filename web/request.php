@@ -127,7 +127,7 @@ if ($user['state'] == ACCEPTED) {
 	}
 	if($oid) {
 		//OK found someone, so create a match and put him into the Master Satestate.
-		$newmatch = $db->prepare("INSERT INTO match (hid,aid,start_time,last_activity) VALUES ( ?,?,(strftime('%s','now')),(strftime('%s','now')))");
+		$newmatch = $db->prepare("INSERT INTO match (hid,aid) VALUES ( ?,?)");
 		$newmatch->bindValue(1,$oid,PDO::PARAM_INT);
 		$newmatch->bindValue(2,$uid,PDO::PARAM_INT);
 		$newmatch->execute();
@@ -185,12 +185,17 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 			if($row['abandon'] == 'A') {
 				echo ',"abandon":true' ;
 			} else {
-				echo ',"deletion":true';
+				if($row['abandon'] == 'D') echo ',"deletion":true';
 			}
 		} 
 		if (!is_null($row['eid'])) echo ',"event":"'.$row['title'].'"';
-		echo ',"hname":"'.$row['hname'].'","aname":"'.$row['aname'].'"';
-		echo ',"stime":'.$row['start_time'] ;
+		echo ',"hname":"'.$row['hname'].'","aname":"';
+		if(is_null($row['aname'])) {
+			echo '(PRACTICING)';
+		} else {
+			echo $row['aname'] ;
+		}
+		echo '","stime":'.$row['start_time'] ;
 		if (!is_null($row['end_time'])) echo ',"etime":'.$row['end_time'];
 		if (!is_null($row['h1'])) {
 			echo ',"games":[['.$row['h1'].','.$row['a1'].']';

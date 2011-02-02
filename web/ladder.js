@@ -44,7 +44,7 @@ MBahladder = function() {
 			var secs = myDate.getSeconds();
 			secs = secs + "";
 			secs = (secs.length == 1)?'0'+secs:secs;
-			duration.set('text',myDate.getHours()+':'+min+':'+secs);
+			duration.set('text',myDate.getUTCHours()+':'+min+':'+secs);
 		}
 	};
 	var userclick = function(e) {

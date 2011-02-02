@@ -61,6 +61,29 @@ $time = time();  //We need to set time BEFORE this following INSERT happens so i
 
 $db->exec("PRAGMA foreign_keys = OFF");
 
+$result = $db->query("SELECT count(*) FROM sqlite_master WHERE name = 'config' ;");
+if(!($result && ($present = $result->fetchColumn()) && $present == '1')) {
+	//NO CONFIG TABLE - so database must be at version 1 - update to version 2
+	$result->closeCursor();
+    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'update1.sql'));	    
+} else {
+	$result->closeCursor();
+}
+/*
+
+Uncomment the code below when the database version is next updated
+
+$result = $db->query("SELECT value FROM config WHERE name = 'version' ");
+if(!($result && ($version = $result->fetchColumn()) && $version < '3')) {
+	$result->closeCursor();
+    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'update2.sql'));	    
+} else {
+	$result->closeCursor();
+}
+*/ 
+
+
+
 $user = $db->prepare("INSERT OR REPLACE INTO player(pid,name) VALUES (?,?)");
 $user->bindValue(1,$uid,PDO::PARAM_INT);
 $user->bindValue(2,$name);
@@ -123,7 +146,7 @@ function content() {
 		}
 ?>			<div class="players">
 				<div class="user"><?php echo $row['hname'] ; ?></div>
-				<div class="user"><?php echo $row['aname'] ; ?></div>
+				<div class="user"><?php echo is_null($row['aname'])?'(PRACTICING)':$row['aname'] ; ?></div>
 			</div>
 <?php
 		for ($i=1;$i <= 7;$i++) {
@@ -154,7 +177,7 @@ function content() {
 			}
 ?>			<div class="players">
 				<div class="user"><?php echo $row['hname'] ; ?></div>
-				<div class="user"><?php echo $row['aname'] ; ?></div>
+				<div class="user"><?php echo is_null($row['aname'])?'(PRACTICING)':$row['aname'] ; ?></div>
 			</div>
 <?php
 			for ($i=1;$i <= 7;$i++) {

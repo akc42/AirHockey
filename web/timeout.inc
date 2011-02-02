@@ -34,14 +34,19 @@ WHERE mid IN (
 	SELECT mid 
 	FROM match 
 	JOIN player h ON match.hid = h.pid
-	JOIN player a ON match.aid = a.pid
+	LEFT JOIN player a ON match.aid = a.pid
 	WHERE
 		end_time IS NULL
 		AND h.state = ".OFFLINE."
-		AND a.state = ".OFFLINE."
+		AND (a.state IS NULL OR a.state = ".OFFLINE.")
 )");
 
-$setdelete = $db->prepare("UPDATE match SET abandon = 'D', last_activity = (strftime('%s','now')) WHERE abandon = 'A' AND end_time < ?");
+$setdelete = $db->prepare("
+UPDATE match SET abandon = 'D', last_activity = (strftime('%s','now')) 
+WHERE 
+	(abandon = 'A' OR abandon = 'P')
+	AND end_time IS NOT NULL AND end_time < ?"
+);
 $setdelete->bindValue(1,time() - 60*AIR_HOCKEY_MATCH_ABANDON,PDO::PARAM_INT);
 
 $mremove = $db->prepare("DELETE FROM match WHERE (start_time < ? AND  eid IS NULL) OR (abandon = 'D' AND end_time < ? )");

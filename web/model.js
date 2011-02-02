@@ -113,7 +113,7 @@ var Table = new Class({
 							pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
 							pvt = this.puck.dx*sin_t - this.puck.dy*cos_t;  //puck velicity tangent
 
-							var pvn2 = 2*mvn - pvn; //puck normal after meeting mallet
+							var pvn2 = Math.min(2*mvn - pvn,this.timers.maxspeed); //puck normal after meeting mallet (although not beyond limit)
 							this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
 							this.puck.dy = pvn2*sin_t - pvt*cos_t;
 							// send model details as they are after the collision
