@@ -257,7 +257,7 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':C]');
 				}
 				break;
 			case 'D':
-				if(this.aC < 3)
+				if(this.aC < 3) {
 this.els.message.appendText('['+this.echoTime()+':'+this.aC+':c]');
 					if(this.aC = 2) this.aC = 0;
 				}
