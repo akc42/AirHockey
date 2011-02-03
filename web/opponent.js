@@ -71,7 +71,7 @@ var Opponent = new Class({
 			that.comms.set(er,timers.timeout);
 			that.comms.read();
 			var now = new Date().getTime() + that.timeOffset;
-			that.links.match.start.delay(time+800 - now,that.links.match);	//we want to start the match from 1 second from when the server told us.
+			that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
 			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
 		var er = function(t,m) {
@@ -231,14 +231,14 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':g]');
 				firm = true;
 			case 'P' :
 					this.links.table.update(firm,
-					{x:splitMsg[1].toFloat(),y:2400 - splitMsg[2].toFloat()},
-					{x:splitMsg[3].toFloat(),y:2400 - splitMsg[4].toFloat(),
-						dx:splitMsg[5].toFloat(),dy:-splitMsg[6].toFloat()},
+					{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},
+					{x:splitMsg[3].toFloat(),y:splitMsg[4].toFloat(),
+						dx:splitMsg[5].toFloat(),dy:splitMsg[6].toFloat()},
 	 				splitMsg[7].toInt()-this.timeOffset);
 				//calculate where I think the puck should be based on the time
 				break;
 			case 'M' :
-				this.links.table.update(false,{x:splitMsg[1].toFloat(),y:2400 - splitMsg[2].toFloat()},null,null);
+				this.links.table.update(false,{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},null,null);
 				break;
 			case 'X' :
 this.els.message.appendText('['+this.echoTime()+':'+this.aC+':X:'+splitMsg[1]+']');

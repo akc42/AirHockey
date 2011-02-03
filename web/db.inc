@@ -21,6 +21,17 @@
 */
 define('AIR_HOCKEY_DATABASE','/home/alan/dev/airhock/db/');
 
+function get_param($name) {
+	global $db;
+	$params = $db->prepare("SELECT value FROM config WHERE name = ?");
+	$params->bindValue(1,$name);
+	$params->execute();
+	$value = $params->fetchColumn();
+	$params->closeCursor();
+	return $value;
+}
+
+
 if(!file_exists(AIR_HOCKEY_DATABASE.'airhock.db')) {
 	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.'airhock.db');
     $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'database.sql'));

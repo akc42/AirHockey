@@ -27,9 +27,6 @@ Path to the pipe directory.  If you change it here, also change it in abort.php 
 */
 define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 
-define('AIR_HOCKEY_MAX_MATCHLIST_SIZE',		10);
-define('AIR_HOCKEY_POLL',				10000);  //milliseconds delay between polls for new info
-
 require_once($_SERVER['DOCUMENT_ROOT'].'/forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
 if($user_info['is_guest']) {
@@ -43,19 +40,6 @@ if(isset($user_info['id'])) { //check if this is SMFv2
 }
 $name = &$user_info['name'];
 
-// Make a fifo for this user if there isn't one already
-$old_umask = umask(0007);
-if(!file_exists(AIR_HOCKEY_PIPE_PATH."msg".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."msg".$uid,0660);
-if(!file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."ack".$uid,0660);
-umask($old_umask);
-
-//make sure there are no extant processes waiting on message any hanging reads will terminate
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."msg".$uid,'r+');
-usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-fclose($pipe);
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+');
-usleep(10000);  //give the other side of the pipe a chance to wake up and notice
-fclose($pipe);
 require_once('./db.inc');
 $time = time();  //We need to set time BEFORE this following INSERT happens so its state change is seen.
 
@@ -69,18 +53,13 @@ if(!($result && ($present = $result->fetchColumn()) && $present == '1')) {
 } else {
 	$result->closeCursor();
 }
-/*
 
-Uncomment the code below when the database version is next updated
-
-$result = $db->query("SELECT value FROM config WHERE name = 'version' ");
-if(!($result && ($version = $result->fetchColumn()) && $version < '3')) {
-	$result->closeCursor();
-    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'update2.sql'));	    
-} else {
-	$result->closeCursor();
+$version = get_param('version');
+if($version < 3) {
+    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'update2.sql'));
 }
-*/ 
+
+ 
 
 
 
@@ -98,6 +77,21 @@ $db->exec("PRAGMA foreign_keys = ON");
 //Timeout users who are supposed to be on line, but haven't contacted for a while
 require('./timeout.inc');
 
+
+// Make a fifo for this user if there isn't one already
+$old_umask = umask(0007);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."msg".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."msg".$uid,0660);
+if(!file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."ack".$uid,0660);
+umask($old_umask);
+
+//make sure there are no extant processes waiting on message any hanging reads will terminate
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."msg".$uid,'r+');
+usleep(10000);  //give the other side of the pipe a chance to wake up and notice
+fclose($pipe);
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+');
+usleep(10000);  //give the other side of the pipe a chance to wake up and notice
+fclose($pipe);
+
 function head_content() {
 	global $uid,$time;
 ?>   <title>Melinda's Backups Air Hockey Ladder</title>
@@ -107,7 +101,7 @@ function head_content() {
 	<!--
 window.addEvent('domready', function() {
 	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>},
-		<?php echo SPECTATOR; ?>,<?php echo AIR_HOCKEY_POLL; ?>);
+		<?php echo SPECTATOR; ?>,<?php echo get_param('POLL'); ?>);
 });
 window.addEvent('unload', function() {
 	MBahladder.logout();
@@ -163,10 +157,10 @@ function content() {
 <?php
 	}
 	$result->closeCursor();
-
-	if($nomatches < AIR_HOCKEY_MAX_MATCHLIST_SIZE) {
+	$matchlistsize = get_param('MAX_MATCHLIST_SIZE');
+	if($nomatches < $matchlistsize) {
 		$result = $db->query("SELECT * FROM full_match WHERE end_time IS NOT NULL AND abandon <> 'D' ORDER BY start_time DESC LIMIT "
-								.(AIR_HOCKEY_MAX_MATCHLIST_SIZE - $nomatches));
+								.($matchlistsize - $nomatches));
 		while ($row=$result->fetch(PDO::FETCH_ASSOC)) {
 			$nomatches++;
 ?>		<div id="<?php echo 'M'.$row['mid'] ; ?>" class="match">
@@ -189,7 +183,7 @@ function content() {
 <?php
 				}
 			}
-?>			<div class="endmatch<? if(!is_null($row['abandon'])) echo ' abandon'; ?>"><?php echo $row['end_time'] ; ?></div>
+?>			<div class="endmatch<? if(!is_null($row['abandon']) && $row['abandon'] == 'A') echo ' abandon'; ?>"><?php echo $row['end_time'] ; ?></div>
 		</div>
 <?php
 		}

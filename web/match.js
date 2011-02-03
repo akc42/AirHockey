@@ -53,9 +53,9 @@ var Match = new Class({
 			that.links.table.transition();
 		};
 		this.links.scoreboard.status('Start Match');
-		this.links.scoreboard.set(this.timers.startup,inPlay);
+		this.links.scoreboard.set(this.timers.startdelay,inPlay);
 		this.links.table.start();
-		this.links.table.place({x:560,y:1200});
+		this.links.table.place(); //Null position places it in the centre by default
 	},
 	serve: function(position) {
 		this.links.table.place(position);

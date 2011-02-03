@@ -26,7 +26,6 @@ define('AIR_HOCKEY_MATCH_REMOVE', 60); //No of days after match we remove friend
 define('AIR_HOCKEY_PLAYER_REMOVE',300); //No of days we remove players with no activity (unless they are in a match being kept)
 
 $players = $db->prepare("UPDATE player SET state = ".OFFLINE." WHERE last_poll < ? ");
-$players->bindValue(1,time() - 60*AIR_HOCKEY_OFFLINE_USER,PDO::PARAM_INT);
 
 $abandon = $db->prepare(" 
 UPDATE match SET abandon = 'A', last_activity = (strftime('%s','now')), end_time = (strftime('%s','now')) 
@@ -47,11 +46,8 @@ WHERE
 	(abandon = 'A' OR abandon = 'P')
 	AND end_time IS NOT NULL AND end_time < ?"
 );
-$setdelete->bindValue(1,time() - 60*AIR_HOCKEY_MATCH_ABANDON,PDO::PARAM_INT);
 
 $mremove = $db->prepare("DELETE FROM match WHERE (start_time < ? AND  eid IS NULL) OR (abandon = 'D' AND end_time < ? )");
-$mremove->bindValue(1,time() - 86400*AIR_HOCKEY_MATCH_REMOVE,PDO::PARAM_INT);
-$mremove->bindValue(2,time() - 2*60*AIR_HOCKEY_MATCH_ABANDON,PDO::PARAM_INT);
 
 $premove = $db->prepare("
 DELETE FROM player 
@@ -63,9 +59,13 @@ WHERE
 		SELECT aid AS pid FROM match a
 	)
 ");
-$premove->bindValue(1,time() - 86400*AIR_HOCKEY_PLAYER_REMOVE,PDO::PARAM_INT);
 
 $db->beginTransaction();
+$players->bindValue(1,time() - get_param('OFFLINE_USER'),PDO::PARAM_INT);
+$setdelete->bindValue(1,time() - get_param('PRACTICE_ABANDON_REMOVE'),PDO::PARAM_INT);
+$mremove->bindValue(1,time() - 86400*get_param('MATCH_REMOVE'),PDO::PARAM_INT);
+$mremove->bindValue(2,time() - get_param('DELETE_REMOVE'),PDO::PARAM_INT);
+$premove->bindValue(1,time() - 86400*get_param('PLAYER_REMOVE'),PDO::PARAM_INT);
 
 $players->execute(); //Mark all players with no polling going on for a while as OFFLINE
 $players->closeCursor();

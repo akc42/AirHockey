@@ -24,31 +24,6 @@ if(!(isset($_GET['user']) && isset($_GET['pass'])))
 $uid = $_GET['user'];
 if ($_GET['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_GET['pass'].' expected: '.sha1("Air".$uid));
-
-define('AIR_HOCKEY_MODEL_TICK',			33);	//milliseconds between calculating new table layout
-define('AIR_HOCKEY_OPPONENT_TIMEOUT',	30000);  //Milliseconds to wait until assume opponent has not come (approx 30 secs)
-define('AIR_HOCKEY_MODEL_TIMEOUT', 		5000);  //Milliseconds to wait until assume comms running the model have died (approx 2 secs)
-define('AIR_HOCKEY_MODEL_MAX_SPEED',	3.5);		//Max distance puck can travel in a millisecond
-define('AIR_HOCKEY_START_DELAY',		5);		//Seconds to start after both sides have synchronised
-define('AIR_HOCKEY_MALLET_DELAY',		1000);   // Millisecs between when mallet positions get sent
-define('AIR_HOCKEY_MYSIDE_TIMEOUT',		7);		//Seconds before a violation of too long my side
-define('AIR_HOCKEY_OFFSET_COUNT',		10);	//how many measurements of time offset do we need to get a good average
-define('AIR_HOCKEY_RESTART_DELAY',		10);  //Seconds you have after foul or goal to place puck
-define('AIR_HOCKEY_CONTROL_DELAY',		2000); //Milliseconds to have puck on your side to be "in Control" of it
-define('AIR_HOCKEY_INPLAY_DELAY',		2); //Seconds after puck server that he is allowed to hit it
-define('AIR_HOCKEY_MATCH_POLL',			60000); //Milliseconds between polls whilst in match to show still here
-define('AIR_HOCKEY_MALLET_POSITION', 148);  //Mallet starting position measured in model coordinate from goal (table length = 2400)
-/*
-	The following definition is a javascript object containing all the starting parameters for the opponent simulation
-	that runs in practice mode.  It is easy to be confused with the coordinate systems because the main game runs on the assumption
-	that "My" end is the high values of y and the Opponent runs with low values of y.  However, although we are the opponent here,
-	the internal simulation it runs to decide what to do pretends it is playing a game in which it is the "My" end (ie all the
-	coordinates are reversed.  It has an internal copy of the match (with a dummy scoreboard) and table (with associated pucks and 
-	mallets) objects with everything reversed.
-	
-	These parameters refer to the values of the internal model.  That is they should have high y values
-*/   
-define('AIR_HOCKEY_PRACTICE_PARAMS', '{delay:2500,tick:50,c:{x:560,y:2006},r:200,d:0.3,s:{x:560,y:1290},ran:40}');  
 		
 require_once('./db.inc');
 
@@ -100,7 +75,8 @@ if (isset($_GET['mid'])) {
 $db->commit();
 
 function head_content() {
-	global $mid,$startTime,$uid,$oid,$isMaster;
+	global $db,$mid,$startTime,$uid,$oid,$isMaster;
+	$db->beginTransaction();
 ?>	<title>Melinda's Backups Air Hockey Game Play Screen</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
 	<script src="soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
@@ -128,18 +104,19 @@ window.addEvent('domready', function() {
 			<?php echo $oid;?>,
 			<?php echo (($isMaster)?'true':'false'); ?>,
 			{
-				tick:<?php echo AIR_HOCKEY_MODEL_TICK ;?>,
-				opponent:<?php echo AIR_HOCKEY_OPPONENT_TIMEOUT ; ?>,
-				timeout:<?php echo AIR_HOCKEY_MODEL_TIMEOUT ; ?>,
-				maxspeed:<?php echo AIR_HOCKEY_MODEL_MAX_SPEED ; ?>,
-				startup:<?php echo AIR_HOCKEY_START_DELAY ; ?>,
-				mallet: <?php echo AIR_HOCKEY_MALLET_DELAY ; ?>,
-				myside: <?php echo AIR_HOCKEY_MYSIDE_TIMEOUT ; ?>,
-				count: <?php echo AIR_HOCKEY_OFFSET_COUNT ; ?>,
-				restart: <?php echo AIR_HOCKEY_RESTART_DELAY ; ?>,
-				control:<?php echo AIR_HOCKEY_CONTROL_DELAY ;?>,
-				inplay:<?php echo AIR_HOCKEY_INPLAY_DELAY ; ?>,
-				poll:<?php echo AIR_HOCKEY_MATCH_POLL ;?> 
+				tick:<?php echo get_param('MODEL_TICK') ;?>,
+				opponent:<?php echo get_param('OPPONENT_TIMEOUT') ; ?>,
+				timeout:<?php echo get_param('MODEL_TIMEOUT') ; ?>,
+				maxspeed:<?php echo get_param('MODEL_MAX_SPEED') ; ?>,
+				startup:<?php echo get_param('STARTUP_DELAY') ; ?>,
+				startdelay:<?php echo get_param('START_DELAY') ; ?>,
+				mallet: <?php echo get_param('MALLET_DELAY') ; ?>,
+				myside: <?php echo get_param('MYSIDE_TIMEOUT') ; ?>,
+				count: <?php echo get_param('OFFSET_COUNT') ; ?>,
+				restart: <?php echo get_param('RESTART_DELAY') ; ?>,
+				control:<?php echo get_param('CONTROL_DELAY') ;?>,
+				inplay:<?php echo get_param('INPLAY_DELAY') ; ?>,
+				poll:<?php echo get_param('MATCH_POLL') ;?> 
 			},
 			{
 				table:$('table'),
@@ -158,11 +135,22 @@ window.addEvent('domready', function() {
 				message:$('message')
 			},
 			{
-				mymallet:{x:560,y:<?php echo 2400 - AIR_HOCKEY_MALLET_POSITION ; ?>},
-				opmallet:{x:560,y:<?php echo AIR_HOCKEY_MALLET_POSITION ;?>}
+				mymallet:{x:560,y:TY - <?php echo get_param('MALLET_POSITION') ; ?>},
+				opmallet:{x:560,y:<?php echo get_param('MALLET_POSITION') ;?>}
 <?php
 	if(!isset($_GET['mid'])) {
-?>				,practice: <?php echo AIR_HOCKEY_PRACTICE_PARAMS ;?>
+?>				,practice: {
+					delay:<?php echo get_param('PRACTICE_DELAY') ;?>,
+					tick:<?php echo get_param('PRACTICE_TICK') ;?>,
+					c:{x:<?php echo get_param('PRACTICE_CENTRE_X') ;?>,y:<?php echo get_param('PRACTICE_CENTRE_Y') ;?>},
+					r:<?php echo get_param('PRACTICE_RADIUS') ;?>,
+					d:<?php echo get_param('PRACTICE_DISTANCE') ;?>,
+					s:{x:<?php echo get_param('PRACTICE_SERVE_X') ;?>,y:<?php echo get_param('PRACTICE_SERVE_Y') ;?>},
+					ran:<?php echo get_param('PRACTICE_RANDOM') ;?>,
+					startup:<?php echo get_param('PRACTICE_STARTUP_DELAY') ;?>,
+					servedelay:<?php echo get_param('PRACTICE_SERVE_DELAY') ;?>,
+					hitdelay:<?php echo get_param('PRACTICE_HIT_DELAY') ;?>
+				}
 <?php
 }
 ?>			
@@ -220,6 +208,7 @@ soundManager.onload = function() {
 	// -->
 </script>
 <?php
+	$db->rollBack();
 }
 function content_title() {
 	echo 'Air Hockey Match';
