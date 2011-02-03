@@ -75,7 +75,7 @@ var Opponent = new Class({
 			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
 		var er = function(t,m) {
-			that.eventReceived(t,m);
+			that.eventReceived.delay(1,that,m);
 		};
 
 		var startTime;
@@ -166,12 +166,8 @@ this.els.message.appendText(' ['+this.echoTime()+':3:S]');
 			this.comms.write('M:'+reply.mallet.x+':'+reply.mallet.y);
 		}
 	},
-	eventReceived : function (time,msg) {
+	eventReceived : function (msg) {
 		this.comms.read();
-		var that = this;
-		var er = function(t,m) {
-			that.eventReceived(t,m);
-		};
 		var splitMsg = msg.split(':');
 		var firm = false;
 		switch (splitMsg[0]) {
@@ -203,7 +199,7 @@ this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':S]');
 			case 'T' :
 				if(this.aC < 4) {
 this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':s]');
-					if(this.aC == 4) this.aC = 0;
+					if(this.aC == 3) this.aC = 0;
 					this.links.match.serveConfirmed();
 				}
 				break;

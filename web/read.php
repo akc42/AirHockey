@@ -43,7 +43,11 @@ if(strlen($response) > 0) {
 			echo ',"msg2":"'.$r[2].'"';
 		}
 		echo '}';
+	} else {
+		echo '{"time":'.$time.',"msg":"abort"}';
 	}
+} else {
+echo '{"time":'.$time.',"msg":"abort"}';
 }
 
 ?>
