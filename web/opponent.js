@@ -238,7 +238,7 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':g]');
 				this.links.match.goalConfirmed();
 				break;
 			case 'C' :
-				if (this.aC <2 || (!this.master && this.aC ==2)	{
+				if (this.aC <2 || (!this.master && this.aC ==2))	{
 this.els.message.appendText('['+this.echoTime()+':'+this.aC+':C]');
 					firm = true;
 				} else {
