@@ -425,6 +425,7 @@ overflow:hidden;
 	height:300px;
 	margin:5px;
 	padding:2px;
+	word-wrap:break-word;
 	overflow-y:auto;
 	overflow-x:hidden;
 }

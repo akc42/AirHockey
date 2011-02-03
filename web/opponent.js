@@ -109,7 +109,7 @@ var Opponent = new Class({
 	hit: function(mallet,puck,time) {
 		if(this.aC > 2) return;  //shouldn't get this but just to be safe
 		if(this.inSync) {
-this.els.message.appendText('['+this.echoTime()+'2:C]');
+this.els.message.appendText(' ['+this.echoTime()+':2:C]');
 			this.aC = 2;
 			this.comms.write('C:'+mallet.x+':'+mallet.y
 				+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
@@ -124,7 +124,7 @@ this.els.message.appendText('['+this.echoTime()+'2:C]');
 	faceoff: function() {
 		if(this.aC > 0) return; //Anything underway right now then ignore
 		if(this.inSync) {
-this.els.message.appendText('['+this.echoTime()+':1:O]');
+this.els.message.appendText(' ['+this.echoTime()+':1:O]');
 			this.aC = 1;
 			this.send('O');
 		}
@@ -133,7 +133,7 @@ this.els.message.appendText('['+this.echoTime()+':1:O]');
 		if( this.aC > 3)return;  //I've already detected an off table event and am awaiting response
 		if(this.inSync) {
 			this.aC = 5;
-this.els.message.appendText('['+this.echoTime()+':5:G]');
+this.els.message.appendText(' ['+this.echoTime()+':5:G]');
 			this.send('G');
 		}
 	},
@@ -141,14 +141,14 @@ this.els.message.appendText('['+this.echoTime()+':5:G]');
 		if(this.aC > 3) return; //I've already reported a something and am awaiting a response
 		if(this.inSync)  {
 			this.aC = 4;
-this.els.message.appendText('['+this.echoTime()+':4:F]');
+this.els.message.appendText(' ['+this.echoTime()+':4:F]');
 			this.send('F:'+msg);
 		}
 	},
 	serve: function (p) {
 		if(this.aC >2) return;
 		this.aC = 3;
-this.els.message.appendText('['+this.echoTime()+':3:S]');
+this.els.message.appendText(' ['+this.echoTime()+':3:S]');
 		if(this.inSync) this.send('S:'+p.x+':'+p.y);
 	},
 	send: function(msg) {
@@ -177,14 +177,14 @@ this.els.message.appendText('['+this.echoTime()+':3:S]');
 		switch (splitMsg[0]) {
 			case 'N' :
 				if(this.aC < 2 ) {
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':o]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':o]');
 					this.aC = 0;
 					this.links.match.faceoffConfirmed();
 				}
 				break;
 			case 'O':
 				if(this.aC < 1 || (!this.master && this.aC ==1)) {
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':O]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':O]');
 					this.comms.write('N');
 					this.links.match.faceoff()
 				} else {
@@ -194,7 +194,7 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':O]');
 			case 'S' :
 				if(this.aC < 3 || (!this.master && this.aC ==3)) {
 					this.comms.write('T');
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':S]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':S]');
 					this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
 				} else {
 					this.comms.write('X:3');
@@ -202,14 +202,14 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':S]');
 				break;
 			case 'T' :
 				if(this.aC < 4) {
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':s]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':s]');
 					if(this.aC == 4) this.aC = 0;
 					this.links.match.serveConfirmed();
 				}
 				break;
 			case 'E' :
 				if(this.aC < 5) {
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':f]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':f]');
 					if (this.aC == 4) this.aC = 0;
 					this.links.match.foulConfirmed(splitMsg[1]);
 				}
@@ -225,7 +225,7 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':F]');
 				break;
 			case 'G' :
 				if(this.aC < 5 || (!this.master && this.aC ==5)) {
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':G]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':G]');
 					this.comms.write('H'); //confirm
 					this.links.match.goal();
 				} else {
@@ -233,7 +233,7 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':G]');
 				}
 				break;
 			case 'H' :
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':g]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':g]');
 				if(this.aC == 5) this.aC = 0;
 				this.links.match.goalConfirmed();
 				break;
@@ -252,13 +252,13 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':C]');
 						dx:splitMsg[5].toFloat(),dy:splitMsg[6].toFloat()},
 	 				splitMsg[7].toInt()-this.timeOffset);
 					if (firm) {
-							this.comms.write('D');
+						this.comms.write('D');
 					}
 				}
 				break;
 			case 'D':
 				if(this.aC < 3) {
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':c]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':c]');
 					if(this.aC = 2) this.aC = 0;
 				}
 				break;
@@ -266,7 +266,7 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':c]');
 				this.links.table.update(firm,{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},null,null);
 				break;
 			case 'X' :
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':X:'+splitMsg[1]+']');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':X:'+splitMsg[1]+']');
 				if(splitMsg[1] == this.aC) this.aC = 0;
 				break;
 			default :
@@ -293,7 +293,7 @@ var Comms = new Class({
 		this.fail = function(reason) {
 			if(!that.commsFailed) {
 				that.commsFailed = true;
-				fail('Comms Timeout');
+				fail(' Comms Timeout');
 			}
 		};
 		
