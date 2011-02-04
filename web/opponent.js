@@ -21,6 +21,10 @@
 var Opponent = new Class({
 	initialize: function(links,me,oid,master,timers,els,positions) {
 		var that = this;
+		function myFail (reason) {
+			window.clearInterval(that.poller);
+			that.fail(reason);
+		}
 		this.links = links;
 		this.timers = timers;
 		this.els = els;
@@ -95,7 +99,7 @@ var Opponent = new Class({
 					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
 				} else {
 					that.timeOffset = that.timeOffset.toInt();
-					that.comms = new Comms(me,oid,timers.opponent,that.fail,that.timeOffset,els);
+					that.comms = new Comms(me,oid,timers.opponent,myFail,that.timeOffset,els);
 					awaitOpponent();
 				}
 			}
@@ -268,17 +272,10 @@ var Comms = new Class({
 		};
 		
 		this.func = null;
-		this.sendReq = new Request.JSON({url:'send.php',link:'chain',onComplete:function(r,e){
-			var x;
-			if (r.OK) {
-				x = 1;
-			} else {
-that.els.em.appendText('***');
-				that.sendReq.post(that.sopt);
-			}
-		}});
+
+		this.sendReq = new Request.JSON({url:'send.php',link:'chain',noCache:true});
 		
-		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete:function(r,e) {
+		this.readReq = new Request.JSON({url:'read.php',link:'chain',noCache:true,onComplete:function(r,e) {
 			if(r){
 				that.timeout=window.clearTimeout(that.timeout);
 				if (that.func) {
