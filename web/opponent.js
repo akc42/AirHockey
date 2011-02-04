@@ -32,7 +32,7 @@ var Opponent = new Class({
 		this.inSync = false;
 		this.timeout = timers.timeout;
 		this.timeOffset = 0;
-		this.aC = 0;
+		this.awaitingConfirmation = 0; //0 = not waiting, 1 awaiting serve, 2 awaiting hit, 3 awaiting foul, 4 awaiting goal
 		this.echoTime = function() {
 			var t = ((new Date().getTime() + this.timeOffset)/100).toInt();
 			return t%10000;
@@ -75,7 +75,7 @@ var Opponent = new Class({
 			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
 		var er = function(t,m) {
-			that.eventReceived.delay(1,that,m);
+			that.messageReceived.delay(1,that,m);
 		};
 
 		var startTime;
@@ -107,10 +107,9 @@ var Opponent = new Class({
 		timeReq();
 	},
 	hit: function(mallet,puck,time) {
-		if(this.aC > 2) return;  //shouldn't get this but just to be safe
 		if(this.inSync) {
 this.els.message.appendText(' ['+this.echoTime()+':2:C]');
-			this.aC = 2;
+			this.awaitingConfirmation = 2;
 			this.comms.write('C:'+mallet.x+':'+mallet.y
 				+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
 				+':'+(time+this.timeOffset));
@@ -122,43 +121,33 @@ this.els.message.appendText(' ['+this.echoTime()+':2:C]');
 		this.comms.die.delay(1000,this.comms); //need to wait for last message to have gone
 	},
 	faceoff: function() {
-		if(this.aC > 0) return; //Anything underway right now then ignore
 		if(this.inSync) {
-this.els.message.appendText(' ['+this.echoTime()+':1:O]');
-			this.aC = 1;
-			this.send('O');
+			this.comms.write('O');
 		}
 	},
 	goal: function () {
-		if( this.aC > 3)return;  //I've already detected an off table event and am awaiting response
 		if(this.inSync) {
-			this.aC = 5;
-this.els.message.appendText(' ['+this.echoTime()+':5:G]');
-			this.send('G');
+			this.awaitingConfirmation = 4;
+this.els.message.appendText(' ['+this.echoTime()+':4:G]');
+			this.comms.write('G');
 		}
 	},
 	foul: function (msg) {
-		if(this.aC > 3) return; //I've already reported a something and am awaiting a response
 		if(this.inSync)  {
-			this.aC = 4;
-this.els.message.appendText(' ['+this.echoTime()+':4:F]');
-			this.send('F:'+msg);
+			this.awaitingConfirmation = 3;
+this.els.message.appendText(' ['+this.echoTime()+':3:F]');
+			this.comms.write('F:'+msg);
 		}
 	},
 	serve: function (p) {
-		if(this.aC >2) return;
-		this.aC = 3;
-this.els.message.appendText(' ['+this.echoTime()+':3:S]');
-		if(this.inSync) this.send('S:'+p.x+':'+p.y);
-	},
-	send: function(msg) {
-		this.comms.write(msg);
+		this.awaitingConfirmation = 1;
+this.els.message.appendText(' ['+this.echoTime()+':1:S]');
+		if(this.inSync) this.comms.write('S:'+p.x+':'+p.y);
 	},
 	poll : function() {
-		if(this.aC > 2) return; //don't do any polls whilst waiting from confirmation of goal, or foul
 		var reply = this.links.table.getUpdate();
 		if(reply.puck) {
-			//puck is on table
+			//puck is on table (it should not be on table if awaiting confirmation of foul or goal)
 			this.comms.write('P:'+reply.mallet.x+':'+reply.mallet.y
 				+':'+reply.puck.x+':'+reply.puck.y+':'+reply.puck.dx+':'+reply.puck.dy
 				+':'+(reply.time+this.timeOffset));
@@ -166,82 +155,72 @@ this.els.message.appendText(' ['+this.echoTime()+':3:S]');
 			this.comms.write('M:'+reply.mallet.x+':'+reply.mallet.y);
 		}
 	},
-	eventReceived : function (msg) {
+	messageReceived : function (msg) {
 		this.comms.read();
 		var splitMsg = msg.split(':');
 		var firm = false;
 		switch (splitMsg[0]) {
 			case 'N' :
-				if(this.aC < 2 ) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':o]');
-					this.aC = 0;
-					this.links.match.faceoffConfirmed();
-				}
+				this.links.match.faceoffConfirmed();
 				break;
 			case 'O':
-				if(this.aC < 1 || (!this.master && this.aC ==1)) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':O]');
+				if(this.links.match.faceoff()) {
 					this.comms.write('N');
-					this.links.match.faceoff()
-				} else {
-					this.comms.write('X:1');
 				}
 				break;
 			case 'S' :
-				if(this.aC < 3 || (!this.master && this.aC ==3)) {
+				if(this.awaitingConfirmation < 3 ) {
+this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':S]');
+					this.awaitingConfirmation = 0 ; 
 					this.comms.write('T');
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':S]');
-					this.links.match.serve({x:splitMsg[1].toFloat(),y:2400-splitMsg[2].toFloat()});
-				} else {
-					this.comms.write('X:3');
+					this.links.match.serve({x:splitMsg[1].toFloat(),y:TY-splitMsg[2].toFloat()});
 				}
 				break;
 			case 'T' :
-				if(this.aC < 4) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':s]');
-					if(this.aC == 3) this.aC = 0;
+				if(this.awaitingConfirmation == 1) {
+this.els.message.appendText(' ['+this.echoTime()+':1:s]');
+					this.awaitingConfirmation = 0;
 					this.links.match.serveConfirmed();
 				}
 				break;
 			case 'E' :
-				if(this.aC < 5) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':f]');
-					if (this.aC == 4) this.aC = 0;
+				if(this.awaitingConfirmation == 3) {
+this.els.message.appendText(' ['+this.echoTime()+':3:f]');
+					this.awaitingConfirmation = 0;
 					this.links.match.foulConfirmed(splitMsg[1]);
 				}
 				break;
 			case 'F' :
-				if(this.aC < 4 || (!this.master && this.aC ==4)) {
+				if(this.awaitingConfirmation < 3 || !this.master) {
 					this.comms.write('E:'+splitMsg[1]); //confirm
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':F]');
+this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':F]');
+					this.awaitingConfirmation = 0;
 					this.links.match.foul();
-				} else {
-					this.comms.write('X:4');
 				}
 				break;
 			case 'G' :
-				if(this.aC < 5 || (!this.master && this.aC ==5)) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':G]');
+				if(this.awaitingConfirmation < 3 || !this.master) {
+this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':G]');
+					this.awaitingConfirmation = 0
 					this.comms.write('H'); //confirm
 					this.links.match.goal();
-				} else {
-					this.comms.write('X:5');
 				}
 				break;
 			case 'H' :
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':g]');
-				if(this.aC == 5) this.aC = 0;
-				this.links.match.goalConfirmed();
+				if(this.awaitingConfirmation == 4) { 
+this.els.message.appendText(' ['+this.echoTime()+':4:g]');
+					this.awaitingConfirmation = 0;
+					this.links.match.goalConfirmed();
+				}
 				break;
 			case 'C' :
-				if (this.aC <2 || (!this.master && this.aC ==2))	{
-this.els.message.appendText('['+this.echoTime()+':'+this.aC+':C]');
+				if (this.awaitingConfirmation <2 || (!this.master && this.awaitingConfirmation ==2))	{
+this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':C]');
 					firm = true;
-				} else {
-					this.comms.write('X:2');
+					this.awaitingConfirmation = 0;
 				}
 			case 'P' :
-				if(firm || this.aC < 2) { 
+				if(firm || this.awaitingConfirmation == 0) { 
 					this.links.table.update(firm,
 					{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},
 					{x:splitMsg[3].toFloat(),y:splitMsg[4].toFloat(),
@@ -250,20 +229,19 @@ this.els.message.appendText('['+this.echoTime()+':'+this.aC+':C]');
 					if (firm) {
 						this.comms.write('D');
 					}
+				} else {
+					//regardless - send at least the mallet position
+					this.links.table.update(false,{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},null,null);
 				}
 				break;
 			case 'D':
-				if(this.aC < 3) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':c]');
-					if(this.aC = 2) this.aC = 0;
+				if(this.awaitingConfirmation == 2 ) {
+this.els.message.appendText(' ['+this.echoTime()+':2:c]');
+					this.awaitingConfirmation = 0;
 				}
 				break;
 			case 'M' :
 				this.links.table.update(firm,{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},null,null);
-				break;
-			case 'X' :
-this.els.message.appendText(' ['+this.echoTime()+':'+this.aC+':X:'+splitMsg[1]+']');
-				if(splitMsg[1] == this.aC) this.aC = 0;
 				break;
 			default :
 				this.els.message.appendText('Invalid Message:'+msg);

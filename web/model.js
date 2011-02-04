@@ -151,7 +151,7 @@ var Table = new Class({
  	serve: function () {
 		this.myServe = true;
 		this.puck.remove();
-		this.myMallet.drop();
+		this.myMallet.drop(); //have to serve before I can pick up the mallet again
 	},
 	place: function (position) {
 		this.ontable = true;
@@ -167,8 +167,8 @@ var Table = new Class({
 		this.puck.remove();
 		this.inP = false;
 		this.myServe = false;
-		this.myMallet.drop();
-		this.myMallet.hold(); //but I am allowed to pick up the mallet again (prevented during serving)
+		this.myMallet.drop(); //drops the mallet - but also says can't pick it up again until ...
+		this.myMallet.hold(); //... but I am allowed to pick up the mallet again 
 		this.transition();
 	},
  	update:function(firm,mallet,puck,time) {
@@ -193,6 +193,7 @@ var Table = new Class({
 				this.ontable = true;
 				this.inP = true; //opponent hit the puck, so it must be in play
 				this.myServe = false;
+				this.myMallet.hold(); //can also pick up the mallet
 		  		this.links.scoreboard.foul(false);
 				this.links.scoreboard.status('');
 	  		} else {
@@ -328,7 +329,7 @@ var myMallet = new Class({
 		this.serve = true;  //say can't pick up until served.
 	},
 	hold: function () {
-		this.serve = false; //cant hold during serving
+		this.serve = false; //not serving so can hold mallet
 	}
 	
 });
