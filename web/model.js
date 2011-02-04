@@ -69,7 +69,7 @@ var Table = new Class({
 		this.tickId = this.tick.periodical(this.timers.tick,this);
 	},
 	stop: function () {
-		this.tickId = $clear(this.tickId);
+		this.tickId = window.clearInterval(this.tickId);
 	},
 	tick: function () {
 		var now = new Date().getTime();
@@ -233,12 +233,12 @@ var Table = new Class({
 		};
 		if(this.puck.y <= TY2 || !this.ontable) {
 			this.links.scoreboard.cancel();
-			this.timer= $clear(this.timer);
+			this.timer= window.clearTimeout(this.timer);
 		} else {
 			this.links.scoreboard.set(this.timers.myside, function() {
 				that.links.match.tFoul('Puck too long on your side');
 			});
-			this.timer = $clear(this.timer);  //clear in case was already running.
+			this.timer = window.clearTimeout(this.timer);  //clear in case was already running.
 			this.timer = control.delay(this.timers.control,this);
 		}
 	}

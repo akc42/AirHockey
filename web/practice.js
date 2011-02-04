@@ -250,10 +250,10 @@ var Opponent = new Class({
 	},
 	end: function() {
 		this.inSync = false;
-		this.poller = $clear(this.poller);
+		this.poller = window.clearInterval(this.poller);
 		this.computer.table.halt();
 		this.computer.table.stop();
-		this.mouseId = $clear(this.malletId);
+		this.mouseId = window.clearInterval(this.malletId);
 	},
 	faceoff: function() {
 		if(this.inSync) {
@@ -325,8 +325,8 @@ var DummyScoreboard = new Class({
 	serve: function(s) {
 		function placePuck() {
 			var serveposition = {};
-			serveposition.x = this.links.opponent.getModel().serve.x+$random(-this.links.opponent.getModel().ran,this.links.opponent.getModel().ran);
-			serveposition.y = this.links.opponent.getModel().serve.y+$random(-this.links.opponent.getModel().ran,this.links.opponent.getModel().ran);
+			serveposition.x = this.links.opponent.getModel().serve.x+Number.random(-this.links.opponent.getModel().ran,this.links.opponent.getModel().ran);
+			serveposition.y = this.links.opponent.getModel().serve.y+Number.random(-this.links.opponent.getModel().ran,this.links.opponent.getModel().ran);
 			this.links.table.place(serveposition);  //Tell table is on it
 			this.links.match.served(serveposition); //And signal everyone else
 			moveToHit.delay(this.links.opponent.getModel().hitdelay,this);			//And after at least the delay for in play - start moving to hit it
@@ -353,19 +353,19 @@ var DummyScoreboard = new Class({
 		var counter = function() {
 			this.n--;
 			if (this.n < 0) {
-				this.countdown = $clear(this.countdown);
+				this.countdown = window.clearTimeout(this.countdown);
 			} else {
 				if (this.n == 0) {
 					callback();
 				}
 			}
 		};
-		this.countdown = $clear(this.countdown);
+		this.countdown = window.clearTimeout(this.countdown);
 		this.n = n;
 		this.countdown = counter.periodical(1000,this);
 	},
 	cancel: function() {
-		this.countdown = $clear(this.countdown);
+		this.countdown = window.clearTimeout(this.countdown);
 		this.n = -1;
 	}
 });

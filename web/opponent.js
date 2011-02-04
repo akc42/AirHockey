@@ -21,10 +21,6 @@
 var Opponent = new Class({
 	initialize: function(links,me,oid,master,timers,els,positions) {
 		var that = this;
-		var myfail = function(reason) {
-			that.poller = $clear(that.poller);
-			that.fail(reason);
-		};
 		this.links = links;
 		this.timers = timers;
 		this.els = els;
@@ -85,7 +81,7 @@ var Opponent = new Class({
 		var i = timers.count;
 		var timeReq = function() {
 			startTime = new Date().getTime();
-			req.post($merge(me,{t:startTime+that.timeOffset}));
+			req.post(Object.merge(me,{t:startTime+that.timeOffset}));
 		};
 		var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
 			if (response ) {
@@ -117,7 +113,7 @@ this.els.message.appendText(' ['+this.echoTime()+':2:C]');
 	},
 	end: function() {
 		this.inSync = false;
-		this.poller = $clear(this.poller);
+		this.poller = window.clearInterval(this.poller);
 		this.comms.die.delay(1000,this.comms); //need to wait for last message to have gone
 	},
 	faceoff: function() {
@@ -284,7 +280,7 @@ that.els.message.appendText('***');
 		
 		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete:function(r,e) {
 			if(r){
-				that.timeout=$clear(that.timeout);
+				that.timeout=window.clearTimeout(that.timeout);
 				if (that.func) {
 					that.func(r.time,r.msg);
 					if(r.msg2) {
@@ -301,7 +297,7 @@ that.els.message.appendText('$$$');
 	},
 	set: function(success,timeout) {
 		this.timeoutValue = timeout;
-		this.timeout = $clear(this.timeout);
+		this.timeout = window.clearTimeout(this.timeout);
 		this.func = success;
 	},
 	read: function () {
@@ -311,7 +307,7 @@ that.els.message.appendText('$$$');
 	},
 	write: function (msg) {
 		if(this.commsFailed) return;
-		this.sendReq.post($extend(this.sopt,{msg:msg}));
+		this.sendReq.post(Object.append(this.sopt,{msg:msg}));
 	},
 	die: function () {
 		this.commsFailed = true;

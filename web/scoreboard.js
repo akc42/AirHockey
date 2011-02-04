@@ -21,7 +21,7 @@
 var Scoreboard = new Class({
 	initialize: function(mid,startTime,me,master,els,play) {
 		this.params = {m:mid,g:1,h:0,a:0};
-		Object.extend(this.params,me);
+		Object.append(this.params,me);
 		this.game = els.firstgame;
 		this.startTime = startTime;
 		this.master = master;
@@ -119,7 +119,7 @@ var Scoreboard = new Class({
 			this.n--;
 			if (this.n < 0) {
 				this.els.countdown.set('text','');
-				this.countdown = $clear(this.countdown);
+				this.countdown = window.clearInterval(this.countdown);
 			} else {
 				this.els.countdown.set('text',this.n);
 				if (this.n == 0) {
@@ -137,7 +137,7 @@ this.els.message.appendText(' *');
 		this.els.countdown.set('text',this.n);
 	},
 	cancel: function() {
-		this.countdown = $clear(this.countdown);
+		this.countdown = window.clearInterval(this.countdown);
 		this.n = -1;
 		this.els.countdown.set('text','');
 	}

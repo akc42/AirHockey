@@ -50,7 +50,7 @@ if(master) {
 		els.abandon.addEvent('click', function(e) {
 			e.stop();
 			that.links.match.end(); //abandons match if not already ended
-			$clear(pollerID); //stop poller
+			window.clearInterval(pollerID); //stop poller
 			window.location.assign('index.php');
 		});
 	},
