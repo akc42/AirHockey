@@ -52,8 +52,8 @@ var Scoreboard = new Class({
 		this.n = -1;
 	},
 	endMatch: function() {
-		this.duration = $clear(this.duration);
-		this.countdown = $clear(this.countdown);
+		this.duration = window.clearInterval(this.duration);
+		this.countdown = window.clearInterval(this.countdown);
 		if(this.params.m != 0 && this.master) {
 			this.params.g = 0;  //special flag to say end the game
 			this.updateMatchReq.post(this.params);
@@ -61,8 +61,8 @@ var Scoreboard = new Class({
 		this.status('Match Complete');
 	},
 	abandonMatch: function () {
-		this.duration = $clear(this.duration);
-		this.countdown = $clear(this.countdown);
+		this.duration = window.clearInterval(this.duration);
+		this.countdown = window.clearInterval(this.countdown);
 		if (this.params.m !=0) {
 			this.params.g = -1;
 			this.updateMatchReq.post(this.params);
