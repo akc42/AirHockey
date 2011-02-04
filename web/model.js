@@ -271,7 +271,6 @@ var myMallet = new Class({
 	initialize: function(els,position) {
 		var that = this;
 		this.parent(els.mymallet,position);
-		if(els.table) this.table = els.table.getPosition();
 		this.serve = false;
 		this.held = false;
 		this.mp.x = this.x;
@@ -279,8 +278,9 @@ var myMallet = new Class({
 		this.els = els;
 		if(this.el) this.el.addEvent('mouseover',function(e) {
 			var setMalletPosition = function(e) {
-				that.mp.x = (e.page.y - that.table.y)*PX;
-				that.mp.y = TY-(e.page.x - that.table.x)*PX;
+				var table = that.els.table.getPosition();
+				that.mp.x = (e.page.y - table.y)*PX;
+				that.mp.y = TY-(e.page.x - table.x)*PX;
 				if (that.mp.x < 0 || that.mp.y < 0) {
 					return false;
 				} else {
