@@ -132,7 +132,7 @@ window.addEvent('domready', function() {
 				duration:document.id('duration'),
 				abandon:document.id('exittoforum'),
 				freeze:document.id('freeze'),
-				message:document.id('message')
+				em:document.id('message')
 			},
 			{
 				mymallet:{x:560,y:TY - <?php echo get_param('MALLET_POSITION') ; ?>},

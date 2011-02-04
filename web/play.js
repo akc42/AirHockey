@@ -24,9 +24,9 @@ var Play = new Class({
 			if(soundReady) soundManager.play(sound);
 		};
 if(master) {
-	els.message.appendText('MASTER:');
+	els.em.appendText('MASTER:');
 } else {
-	els.message.appendText('SLAVE:');
+	els.em.appendText('SLAVE:');
 }
 		this.links = {
 			table:null,

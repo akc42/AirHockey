@@ -104,7 +104,7 @@ var Opponent = new Class({
 	},
 	hit: function(mallet,puck,time) {
 		if(this.inSync) {
-this.els.message.appendText(' ['+this.echoTime()+':2:C]');
+this.els.em.appendText(' ['+this.echoTime()+':2:C]');
 			this.awaitingConfirmation = 2;
 			this.comms.write('C:'+mallet.x+':'+mallet.y
 				+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
@@ -124,20 +124,20 @@ this.els.message.appendText(' ['+this.echoTime()+':2:C]');
 	goal: function () {
 		if(this.inSync) {
 			this.awaitingConfirmation = 4;
-this.els.message.appendText(' ['+this.echoTime()+':4:G]');
+this.els.em.appendText(' ['+this.echoTime()+':4:G]');
 			this.comms.write('G');
 		}
 	},
 	foul: function (msg) {
 		if(this.inSync)  {
 			this.awaitingConfirmation = 3;
-this.els.message.appendText(' ['+this.echoTime()+':3:F]');
+this.els.em.appendText(' ['+this.echoTime()+':3:F]');
 			this.comms.write('F:'+msg);
 		}
 	},
 	serve: function (p) {
 		this.awaitingConfirmation = 1;
-this.els.message.appendText(' ['+this.echoTime()+':1:S]');
+this.els.em.appendText(' ['+this.echoTime()+':1:S]');
 		if(this.inSync) this.comms.write('S:'+p.x+':'+p.y);
 	},
 	poll : function() {
@@ -166,7 +166,7 @@ this.els.message.appendText(' ['+this.echoTime()+':1:S]');
 				break;
 			case 'S' :
 				if(this.awaitingConfirmation < 3 ) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':T]');
+this.els.em.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':T]');
 					this.awaitingConfirmation = 0 ; 
 					this.comms.write('T');
 					this.links.match.serve({x:splitMsg[1].toFloat(),y:TY-splitMsg[2].toFloat()});
@@ -174,14 +174,14 @@ this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+'
 				break;
 			case 'T' :
 				if(this.awaitingConfirmation == 1) {
-this.els.message.appendText(' ['+this.echoTime()+':1:s]');
+this.els.em.appendText(' ['+this.echoTime()+':1:s]');
 					this.awaitingConfirmation = 0;
 					this.links.match.serveConfirmed();
 				}
 				break;
 			case 'E' :
 				if(this.awaitingConfirmation == 3) {
-this.els.message.appendText(' ['+this.echoTime()+':3:f]');
+this.els.em.appendText(' ['+this.echoTime()+':3:f]');
 					this.awaitingConfirmation = 0;
 					this.links.match.foulConfirmed(splitMsg[1]);
 				}
@@ -189,14 +189,14 @@ this.els.message.appendText(' ['+this.echoTime()+':3:f]');
 			case 'F' :
 				if(this.awaitingConfirmation < 3 || !this.master) {
 					this.comms.write('E:'+splitMsg[1]); //confirm
-this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':E]');
+this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':E]');
 					this.awaitingConfirmation = 0;
 					this.links.match.foul();
 				}
 				break;
 			case 'G' :
 				if(this.awaitingConfirmation < 3 || !this.master) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':H]');
+this.els.em.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':H]');
 					this.awaitingConfirmation = 0
 					this.comms.write('H'); //confirm
 					this.links.match.goal();
@@ -204,7 +204,7 @@ this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+'
 				break;
 			case 'H' :
 				if(this.awaitingConfirmation == 4) { 
-this.els.message.appendText(' ['+this.echoTime()+':4:g]');
+this.els.em.appendText(' ['+this.echoTime()+':4:g]');
 					this.awaitingConfirmation = 0;
 					this.links.match.goalConfirmed();
 				}
@@ -222,7 +222,7 @@ this.els.message.appendText(' ['+this.echoTime()+':4:g]');
 	 				splitMsg[7].toInt()-this.timeOffset);
 					if (firm) {
 						this.comms.write('D');
-this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':D]');
+this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':D]');
 					this.awaitingConfirmation = 0;
 					}
 				} else {
@@ -232,7 +232,7 @@ this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':
 				break;
 			case 'D':
 				if(this.awaitingConfirmation == 2 ) {
-this.els.message.appendText(' ['+this.echoTime()+':2:c]');
+this.els.em.appendText(' ['+this.echoTime()+':2:c]');
 					this.awaitingConfirmation = 0;
 				}
 				break;
@@ -240,11 +240,11 @@ this.els.message.appendText(' ['+this.echoTime()+':2:c]');
 				this.links.table.update(firm,{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},null,null);
 				break;
 			default :
-				this.els.message.appendText('Invalid Message:'+msg);
+				this.els.em.appendText('Invalid Message:'+msg);
 		}
 	},
 	fail: function(reason) {
-		this.els.message.appendText(reason);
+		this.els.em.appendText(reason);
 		this.links.match.end();
 	}
 });
@@ -273,7 +273,7 @@ var Comms = new Class({
 			if (r.OK) {
 				x = 1;
 			} else {
-that.els.message.appendText('***');
+that.els.em.appendText('***');
 				that.sendReq.post(that.sopt);
 			}
 		}});
@@ -284,12 +284,12 @@ that.els.message.appendText('***');
 				if (that.func) {
 					that.func(r.time,r.msg);
 					if(r.msg2) {
-that.els.message.appendText('%%%');
+that.els.em.appendText('%%%');
 						that.func(r.time,r.msg2);
 					}
 				}
 			} else {
-that.els.message.appendText('$$$');
+that.els.em.appendText('$$$');
 			}
 		}});
 		this.abortReq = new Request.JSON({url:'abort.php',link:'chain'});

@@ -44,7 +44,7 @@ var Scoreboard = new Class({
 				if(response) {
 					var x = 1;
 				}else{
-					els.message.appendText(errstr);
+					els.em.appendText(errstr);
 				}
 			}});
 		}
@@ -124,7 +124,7 @@ var Scoreboard = new Class({
 				this.els.countdown.set('text',this.n);
 				if (this.n == 0) {
 					this.play('start');
-this.els.message.appendText(' *');
+this.els.em.appendText(' *');
 					callback();
 				} else {
 					this.play('count');
