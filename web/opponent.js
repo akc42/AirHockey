@@ -277,7 +277,8 @@ var Comms = new Class({
 			if (r.OK) {
 				x = 1;
 			} else {
-				x = 2;
+that.els.message.appendText('***');
+				that.sendReq.post(that.sopt);
 			}
 		}});
 		
@@ -310,7 +311,7 @@ that.els.message.appendText('$$$');
 	},
 	write: function (msg) {
 		if(this.commsFailed) return;
-		this.sendReq.post($merge(this.sopt,{msg:msg}));
+		this.sendReq.post($extend(this.sopt,{msg:msg}));
 	},
 	die: function () {
 		this.commsFailed = true;
