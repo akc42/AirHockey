@@ -54,7 +54,7 @@ MBahladder = function() {
 		if(personalState.get('id') != 'S3') {
 			var pstext = personalState.get('text');
 			personalState.set('html',pstext);  //removes tick image
-			personalState = $('S3');  //we set ourselves into invite mode
+			personalState = document.id('S3');  //we set ourselves into invite mode
 			pstext = personalState.get('text');
 			personalState.set('html', pstext+'<img src="tick.gif" alt="selected" />') ;
 			ropt.state = 3;  //set ourselves into invite mode
@@ -62,10 +62,10 @@ MBahladder = function() {
 		}
 		var statediv = this.getFirst().getNext();
 		if(statediv.hasClass('free') || statediv.hasClass('inviteFrom')) {
-			stateReq.post($merge(ropt,{cmd:'A',oid:oid})); //accept an invite
+			stateReq.post(Object.merge(ropt,{cmd:'A',oid:oid})); //accept an invite
 		} else {
 			if(statediv.hasClass('byInvite') || statediv.hasClass('inviteTo')) {
-				stateReq.post($merge(ropt,{cmd:'I',oid:oid})); // send an invite
+				stateReq.post(Object.merge(ropt,{cmd:'I',oid:oid})); // send an invite
 			} else {
 				if(changedState) {
 					/* even though the person we clicked on was not eligable to be invited, our
@@ -83,7 +83,7 @@ MBahladder = function() {
 				ropt.t = response.t; //set for next poll
 				if (response.matches) {
 					response.matches.each(function(match) {
-						var el = $('M'+match.mid);  //see of match already has a record
+						var el = document.id('M'+match.mid);  //see of match already has a record
 						if (match.deletion) {
 							if(el) el.destroy();
 						} else {
@@ -102,7 +102,7 @@ MBahladder = function() {
 									}
 								});
 								if (!injected) {
-									el.inject($('matchlist'),'bottom');
+									el.inject(document.id('matchlist'),'bottom');
 								};
 							}
 							//Now we have the match element, build up contents
@@ -135,7 +135,7 @@ MBahladder = function() {
 				}
 				if (response.users) {
 					response.users.each(function(user) {
-						var el = $('U'+user.pid);
+						var el = document.id('U'+user.pid);
 						var d;
 						if (user.state == 0) {
 							if(el) el.destroy(); //remove offline users
@@ -149,7 +149,7 @@ MBahladder = function() {
 								d.removeProperty('class');
 								d.set('text','');
 							} else {
-								el = new Element('div',{'class':'onlineUser','id':'U'+user.pid}).inject($('onlineListHeader'),'after');
+								el = new Element('div',{'class':'onlineUser','id':'U'+user.pid}).inject(document.id('onlineListHeader'),'after');
 								d = new Element('div',{'class':'ouser','text':user.name}).inject(el);
 								d = new Element('div').inject(el);
 								el.addEvent('click',userclick);
@@ -207,7 +207,7 @@ MBahladder = function() {
 			}
 		} else {
 			var el = new Element('div',{'html':errorstr});
-			el.inject($('copyright'),'before');
+			el.inject(document.id('copyright'),'before');
 		}
 	};
 	var ropt;
@@ -229,7 +229,7 @@ MBahladder = function() {
 			ropt = param;  //save request options
 			ropt.state = initialstate;
 			timeOffset = new Date().getTime()/1000 - ropt.t;
-			personalState = $('S'+initialstate);
+			personalState = document.id('S'+initialstate);
 			stateReq.post(ropt); //tell underlying system state to go to
 			$$('.ps').addEvent('click',function(e) {
 				e.stop();
@@ -269,9 +269,9 @@ MBahladder = function() {
 			durationID = durationUpdate.periodical(1000);
 		},
 		logout: function () {
-		    if (doingExitToForum) stateReq.post($merge(ropt,{state:0})); //say going offline (except when going to match or practice)
-			$clear(pollerID); //stop poller
-			$clear(durationID);
+		    if (doingExitToForum) stateReq.post(Object.merge(ropt,{state:0})); //say going offline (except when going to match or practice)
+			window.clearInterval(pollerID); //stop poller
+			window.clearInterval(durationID);
 		}
 	}
 }();
