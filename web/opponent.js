@@ -95,7 +95,7 @@ var Opponent = new Class({
 					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
 				} else {
 					that.timeOffset = that.timeOffset.toInt();
-					that.comms = new Comms(me,oid,timers.opponent,myfail,that.timeOffset,els);
+					that.comms = new Comms(me,oid,timers.opponent,that.fail,that.timeOffset,els);
 					awaitOpponent();
 				}
 			}
