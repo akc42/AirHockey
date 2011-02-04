@@ -170,7 +170,7 @@ this.els.message.appendText(' ['+this.echoTime()+':1:S]');
 				break;
 			case 'S' :
 				if(this.awaitingConfirmation < 3 ) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':S]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':T]');
 					this.awaitingConfirmation = 0 ; 
 					this.comms.write('T');
 					this.links.match.serve({x:splitMsg[1].toFloat(),y:TY-splitMsg[2].toFloat()});
@@ -193,14 +193,14 @@ this.els.message.appendText(' ['+this.echoTime()+':3:f]');
 			case 'F' :
 				if(this.awaitingConfirmation < 3 || !this.master) {
 					this.comms.write('E:'+splitMsg[1]); //confirm
-this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':F]');
+this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':E]');
 					this.awaitingConfirmation = 0;
 					this.links.match.foul();
 				}
 				break;
 			case 'G' :
 				if(this.awaitingConfirmation < 3 || !this.master) {
-this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':G]');
+this.els.message.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':H]');
 					this.awaitingConfirmation = 0
 					this.comms.write('H'); //confirm
 					this.links.match.goal();
@@ -215,9 +215,7 @@ this.els.message.appendText(' ['+this.echoTime()+':4:g]');
 				break;
 			case 'C' :
 				if (this.awaitingConfirmation <2 || (!this.master && this.awaitingConfirmation ==2))	{
-this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':C]');
 					firm = true;
-					this.awaitingConfirmation = 0;
 				}
 			case 'P' :
 				if(firm || this.awaitingConfirmation == 0) { 
@@ -228,6 +226,8 @@ this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':
 	 				splitMsg[7].toInt()-this.timeOffset);
 					if (firm) {
 						this.comms.write('D');
+this.els.message.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':D]');
+					this.awaitingConfirmation = 0;
 					}
 				} else {
 					//regardless - send at least the mallet position
