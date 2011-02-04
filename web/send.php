@@ -24,9 +24,10 @@ define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
-if(!(isset($_POST['uid']) && isset($_POST['msg'])))
-	die('Log - Hacking attempt - wrong parameters');
-
+if(!(isset($_POST['uid']) && isset($_POST['msg']))) {
+	echo '{"OK":false}';
+	exit;
+}
 list($utime,$now) = explode(" ",microtime());
 $now .= substr($utime,2,3);
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r'); //This waits until an read request is outstanding
@@ -38,5 +39,5 @@ fclose($sendpipe);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
 $time -= $now;
-echo '{"t":'.$time.'}';
+echo '{"OK":true,"t":'.$time.'}';
 ?>

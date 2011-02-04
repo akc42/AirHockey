@@ -294,7 +294,14 @@ var Comms = new Class({
 		};
 		
 		this.func = null;
-		this.sendReq = new Request.JSON({url:'send.php',link:'chain'});
+		this.sendReq = new Request.JSON({url:'send.php',link:'chain',onComplete:function(r,e){
+			var x;
+			if (r.OK) {
+				x = 1;
+			} else {
+				x = 2;
+			}
+		}});
 		
 		this.readReq = new Request.JSON({url:'read.php',link:'chain',onComplete:function(r,e) {
 			if(r){
