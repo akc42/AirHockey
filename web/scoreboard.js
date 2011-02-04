@@ -21,7 +21,7 @@
 var Scoreboard = new Class({
 	initialize: function(mid,startTime,me,master,els,play) {
 		this.params = {m:mid,g:1,h:0,a:0};
-		$extend(this.params,me);
+		Object.extend(this.params,me);
 		this.game = els.firstgame;
 		this.startTime = startTime;
 		this.master = master;
