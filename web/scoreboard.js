@@ -131,7 +131,7 @@ this.els.message.appendText(' *');
 				}
 			}
 		};
-		this.countdown = $clear(this.countdown);
+		this.countdown = window.clearInterval(this.countdown);
 		this.n = n;
 		this.countdown = counter.periodical(1000,this);
 		this.els.countdown.set('text',this.n);

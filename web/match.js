@@ -139,7 +139,7 @@ var Match = new Class({
 	},
 	end: function() {
 		if (this.matchInProgress) {
-			windows.clearTimeout(this.startDelay);
+			window.clearTimeout(this.startDelay);
 			this.links.table.halt();
 			this.links.scoreboard.cancel();
 			this.links.scoreboard.abandonMatch();
