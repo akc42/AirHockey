@@ -78,7 +78,7 @@ Comms = function () {
 							if(m) {
 								messageCallback(m.get('time'),m.get('text'));
 								if(m=m.getNext()) {
-									errDiv.appendText('++++SECOND MESSAGE+++);
+									errDiv.appendText('++++SECOND MESSAGE+++');
 									messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
 								}
 							}
