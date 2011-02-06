@@ -47,12 +47,11 @@ if ($uid != $ID_MEMBER) {
 	exit;
 }
 
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r+'); //unlock any write waiting to go
+$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r+b'); //unlock any write waiting to go
 sleep(1);
 fclose($sendpipe);
 
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //unlock any previous read (cancel already happened)
-fwrite($readpipe,'$');
+$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+b'); //unlock any previous read (cancel already happened)
 sleep(1);
 fclose($readpipe);
 ?><status>DONE</status>

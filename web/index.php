@@ -85,11 +85,10 @@ if(!file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_P
 umask($old_umask);
 
 //make sure there are no extant processes waiting on message any hanging reads will terminate
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."msg".$uid,'r+');
 fwrite($pipe,'$');					//Send the $ because other side uses this as message delimeter
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
-$pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+');
+$pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+b');
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
 
