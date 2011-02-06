@@ -29,14 +29,35 @@ if(!(isset($_POST['oid']))) {
 <?php
 	exit;
 }
+list($utime,$now1) = explode(" ",microtime());
+$now1 .= substr($utime,2,3);
 
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['oid'],'r+b'); //Say I am ready for a send from the other end
+
+list($utime,$now2) = explode(" ",microtime());
+$now2 .= substr($utime,2,3);
+
 $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'rb');
+
+list($utime,$now3) = explode(" ",microtime());
+$now3 .= substr($utime,2,3);
+
 fclose($sendpipe);//this tells other end it may now write to the pipe
+
+list($utime,$now4) = explode(" ",microtime());
+$now4 .= substr($utime,2,3);
+
 $response=fread($readpipe,400);
+
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
+$now5 = $time;
+
 fclose($readpipe);
+
+list($utime,$now6) = explode(" ",microtime());
+$now6 .= substr($utime,2,3);
+
 if(strlen($response) > 0) {
 	$r = explode('$',$response);
 	if(strlen($r[0]) == 0) { //expect first item to be empty as $ should be first character
@@ -45,10 +66,10 @@ if(strlen($response) > 0) {
 			echo '<message time="'.$time.'">'.$r[2].'</message>';
 		}
 	} else {
-		echo '<error now="'.$time.'">$ not first character</error>';
+		echo '<error  now1="'.$now1.'" now2="'.$now2.'" now3="'.$now3.'" now4="'.$now4.'" now5="'.$now5.'" now6="'.$now6.'">$ not first character</error>';
 	}
 } else {
-echo '<error now="'.$time.'">zero length response = "'.$response.'"</error>';
+echo '<error  now1="'.$now1.'" now2="'.$now2.'" now3="'.$now3.'" now4="'.$now4.'" now5="'.$now5.'" now6="'.$now6.'">zero length response = "'.$response.'"</error>';
 }
 
 ?>

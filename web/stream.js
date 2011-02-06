@@ -77,7 +77,10 @@ Comms = function () {
 							var m = holder.getElement('message');
 							if(m) {
 								messageCallback(m.get('time'),m.get('text'));
-								if(m=m.getNext()) messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
+								if(m=m.getNext()) {
+									errDiv.appendText('++++SECOND MESSAGE+++);
+									messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
+								}
 							}
 						}
 						reader.post({oid:oid}); //Queue up next request 
