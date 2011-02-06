@@ -46,23 +46,17 @@ var Opponent = new Class({
 			}
 		};
 		var startMatchM = function(time,msg) {
-			if(msg == 'OK') {
 				Comms.set(me,oid,er,timers.timeout,timers.limit,myFail,els.em);
 				startMatch(time);
-			}
 		};
 		var startMatchS = function(time,msg) {
-			switch (msg) {
-				case 'Start':
-					Comms.set(me,oid,er,timers.timeout,timers.limit,myFail,els.em);
-					that.write.delay(20,that,'OK'); // just wait a short while before returning the OK
-					startMatch(time);
-					break;
-				case 'Abandon':
-					that.links.match.end();
-					break;
-				default:
-					awaitOpponent();
+			if(msg != 'A') {
+				Comms.set(me,oid,er,timers.timeout,timers.limit,myFail,els.em);
+				that.write('Going'); // Send something back to tell the other end to start
+				startMatch(time);
+			} else {
+				that.els.em.appendText('Told to Abandon during startup');
+				that.links.match.end();
 			}
 		};	
 		var startMatch = function (time) {
@@ -244,12 +238,17 @@ this.els.em.appendText(' ['+this.echoTime()+':2:c]');
 			case 'M' :
 				this.links.table.update(firm,{x:splitMsg[1].toFloat(),y:splitMsg[2].toFloat()},null,null);
 				break;
+			case 'A' :
+				this.els.em.appendText('Told to abandon');
+				this.links.match.end();
+				break;
 			default :
 				this.els.em.appendText('Invalid Message:'+msg);
 		}
 	},
 	fail: function(reason) {
 		this.els.em.appendText(reason);
+		this.write('A');
 		this.links.match.end();
 	}
 });
