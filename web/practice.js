@@ -36,12 +36,14 @@ var Opponent = new Class({
 			match:null,
 			opponent:{
 			// We are recreating an opponent interface for the externally called functions, but processing backwards
-				hit: function (mallet,puck,time) {
-					//NOTE: not copying whole objects here because the update routine will alter them
-					if (that.inSync) that.links.table.update(true,{x:mallet.x,y:mallet.y},{x:puck.x,y:puck.y,dx:puck.dx,dy:puck.dy},time);						
+				start: function() {
 				},
 				end: function() {
 					that.inSync = false;
+				},
+				hit: function (mallet,puck,time) {
+					//NOTE: not copying whole objects here because the update routine will alter them
+					if (that.inSync) that.links.table.update(true,{x:mallet.x,y:mallet.y},{x:puck.x,y:puck.y,dx:puck.dx,dy:puck.dy},time);						
 				},
 				faceoff: function () {
 					if(that.inSync) {
@@ -108,146 +110,144 @@ var Opponent = new Class({
 			serve:positions.practice.s,		//server data
 			ran:positions.practice.ran,		//Max random about serve position to actually serve
 			servedelay:positions.practice.servedelay, //Delay after goal before serving
-			hitdelay:positions.practice.hitdelay
+			hitdelay:positions.practice.hitdelay,
+			tick:positions.practice.tick
 		};
-		// this function models the mouse movement - and therefore the mallet movement of opponent.
-		function Mouse() {
-			var d,m,n,x,y,c;
-			var mx = this.computer.table.myMallet.x;
-			var my = this.computer.table.myMallet.y;
-			x = mx - this.model.centre.x;
-			y = my - this.model.centre.y;
-			var now = new Date().getTime();
-			var timeSince = now - this.time;
-			this.time = now;
-			var dd = this.model.d * timeSince;
-			switch (this.model.state) {
-			case 1:
-				// Moving towards the circles edge calculate how far away it is
-				d = this.model.r -Math.sqrt((x)*(x) + (y)*(y));
-				if (Math.abs(d) > 2) {
-					//not there, so have to move closer
-					if (d > 0) {
-						if ( d > dd) d = dd;
-					} else {
-						if ( -d > dd) d = -dd;		
-					}
-					if (x > 0) {
-						m = (d/Math.sqrt(1 + ((y*y)/(x*x))));
-					} else {
-						m = - (d/Math.sqrt(1 + ((y*y)/(x*x))));
-					}
-					if (y > 0) {
-						n = (d/Math.sqrt(1 + ((x*x)/(y*y))));
-					} else {
-						n = - (d/Math.sqrt(1 + ((x*x)/(y*y))));
-					}
-					break;
-				}
-				this.model.state = 2; //fall into circling state below
-			case 2:
-				//circling
-				d = dd*dd; //calculate d2
-				c = (x*x*d*d) - ((x*x)+(y*y))*((d*d)-(4*y*y*d));
-				if(c < 0) {
-					c = 0;
-				}
-				m = (Math.sqrt(c) - (x*d))/(2*((x*x)+(y*y)));
-				n = Math.sqrt(d - (m*m));
-				if (y < 0 ) m = -m;
-				if (x > 0 ) n = -n;
-				this.model.state = 1;	//forces us to ensure we don't drift too far away from a circle
-				break;  
-			case 3:
-				//headed towards puck
-				x = this.computer.table.puck.x - mx;
-				y = this.computer.table.puck.y - my + PM3;  //aim behind puck at a half hit - puck = 41, mallet 53, use 41 + 26(half 53)
-				if(isNaN(x) || isNaN(y)) {
-					m=0;
-					n=0;
-					this.model.state = 1;
-				} else {
-					d = 1.5*dd/Math.sqrt(x*x + y*y);
-					if(this.computer.table.puck.dy > this.model.d) {	
-						//pack is already faster than us
-						d *= 1+ 0.5*this.computer.table.puck.dy/this.model.d;
-						if(this.computer.table.puck.y >my) { //aim off to the side puck is past us
-							// try and avoid hitting puck into goal
-							if ( x < 0) {
-								x += MR+PR; //aim low side to push towards the edge 
-							} else {
-								x -= MR+PR;
-							}
-							y += PM3;  //Also aim further back
-						
-						} 
-						
-					} 
-					m = x*d;			//can go as far as allowed in that direction - deltas are same ratio in x and y
-					n = y*d;
-				}
-				break;
-			case 4:
-				// Headed back for the goal line as it is a better angle to attack the puck
-				x = TX2 -mx;
-				y = TY-MR-my;
-				if(isNaN(x) || isNaN(y)) {
-					m = 0;
-					n = 0;
-					mx = TX2;
-					my = TY-MR;
-					this.model.state = 1;
-				} else {
-					dd = 2*dd; //allow a speed up
-					d = Math.sqrt(x*x + y*y);
-					if(Math.abs(d) < 4) {
-						m = 0;
-						n = 0;
-						this.model.state = 1;	// almost there so stop trying to go there
-					} else {
-						if(d > dd) { //to far in one go, so go a percentage
-							m = x*dd/d;
-							n = y*dd/d;
-						} else {
-							m = y;
-							n = x;
-						}
-					}
-				}					
-				break;
-			default:
-				m = 0;  //not going anywhere
-				n = 0;
-			}
-			//avoid going of the table
-			m=Math.max(MR,Math.min(m+mx,TX-MR));
-			n=Math.max(TY2+MR,Math.min(n+my,TY-MR));
-			this.computer.table.myMallet.mp.x = m;  //tell my table
-			this.computer.table.myMallet.mp.y = n;
-			if(this.computer.table.myMallet.held) this.links.table.update(true,{x:m,y:n},null,null); //tell other table only if I have held
-			
-		}
-		function StartMouse () {
-			this.time = new Date().getTime();
-			this.mouseId = Mouse.periodical(positions.practice.tick,this);
-			this.model.state = 1;
-			this.computer.table.myMallet.held = true; //say I am holding the mallet
-		}
 		var startMatch = function () {
 			that.inSync = true;
 			that.links.match.start.delay(that.startup,that.links.match);	//we want to start the match from 1 second from when the server told us.
 			that.computer.match.start.delay(that.startup,that.computer.match); // start our own simulation too
-			StartMouse.delay(that.startup+that.startDelay,that);	//and out control of our mallet
-			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
-		Comms.set(me,0,null,0,1,null,els.er);
+		Comms.set(me,0,null,0,1,null,els.em);
 		startMatch.delay(positions.practice.startup); //say opponent is there in 2 secs
 		
 
 	},
-	hit: function(mallet,puck,time) {
-		//NOTE We are not copying objects because update modifies them.  So copy each individual element		
-		if(this.inSync) this.computer.table.update(true,{x:mallet.x,y:mallet.y},{x:puck.x,y:puck.y,dx:puck.dx,dy:puck.dy},time);	
+	StartMouse: function () {
+		this.time = new Date().getTime();
+		this.mouseId = this.Mouse.periodical(this.model.tick,this);
+		this.model.state = 1;
+		this.computer.table.myMallet.held = true; //say I am holding the mallet
+	},
+	Mouse: function () {
+		// this function models the mouse movement - and therefore the mallet movement of opponent.
+		var d,m,n,x,y,c;
+		var mx = this.computer.table.myMallet.x;
+		var my = this.computer.table.myMallet.y;
+		x = mx - this.model.centre.x;
+		y = my - this.model.centre.y;
+		var now = new Date().getTime();
+		var timeSince = now - this.time;
+		this.time = now;
+		var dd = this.model.d * timeSince;
+		switch (this.model.state) {
+		case 1:
+			// Moving towards the circles edge calculate how far away it is
+			d = this.model.r -Math.sqrt((x)*(x) + (y)*(y));
+			if (Math.abs(d) > 2) {
+				//not there, so have to move closer
+				if (d > 0) {
+					if ( d > dd) d = dd;
+				} else {
+					if ( -d > dd) d = -dd;		
+				}
+				if (x > 0) {
+					m = (d/Math.sqrt(1 + ((y*y)/(x*x))));
+				} else {
+					m = - (d/Math.sqrt(1 + ((y*y)/(x*x))));
+				}
+				if (y > 0) {
+					n = (d/Math.sqrt(1 + ((x*x)/(y*y))));
+				} else {
+					n = - (d/Math.sqrt(1 + ((x*x)/(y*y))));
+				}
+				break;
+			}
+			this.model.state = 2; //fall into circling state below
+		case 2:
+			//circling
+			d = dd*dd; //calculate d2
+			c = (x*x*d*d) - ((x*x)+(y*y))*((d*d)-(4*y*y*d));
+			if(c < 0) {
+				c = 0;
+			}
+			m = (Math.sqrt(c) - (x*d))/(2*((x*x)+(y*y)));
+			n = Math.sqrt(d - (m*m));
+			if (y < 0 ) m = -m;
+			if (x > 0 ) n = -n;
+			this.model.state = 1;	//forces us to ensure we don't drift too far away from a circle
+			break;  
+		case 3:
+			//headed towards puck
+			x = this.computer.table.puck.x - mx;
+			y = this.computer.table.puck.y - my + PM3;  //aim behind puck at a half hit - puck = 41, mallet 53, use 41 + 26(half 53)
+			if(isNaN(x) || isNaN(y)) {
+				m=0;
+				n=0;
+				this.model.state = 1;
+			} else {
+				d = 1.5*dd/Math.sqrt(x*x + y*y);
+				if(this.computer.table.puck.dy > this.model.d) {	
+					//pack is already faster than us
+					d *= 1+ 0.5*this.computer.table.puck.dy/this.model.d;
+					if(this.computer.table.puck.y >my) { //aim off to the side puck is past us
+						// try and avoid hitting puck into goal
+						if ( x < 0) {
+							x += MR+PR; //aim low side to push towards the edge 
+						} else {
+							x -= MR+PR;
+						}
+						y += PM3;  //Also aim further back
+					
+					} 
+					
+				} 
+				m = x*d;			//can go as far as allowed in that direction - deltas are same ratio in x and y
+				n = y*d;
+			}
+			break;
+		case 4:
+			// Headed back for the goal line as it is a better angle to attack the puck
+			x = TX2 -mx;
+			y = TY-MR-my;
+			if(isNaN(x) || isNaN(y)) {
+				m = 0;
+				n = 0;
+				mx = TX2;
+				my = TY-MR;
+				this.model.state = 1;
+			} else {
+				dd = 2*dd; //allow a speed up
+				d = Math.sqrt(x*x + y*y);
+				if(Math.abs(d) < 4) {
+					m = 0;
+					n = 0;
+					this.model.state = 1;	// almost there so stop trying to go there
+				} else {
+					if(d > dd) { //to far in one go, so go a percentage
+						m = x*dd/d;
+						n = y*dd/d;
+					} else {
+						m = y;
+						n = x;
+					}
+				}
+			}					
+			break;
+		default:
+			m = 0;  //not going anywhere
+			n = 0;
+		}
+		//avoid going of the table
+		m=Math.max(MR,Math.min(m+mx,TX-MR));
+		n=Math.max(TY2+MR,Math.min(n+my,TY-MR));
+		this.computer.table.myMallet.mp.x = m;  //tell my table
+		this.computer.table.myMallet.mp.y = n;
+		if(this.computer.table.myMallet.held) this.links.table.update(true,{x:m,y:n},null,null); //tell other table only if I have held		
+	},
+	start: function() {
+			this.StartMouse();	//and out control of our mallet
+			this.poller=this.poll.periodical(this.timers.mallet,this);  //start sending my stuff on a regular basis
 	},
 	end: function() {
 		this.inSync = false;
@@ -258,6 +258,10 @@ var Opponent = new Class({
 		var a = new Comms.Stream('abort.php');
 		a.send();
 		Comms.die.delay(1000); //ensure any last messages are gone
+	},
+	hit: function(mallet,puck,time) {
+		//NOTE We are not copying objects because update modifies them.  So copy each individual element		
+		if(this.inSync) this.computer.table.update(true,{x:mallet.x,y:mallet.y},{x:puck.x,y:puck.y,dx:puck.dx,dy:puck.dy},time);	
 	},
 	faceoff: function() {
 		if(this.inSync) {

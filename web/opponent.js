@@ -21,11 +21,9 @@
 var Opponent = new Class({
 	initialize: function(links,me,oid,master,timers,els,positions) {
 		var that = this;
-		function myFail (reason) {
-			window.clearInterval(that.poller);
-			that.fail(reason);
-		}
 		this.links = links;
+		this.me = me;
+		this.oid = oid;
 		this.timers = timers;
 		this.els = els;
 		this.master = master;
@@ -33,10 +31,15 @@ var Opponent = new Class({
 		this.timeout = timers.timeout;
 		this.timeOffset = 0;
 		this.awaitingConfirmation = 0; //0 = not waiting, 1 awaiting serve, 2 awaiting hit, 3 awaiting foul, 4 awaiting goal
+		this.aCtimeoutID;
 		this.echoTime = function() {
 			var t = ((new Date().getTime() + this.timeOffset)/100).toInt();
 			return t%10000;
 		};
+		function myFail (reason) {
+			that.fail(reason);
+		};
+
 		var awaitOpponent = function() {
 			if (master) {
 				Comms.set(me,oid,startMatchM,timers.opponent,1,myFail,els.em);
@@ -46,28 +49,24 @@ var Opponent = new Class({
 			}
 		};
 		var startMatchM = function(time,msg) {
-				Comms.set(me,oid,er,timers.timeout,timers.limit,myFail,els.em);
-				startMatch(time);
+			var now = new Date().getTime() + that.timeOffset;
+			if(msg == 'Going') {
+				that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
+			} else {
+				that.els.em.appendText('"Going" not received got '.msg);
+				that.write('A');  //tell other end to abandon
+			}
 		};
 		var startMatchS = function(time,msg) {
-			if(msg != 'A') {
-				Comms.set(me,oid,er,timers.timeout,timers.limit,myFail,els.em);
+			var now = new Date().getTime() + that.timeOffset;
+			if(msg == 'Start') {
 				that.write('Going'); // Send something back to tell the other end to start
-				startMatch(time);
+				that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
-				that.els.em.appendText('Told to Abandon during startup');
+				that.els.em.appendText('"Start" not received got '.msg);
 				that.links.match.end();
 			}
 		};	
-		var startMatch = function (time) {
-			that.inSync = true;
-			var now = new Date().getTime() + that.timeOffset;
-			that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
-			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
-		};
-		var er = function(t,m) {
-			that.messageReceived.delay(1,that,m);
-		};
 
 		var startTime;
 		that.timeOffset = 0;
@@ -97,22 +96,41 @@ var Opponent = new Class({
 		}});
 		timeReq();
 	},
-	hit: function(mallet,puck,time) {
-		if(this.inSync) {
-this.els.em.appendText(' ['+this.echoTime()+':2:C]');
-			this.awaitingConfirmation = 2;
-			this.write('C:'+mallet.x+':'+mallet.y
-				+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
-				+':'+(time+this.timeOffset));
+	start: function () {
+		var that = this;
+		function myFail (reason) {
+			window.clearInterval(that.poller);
+			that.fail(reason);
+		}
+		function er(t,m) {
+			that.messageReceived.delay(1,that,m);
+		};
+		function pollStart() {
+			this.poller=this.poll.periodical(this.timers.mallet,this);  //start sending my stuff on a regular basis
+		};
+		this.inSync = true;
+		Comms.set(this.me,this.oid,er,this.timers.timeout,this.timers.limit,myFail,this.els.em);
+		if(this.master) {
+			pollStart.delay(1,this);
+		} else {
+			pollStart.delay(this.timers.mallet/2,this);
 		}
 	},
 	end: function() {
 		this.inSync = false;
 		this.poller = window.clearInterval(this.poller);
-		Comms.die.delay(200); //need to wait for last message to have gone
+		Comms.die(); //need to wait for last message to have gone
 	},
 	write: function(msg) {
 		this.comms.send({msg:msg});
+	},
+	hit: function(mallet,puck,time) {
+		if(this.inSync) {
+			this.setConfirmTimeout(2);
+			this.write('C:'+mallet.x+':'+mallet.y
+				+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
+				+':'+(time+this.timeOffset));
+		}
 	},
 	faceoff: function() {
 		if(this.inSync) {
@@ -121,22 +139,26 @@ this.els.em.appendText(' ['+this.echoTime()+':2:C]');
 	},
 	goal: function () {
 		if(this.inSync) {
-			this.awaitingConfirmation = 4;
-this.els.em.appendText(' ['+this.echoTime()+':4:G]');
+			this.setConfirmTimeout(4);
 			this.write('G');
 		}
 	},
 	foul: function (msg) {
 		if(this.inSync)  {
-			this.awaitingConfirmation = 3;
-this.els.em.appendText(' ['+this.echoTime()+':3:F]');
+			this.setConfirmTimeout(3);
 			this.write('F:'+msg);
 		}
 	},
 	serve: function (p) {
-		this.awaitingConfirmation = 1;
-this.els.em.appendText(' ['+this.echoTime()+':1:S]');
+		this.setConfirmTimeout(1);
 		if(this.inSync) this.write('S:'+p.x+':'+p.y);
+	},
+	setConfirmTimeout: function(v) {
+		this.awaitingConfirmation = v;
+		this.aCtimeoutID = this.confirmationTimeout.delay(1000,this,v);
+	},
+	confirmationTimeout: function(v) {
+this.els.em.appendText(' [X:'+this.awaitingConfirmation+':T'+v+']');
 	},
 	poll : function() {
 		var reply = this.links.table.getUpdate();
@@ -163,22 +185,25 @@ this.els.em.appendText(' ['+this.echoTime()+':1:S]');
 				break;
 			case 'S' :
 				if(this.awaitingConfirmation < 3 ) {
-this.els.em.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':T]');
+
 					this.awaitingConfirmation = 0 ; 
+					window.clearTimeout(this.aCtimeoutID);
 					this.write('T');
 					this.links.match.serve({x:splitMsg[1].toFloat(),y:TY-splitMsg[2].toFloat()});
 				}
 				break;
 			case 'T' :
 				if(this.awaitingConfirmation == 1) {
-this.els.em.appendText(' ['+this.echoTime()+':1:s]');
+
+					window.clearTimeout(this.aCtimeoutID);
 					this.awaitingConfirmation = 0;
 					this.links.match.serveConfirmed();
 				}
 				break;
 			case 'E' :
 				if(this.awaitingConfirmation == 3) {
-this.els.em.appendText(' ['+this.echoTime()+':3:f]');
+
+					window.clearTimeout(this.aCtimeoutID);
 					this.awaitingConfirmation = 0;
 					this.links.match.foulConfirmed(splitMsg[1]);
 				}
@@ -186,14 +211,15 @@ this.els.em.appendText(' ['+this.echoTime()+':3:f]');
 			case 'F' :
 				if(this.awaitingConfirmation < 3 || !this.master) {
 					this.write('E:'+splitMsg[1]); //confirm
-this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':E]');
+
+					window.clearTimeout(this.aCtimeoutID);
 					this.awaitingConfirmation = 0;
 					this.links.match.foul();
 				}
 				break;
 			case 'G' :
 				if(this.awaitingConfirmation < 3 || !this.master) {
-this.els.em.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':H]');
+
 					this.awaitingConfirmation = 0
 					this.write('H'); //confirm
 					this.links.match.goal();
@@ -201,7 +227,8 @@ this.els.em.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':H]')
 				break;
 			case 'H' :
 				if(this.awaitingConfirmation == 4) { 
-this.els.em.appendText(' ['+this.echoTime()+':4:g]');
+
+					window.clearTimeout(this.aCtimeoutID);
 					this.awaitingConfirmation = 0;
 					this.links.match.goalConfirmed();
 				}
@@ -219,7 +246,8 @@ this.els.em.appendText(' ['+this.echoTime()+':4:g]');
 	 				splitMsg[7].toInt()-this.timeOffset);
 					if (firm) {
 						this.write('D');
-this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':D]');
+
+					window.clearTimeout(this.aCtimeoutID);
 					this.awaitingConfirmation = 0;
 					}
 				} else {
@@ -229,7 +257,8 @@ this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':D]');
 				break;
 			case 'D':
 				if(this.awaitingConfirmation == 2 ) {
-this.els.em.appendText(' ['+this.echoTime()+':2:c]');
+
+					window.clearTimeout(this.aCtimeoutID);
 					this.awaitingConfirmation = 0;
 				}
 				break;

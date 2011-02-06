@@ -52,13 +52,13 @@ list($utime,$now5) = explode(" ",microtime());
 $now5 .= substr($utime,2,3);
 
 fwrite($sendpipe,"$".$_POST['msg']);
-
+//usleep(5000);
 list($utime,$now6) = explode(" ",microtime());
 $now6 .= substr($utime,2,3);
 
 fclose($sendpipe);
 
-list($utime,$now) = explode(" ",microtime());
+list($utime,$now7) = explode(" ",microtime());
 $now7 .= substr($utime,2,3);
 
 $time = $now7-$now1;

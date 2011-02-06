@@ -32,8 +32,11 @@ Comms = function () {
     var reader = 0;
 	function readTimeout () {
 		messageBoard.appendText('Read Timeout ');
-		if(readTimeoutLimit-- <= 0) {
+		if(--readTimeoutLimit <= 0) {
+			reader.cancel();
 			failCallback('Read Timeout Limit Reached');
+		} else {
+			readTimerID = readTimeout.delay(readTimeoutValue);
 		}
 	}	
     var messageBoard;	 
@@ -59,43 +62,47 @@ Comms = function () {
 			readTimeoutValue = timeout;
 			readTimeoutLimit = limit;
 			failCallback = fail;
-			//reset timeout
-			window.clearTimeout(readTimerID);
-			readTimerId = readTimeout.delay(readTimeoutValue);
-			if (reader == 0 && oid != 0) { 
-				//Set up the first time (only)
-				reader = new Request({
-					url:'read.php',
-					link:'chain',
-					onSuccess: function(html) {
-						window.clearTimeout(readTimerID);
-						readTimerID = readTimeout.delay(readTimeoutValue);
-						var holder = new Element('div').set('html',html);
-						if(holder.getElement('error')) {
-							errDiv.appendText(holder.getElement('error').get('text'));
-						} else {
-							var m = holder.getElement('message');
-							if(m) {
-								messageCallback(m.get('time'),m.get('text'));
-								if(m=m.getNext()) {
-									errDiv.appendText('++++SECOND MESSAGE+++');
-									messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
+			if(oid != 0) {
+				//reset timeout
+				window.clearTimeout(readTimerID);
+				readTimerID = readTimeout.delay(readTimeoutValue);
+				if (reader == 0) { 
+					//Set up the first time (only)
+					reader = new Request({
+						url:'read.php',
+						link:'chain',
+						onSuccess: function(html) {
+							window.clearTimeout(readTimerID);
+							readTimerID = readTimeout.delay(readTimeoutValue);
+							var holder = new Element('div').set('html',html);
+							if(holder.getElement('error')) {
+								errDiv.appendText(holder.getElement('error').get('text'));
+							} else {
+								var m = holder.getElement('message');
+								if(m) {
+									messageCallback(m.get('time'),m.get('text'));
+									if(m=m.getNext()) {
+										errDiv.appendText('++++SECOND MESSAGE+++');
+										messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
+									}
 								}
 							}
+							reader.post({oid:oid}); //Queue up next request 
 						}
-						reader.post({oid:oid}); //Queue up next request 
-					}
-				});
-				reader.post({oid:oid}); //Startup read request chain 
+					});
+					reader.post({oid:oid}); //Startup read request chain 
+				}
 			}
 		},
 		die: function() {
-			if (reader) {
-				window.clearTimeout(readTimerID);
-				reader.cancel();  //Kill off any read requests as we are going to reset them
+			if(sender != 0) {
+				if (reader) {
+					window.clearTimeout(readTimerID);
+					reader.cancel();  //Kill off any read requests as we are going to reset them
+				}
+				sender.cancel();
+				sender = 0; //ensure nothing else goes
 			}
-			sender.cancel();
-			sender = 0; //ensure nothing else goes
 		}
     }
 }();

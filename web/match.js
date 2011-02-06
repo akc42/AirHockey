@@ -56,6 +56,7 @@ var Match = new Class({
 		this.links.scoreboard.set(this.timers.startdelay,inPlay);
 		this.links.table.start();
 		this.links.table.place(); //Null position places it in the centre by default
+		this.links.opponent.start();
 	},
 	serve: function(position) {
 		this.links.table.place(position);
