@@ -25,8 +25,11 @@ define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
-if(!(isset($_POST['uid']) && isset($_POST['oid'])))
-	die('Log - Hacking attempt - wrong parameters');
+if(!(isset($_POST['uid']) && isset($_POST['oid']))) {
+?><error>Log - Hacking attempt - wrong parameters</error>
+<?php
+	exit;
+}
 // Show all errors:
 error_reporting(E_ALL);
 // Path to the air hockety directory:
@@ -38,8 +41,11 @@ if($user_info['is_guest']) {
 	header( 'Location: /static/airhockey.html' ) ;
 	exit;
 };
-if ($uid != $ID_MEMBER)
-	die('Log - Hacking attempt - invalid user id');
+if ($uid != $ID_MEMBER) {
+?><error>Log - Hacking attempt - invalid user id</error>
+<?php
+	exit;
+}
 
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r+'); //unlock any write waiting to go
 sleep(1);
@@ -49,4 +55,4 @@ $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+'); //unlock any pre
 fwrite($readpipe,'$');
 sleep(1);
 fclose($readpipe);
-?>
+?><status>DONE</status>

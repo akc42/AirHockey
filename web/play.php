@@ -80,6 +80,7 @@ function head_content() {
 ?>	<title>Melinda's Backups Air Hockey Game Play Screen</title>
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
 	<script src="soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="stream.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scorer.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
@@ -107,6 +108,7 @@ window.addEvent('domready', function() {
 				tick:<?php echo get_param('MODEL_TICK') ;?>,
 				opponent:<?php echo get_param('OPPONENT_TIMEOUT') ; ?>,
 				timeout:<?php echo get_param('MODEL_TIMEOUT') ; ?>,
+				limit:<?php echo get_param('TIMEOUT_LIMIT') ; ?>,
 				maxspeed:<?php echo get_param('MODEL_MAX_SPEED') ; ?>,
 				startup:<?php echo get_param('STARTUP_DELAY') ; ?>,
 				startdelay:<?php echo get_param('START_DELAY') ; ?>,

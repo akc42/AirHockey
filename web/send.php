@@ -25,13 +25,13 @@ define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
 if(!(isset($_POST['uid']) && isset($_POST['msg']))) {
-	echo '{"OK":false}';
+	echo '<error>Invalid Parameters</error>';
 	exit;
 }
 list($utime,$now) = explode(" ",microtime());
 $now .= substr($utime,2,3);
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r'); //This waits until an read request is outstanding
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['uid'],'r+');
+$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'rb'); //This waits until an read request is outstanding
+$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['uid'],'r+b');
 $r=fread($readpipe,10); //not reading, but syncronising with other end (this will be satisfied as EOF as other side closes)
 fclose($readpipe);
 fwrite($sendpipe,"$".$_POST['msg']);
@@ -39,5 +39,5 @@ fclose($sendpipe);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
 $time -= $now;
-echo '{"OK":true,"t":'.$time.'}';
+echo '<status time="'.$time.'" now="'.$now.'">OK</status>';
 ?>

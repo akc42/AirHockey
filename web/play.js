@@ -41,9 +41,10 @@ if(master) {
 		//this needs to be last, as it starts everything off - the rest has to be set up before it
 		this.links.opponent = new Opponent(this.links,me,oid,master,timers,els,positions);
 
-		var pollReq = new Request({url:'poll.php',link:'chain'})
+		//This will need to follow Opponent as it sets up who I am for the poll parameter
+		var pollReq = new Comms.Stream('poll.php')
 		var poller = function() {
-			pollReq.post(me);
+			pollReq.send();
 		}
 		var pollerID = poller.periodical(timers.poll);
 		var that = this;

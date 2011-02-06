@@ -39,24 +39,23 @@ var Opponent = new Class({
 		};
 		var awaitOpponent = function() {
 			if (master) {
-				that.comms.set(startMatchM,timers.opponent);
-				that.comms.read();
-				that.comms.write('Start');
+				Comms.set(me,oid,startMatchM,timers.opponent,1,myFail,els.em);
+				that.write('Start');
 			} else {
-				that.comms.set(startMatchS,timers.opponent);
-				that.comms.read();
+				Comms.set(me,oid,startMatchS,timers.opponent,1,myFail,els.em);
 			}
 		};
 		var startMatchM = function(time,msg) {
 			if(msg == 'OK') {
+				Comms.set(me,oid,er,timers.timeout,timers.limit,myFail,els.em);
 				startMatch(time);
 			}
 		};
 		var startMatchS = function(time,msg) {
 			switch (msg) {
 				case 'Start':
-					that.comms.set(er,timers.timeout);
-					that.comms.write.delay(20,that.comms,'OK'); // just wait a short while before returning the OK
+					Comms.set(me,oid,er,timers.timeout,timers.limit,myFail,els.em);
+					that.write.delay(20,that,'OK'); // just wait a short while before returning the OK
 					startMatch(time);
 					break;
 				case 'Abandon':
@@ -68,8 +67,6 @@ var Opponent = new Class({
 		};	
 		var startMatch = function (time) {
 			that.inSync = true;
-			that.comms.set(er,timers.timeout);
-			that.comms.read();
 			var now = new Date().getTime() + that.timeOffset;
 			that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
 			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
@@ -99,7 +96,7 @@ var Opponent = new Class({
 					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
 				} else {
 					that.timeOffset = that.timeOffset.toInt();
-					that.comms = new Comms(me,oid,timers.opponent,myFail,that.timeOffset,els);
+					that.comms = new Comms.Stream('send.php');
 					awaitOpponent();
 				}
 			}
@@ -110,7 +107,7 @@ var Opponent = new Class({
 		if(this.inSync) {
 this.els.em.appendText(' ['+this.echoTime()+':2:C]');
 			this.awaitingConfirmation = 2;
-			this.comms.write('C:'+mallet.x+':'+mallet.y
+			this.write('C:'+mallet.x+':'+mallet.y
 				+':'+puck.x+':'+puck.y+':'+puck.dx+':'+puck.dy
 				+':'+(time+this.timeOffset));
 		}
@@ -118,45 +115,49 @@ this.els.em.appendText(' ['+this.echoTime()+':2:C]');
 	end: function() {
 		this.inSync = false;
 		this.poller = window.clearInterval(this.poller);
-		this.comms.die.delay(1000,this.comms); //need to wait for last message to have gone
+		var a = new Comms.Stream('abort.php');
+		a.send();
+		Comms.die.delay(1000); //need to wait for last message to have gone
+	},
+	write: function(msg) {
+		this.comms.send({msg:msg});
 	},
 	faceoff: function() {
 		if(this.inSync) {
-			this.comms.write('O');
+			this.write('O');
 		}
 	},
 	goal: function () {
 		if(this.inSync) {
 			this.awaitingConfirmation = 4;
 this.els.em.appendText(' ['+this.echoTime()+':4:G]');
-			this.comms.write('G');
+			this.write('G');
 		}
 	},
 	foul: function (msg) {
 		if(this.inSync)  {
 			this.awaitingConfirmation = 3;
 this.els.em.appendText(' ['+this.echoTime()+':3:F]');
-			this.comms.write('F:'+msg);
+			this.write('F:'+msg);
 		}
 	},
 	serve: function (p) {
 		this.awaitingConfirmation = 1;
 this.els.em.appendText(' ['+this.echoTime()+':1:S]');
-		if(this.inSync) this.comms.write('S:'+p.x+':'+p.y);
+		if(this.inSync) this.write('S:'+p.x+':'+p.y);
 	},
 	poll : function() {
 		var reply = this.links.table.getUpdate();
 		if(reply.puck) {
 			//puck is on table (it should not be on table if awaiting confirmation of foul or goal)
-			this.comms.write('P:'+reply.mallet.x+':'+reply.mallet.y
+			this.write('P:'+reply.mallet.x+':'+reply.mallet.y
 				+':'+reply.puck.x+':'+reply.puck.y+':'+reply.puck.dx+':'+reply.puck.dy
 				+':'+(reply.time+this.timeOffset));
 		} else {
-			this.comms.write('M:'+reply.mallet.x+':'+reply.mallet.y);
+			this.write('M:'+reply.mallet.x+':'+reply.mallet.y);
 		}
 	},
 	messageReceived : function (msg) {
-		this.comms.read();
 		var splitMsg = msg.split(':');
 		var firm = false;
 		switch (splitMsg[0]) {
@@ -165,14 +166,14 @@ this.els.em.appendText(' ['+this.echoTime()+':1:S]');
 				break;
 			case 'O':
 				if(this.links.match.faceoff()) {
-					this.comms.write('N');
+					this.write('N');
 				}
 				break;
 			case 'S' :
 				if(this.awaitingConfirmation < 3 ) {
 this.els.em.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':T]');
 					this.awaitingConfirmation = 0 ; 
-					this.comms.write('T');
+					this.write('T');
 					this.links.match.serve({x:splitMsg[1].toFloat(),y:TY-splitMsg[2].toFloat()});
 				}
 				break;
@@ -192,7 +193,7 @@ this.els.em.appendText(' ['+this.echoTime()+':3:f]');
 				break;
 			case 'F' :
 				if(this.awaitingConfirmation < 3 || !this.master) {
-					this.comms.write('E:'+splitMsg[1]); //confirm
+					this.write('E:'+splitMsg[1]); //confirm
 this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':E]');
 					this.awaitingConfirmation = 0;
 					this.links.match.foul();
@@ -202,7 +203,7 @@ this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':E]');
 				if(this.awaitingConfirmation < 3 || !this.master) {
 this.els.em.appendText(' ['+this.echoTime()+':'+this.awaitingConfirmation+':H]');
 					this.awaitingConfirmation = 0
-					this.comms.write('H'); //confirm
+					this.write('H'); //confirm
 					this.links.match.goal();
 				}
 				break;
@@ -225,7 +226,7 @@ this.els.em.appendText(' ['+this.echoTime()+':4:g]');
 						dx:splitMsg[5].toFloat(),dy:splitMsg[6].toFloat()},
 	 				splitMsg[7].toInt()-this.timeOffset);
 					if (firm) {
-						this.comms.write('D');
+						this.write('D');
 this.els.em.appendText('['+this.echoTime()+':'+this.awaitingConfirmation+':D]');
 					this.awaitingConfirmation = 0;
 					}
@@ -253,63 +254,4 @@ this.els.em.appendText(' ['+this.echoTime()+':2:c]');
 	}
 });
 
-var Comms = new Class({
-	initialize: function(me,oid,initialTimeout,fail,offset,els) {
-		var that = this;
-		this.els = els;
-		this.offset = offset;
-		this.timeoutValue = initialTimeout;
-		this.timeout = null;
-		this.aopt = {uid:me.uid,oid:oid};
-		this.ropt = {oid:oid};
-		this.sopt = {uid:me.uid};
-		this.commsFailed = false;
-		this.fail = function(reason) {
-			if(!that.commsFailed) {
-				that.commsFailed = true;
-				fail(' Comms Timeout');
-			}
-		};
-		
-		this.func = null;
 
-		this.sendReq = new Request.JSON({url:'send.php',link:'chain',noCache:true});
-		
-		this.readReq = new Request.JSON({url:'read.php',link:'chain',noCache:true,onComplete:function(r,e) {
-			if(r){
-				that.timeout=window.clearTimeout(that.timeout);
-				if (that.func) {
-					that.func(r.time,r.msg);
-					if(r.msg2) {
-that.els.em.appendText('%%%');
-						that.func(r.time,r.msg2);
-					}
-				}
-			} else {
-that.els.em.appendText('$$$');
-			}
-		}});
-		this.abortReq = new Request.JSON({url:'abort.php',link:'chain'});
-		this.timeout = null;
-	},
-	set: function(success,timeout) {
-		this.timeoutValue = timeout;
-		this.timeout = window.clearTimeout(this.timeout);
-		this.func = success;
-	},
-	read: function () {
-		if(this.commsFailed) return;
-		if(!this.timeout) this.timeout = this.fail.delay(this.timeoutValue,this);
-		this.readReq.post(this.ropt);
-	},
-	write: function (msg) {
-		if(this.commsFailed) return;
-		this.sendReq.post(Object.append(this.sopt,{msg:msg}));
-	},
-	die: function () {
-		this.commsFailed = true;
-		this.readReq.cancel();
-		this.sendReq.cancel();
-		this.abortReq.post(this.aopt);  //kill off all of my requests
-	}
-});

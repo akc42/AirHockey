@@ -24,12 +24,16 @@
 	Handles the case when a score occurs
 */
 
-if(!(isset($_POST['uid'])  && isset($_POST['pass'])&& isset($_POST['m'])&& isset($_POST['g'])&& isset($_POST['h'])&& isset($_POST['a'])))
-	die('Log - Hacking attempt - wrong parameters');
+if(!(isset($_POST['uid'])  && isset($_POST['pass'])&& isset($_POST['m'])&& isset($_POST['g'])&& isset($_POST['h'])&& isset($_POST['a']))) {
+?><error>Log - Hacking attempt - wrong parameters</error>
+<?php
+	exit;
+}
 $uid = $_POST['uid']; //extra security for abort so it doesn't get missued
-if ($_POST['pass'] != sha1("Air".$uid))
-	die('Log - Hacking attempt got: '.$_POST['pass'].' expected: '.sha1("Air".$uid));
-
+if ($_POST['pass'] != sha1("Air".$uid)) {
+	echo '<error>Log - Hacking attempt got: ',$_POST['pass'],' expected: ',sha1("Air".$uid),'</error>';
+	exit;
+}
 $mid = $_POST['m'];
 
 require_once('./db.inc');
@@ -111,11 +115,11 @@ if($row = $match->fetch(PDO::FETCH_ASSOC)) {
 		}
 	}
 	$db->commit();
-	echo '{"OK":true}';
+	echo '<status>OK</status>';
 } else {
 	$match->closeCursor();
 	$db->rollBack();
-	echo 'Match with mid = '.$mid.' does not exist';
+	echo '<error>Match with mid = '.$mid.' does not exist</error>';
 }
 ?>
 

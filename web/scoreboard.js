@@ -38,35 +38,23 @@ var Scoreboard = new Class({
 			this.els.duration.set('text',myDate.getUTCHours()+':'+min+':'+secs);
 		};
 		this.duration = updateDuration.periodical(1000,this);
-		if(mid != 0) {
-			//not a practice
-			this.updateMatchReq = new Request.JSON({url:'match.php',link:'chain',onComplete:function(response,errstr) {
-				if(response) {
-					var x = 1;
-				}else{
-					els.em.appendText(errstr);
-				}
-			}});
-		}
+		this.updateMatchReq = new Comms.Stream('match.php')
+
 		this.countdown = null;
 		this.n = -1;
 	},
 	endMatch: function() {
 		this.duration = window.clearInterval(this.duration);
 		this.countdown = window.clearInterval(this.countdown);
-		if(this.params.m != 0 && this.master) {
-			this.params.g = 0;  //special flag to say end the game
-			this.updateMatchReq.post(this.params);
-		}
+		this.params.g = 0;  //special flag to say end the game
+		if(this.master) this.updateMatchReq.send(this.params);
 		this.status('Match Complete');
 	},
 	abandonMatch: function () {
 		this.duration = window.clearInterval(this.duration);
 		this.countdown = window.clearInterval(this.countdown);
-		if (this.params.m !=0) {
-			this.params.g = -1;
-			this.updateMatchReq.post(this.params);
-		}
+		this.params.g = -1;
+		if(this.master) this.updateMatchReq.send(this.params);
 		this.status('Match Abandoned');
 	},
 	score: function (me) {
@@ -79,7 +67,7 @@ var Scoreboard = new Class({
 		h.set('text',(this.master)?this.params.h:this.params.a);
 		var a = h.getNext();
 		a.set('text',(this.master)?this.params.a:this.params.h);
-		if(this.master && this.params.m != 0) 	this.updateMatchReq.post(this.params);
+		if(this.master) this.updateMatchReq.send(this.params);
 	},
 	newGame: function() {
 		var d = new Element('div',{'class':'game'}).inject(this.game,'after');
@@ -89,6 +77,7 @@ var Scoreboard = new Class({
 		this.params.h=0;
 		this.params.a=0;
 		this.params.g++;
+		if(this.master) this.updateMatchReq.send(this.params);
 	},
 	serve: function(s) {
 		if(s) {

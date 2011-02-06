@@ -30,13 +30,15 @@
 if(!(isset($_POST['uid'])  && isset($_POST['pass'])))
 	die('Log - Hacking attempt - wrong parameters');
 $uid = $_POST['uid']; //extra security 
-if ($_POST['pass'] != sha1("Air".$uid))
-	die('Log - Hacking attempt got: '.$_POST['pass'].' expected: '.sha1("Air".$uid));
-
+if ($_POST['pass'] != sha1("Air".$uid)) {
+?>	<error>Log - Hacking attempt got: '<?php echo $_POST['pass'] ;?> expected: <?php echo sha1("Air".$uid); ?></error>
+<?php
+	exit;
+}
 require_once('./db.inc');
 
 $player = $db->prepare("UPDATE player SET last_poll = (strftime('%s','now')) WHERE pid = ?");
 $player->bindValue(1,$uid,PDO::PARAM_INT);
 $player->execute();  //no point in a transaction for this one request
 $player->closeCursor();
-?>
+?><status>OK</status>

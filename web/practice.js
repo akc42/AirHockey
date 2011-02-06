@@ -240,6 +240,7 @@ var Opponent = new Class({
 			StartMouse.delay(that.startup+that.startDelay,that);	//and out control of our mallet
 			that.poller=that.poll.periodical(timers.mallet,that);  //start sending my stuff on a regular basis
 		};
+		Comms.set(me,0,null,0,1,null,els.er);
 		startMatch.delay(positions.practice.startup); //say opponent is there in 2 secs
 		
 
@@ -254,6 +255,9 @@ var Opponent = new Class({
 		this.computer.table.halt();
 		this.computer.table.stop();
 		this.mouseId = window.clearInterval(this.malletId);
+		var a = new Comms.Stream('abort.php');
+		a.send();
+		Comms.die.delay(1000); //ensure any last messages are gone
 	},
 	faceoff: function() {
 		if(this.inSync) {

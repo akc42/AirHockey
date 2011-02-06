@@ -24,30 +24,31 @@ define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
-if(!(isset($_POST['oid'])))
-	die('Log - Hacking attempt - wrong parameters');
+if(!(isset($_POST['oid']))) {
+?><error>Log - Hacking attempt - wrong parameters</error>
+<?php
+	exit;
+}
 
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['oid'],'r+'); //Say I am ready for a send from the other end
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r');
+$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['oid'],'r+b'); //Say I am ready for a send from the other end
+$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'rb');
 fclose($sendpipe);//this tells other end it may now write to the pipe
 $response=fread($readpipe,400);
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
 fclose($readpipe);
-
 if(strlen($response) > 0) {
 	$r = explode('$',$response);
 	if(strlen($r[0]) == 0) { //expect first item to be empty as $ should be first character
-		echo '{"time":'.$time.',"msg":"'.$r[1].'"';
+		echo '<message time="'.$time.'">'.$r[1].'</message>';
 		if(count($r) != 2) {//normal mode = single message as $r[1] but might have one in $r[2]
-			echo ',"msg2":"'.$r[2].'"';
+			echo '<message time="'.$time.'">'.$r[2].'</message>';
 		}
-		echo '}';
 	} else {
-		echo '{"time":'.$time.',"msg":"abort"}';
+		echo '<error now="'.$time.'">$ not first character</error>';
 	}
 } else {
-echo '{"time":'.$time.',"msg":"abort"}';
+echo '<error now="'.$time.'">zero length response = "'.$response.'"</error>';
 }
 
 ?>

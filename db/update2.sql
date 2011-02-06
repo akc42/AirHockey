@@ -38,6 +38,7 @@ INSERT INTO config(name,value) VALUES('POLL',10000); --milliseconds delay betwee
 INSERT INTO config(name,value) VALUES('MODEL_TICK',33);	--milliseconds between calculating new table layout
 INSERT INTO config(name,value) VALUES('OPPONENT_TIMEOUT',30000); --Milliseconds to wait for opponent to arrive in match (approx 30 secs)
 INSERT INTO config(name,value) VALUES('MODEL_TIMEOUT',5000);  --Milliseconds to wait until assume comms running the model have died (approx 2 secs)
+INSERT INTO config(name,value) VALUES('TIMEOUT_LIMIT',3);  --No of times model timeout can occur before aborting the whole thing
 INSERT INTO config(name,value) VALUES('MODEL_MAX_SPEED',3.5);	--Max distance puck can travel in a millisecond
 INSERT INTO config(name,value) VALUES('START_DELAY',5);		--Seconds after both sides have synchronised before puck is in play 
 INSERT INTO config(name,value) VALUES('STARTUP_DELAY',800); --Milliseconds to start up model after we thing we are synchonised
