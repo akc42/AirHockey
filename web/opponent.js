@@ -109,9 +109,7 @@ this.els.em.appendText(' ['+this.echoTime()+':2:C]');
 	end: function() {
 		this.inSync = false;
 		this.poller = window.clearInterval(this.poller);
-		var a = new Comms.Stream('abort.php');
-		a.send();
-		Comms.die.delay(1000); //need to wait for last message to have gone
+		Comms.die.delay(200); //need to wait for last message to have gone
 	},
 	write: function(msg) {
 		this.comms.send({msg:msg});

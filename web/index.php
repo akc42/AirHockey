@@ -83,6 +83,8 @@ $old_umask = umask(0007);
 if(!file_exists(AIR_HOCKEY_PIPE_PATH."msg".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."msg".$uid,0660);
 if(!file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) posix_mkfifo(AIR_HOCKEY_PIPE_PATH."ack".$uid,0660);
 umask($old_umask);
+
+/*
 $pipe=fopen(AIR_HOCKEY_PIPE_PATH."msg".$uid,'r+b');
 //make sure there are no extant processes waiting on message any hanging reads will terminate
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
@@ -90,6 +92,7 @@ fclose($pipe);
 $pipe=fopen(AIR_HOCKEY_PIPE_PATH."ack".$uid,'r+b');
 usleep(10000);  //give the other side of the pipe a chance to wake up and notice
 fclose($pipe);
+*/
 
 function head_content() {
 	global $uid,$time;

@@ -75,13 +75,15 @@ Comms = function () {
 							errDiv.appendText(holder.getElement('error').get('text'));
 						} else {
 							var m = holder.getElement('message');
-							messageCallback(m.get('time'),m.get('text'));
-							if(m=m.getNext()) messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
+							if(m) {
+								messageCallback(m.get('time'),m.get('text'));
+								if(m=m.getNext()) messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
+							}
 						}
 						reader.post({oid:oid}); //Queue up next request 
 					}
 				});
-				reader.post({oid:oid}); //Queue up next request 
+				reader.post({oid:oid}); //Startup read request chain 
 			}
 		},
 		die: function() {
