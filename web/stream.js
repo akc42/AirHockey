@@ -28,6 +28,7 @@ Comms = function () {
 	var readTimeoutValue;
 	var oid = 0;
 	var me;
+	var counter = 0;
     var reader = 0;
     var readerStarted = false;
 	function readTimeout () {
@@ -57,6 +58,8 @@ Comms = function () {
 						} else {
 							var m = holder.getElement('message');
 							if(m) {
+								var c = m.get('count');
+								if(++counter != c) messageBoard.appendText(' [C:'+counter+':'+c+']'); //Should catch out of sequence counts
 								messageCallback(m.get('time'),m.get('text'));
 							}
 						}
@@ -73,7 +76,7 @@ Comms = function () {
 			send: function(myParams) {
 				if (sender != 0) sender.send({
 					url:this.url,
-					data:Object.merge(me,myParams,{c:++this.counter}),
+					data:Object.merge({c:++this.counter},me,myParams),
 					method:'post',
 					onSuccess:function(html) {
 						var holder = new Element('div').set('html',html);

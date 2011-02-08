@@ -35,15 +35,12 @@ $readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'rb'); //This waits unt
 $sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['uid'],'r+b');
 $r=fread($readpipe,10); //not reading, but syncronising with other end (this will be satisfied as EOF as other side closes)
 fclose($readpipe);
-fwrite($sendpipe,"$".$_POST['msg']);
+fwrite($sendpipe,"$".$_POST['msg'].'$'.$_POST['c']);
 
 list($utime,$time) = explode(" ",microtime());
 $time .= substr($utime,2,3);
 	
 fclose($sendpipe);
-
-$c = substr($_POST['msg'],0,2);
-file_put_contents(AIR_HOCKEY_PIPE_PATH.'debug.log',"S:".$_POST['c']."|".$_POST['uid']."|M:".$c."|T:$time\n", FILE_APPEND);
 
 echo '<status time="'.$time.'">OK</status>';
 ?>

@@ -113,7 +113,6 @@ var Scoreboard = new Class({
 				this.els.countdown.set('text',this.n);
 				if (this.n == 0) {
 					this.play('start');
-this.els.em.appendText(' *');
 					callback();
 				} else {
 					this.play('count');

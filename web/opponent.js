@@ -54,7 +54,7 @@ var Opponent = new Class({
 			var now = new Date().getTime() + that.timeOffset;
 			if(msg == 'Going') {
 				Comms.set(er,timers.timeout);
-				that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
+				that.links.match.start.delay(Math.max(1,time+timers.startup - now),that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
 				that.els.em.appendText('"Going" not received got '.msg);
 				that.write('A');  //tell other end to abandon
@@ -65,7 +65,7 @@ var Opponent = new Class({
 			if(msg == 'Start') {
 				that.write('Going'); // Send something back to tell the other end to start
 				Comms.set(er,timers.timeout);				
-				that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
+				that.links.match.start.delay(Math.max(1,time+timers.startup - now),that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
 				that.els.em.appendText('"Start" not received got '.msg);
 				that.links.match.end();
@@ -79,7 +79,7 @@ var Opponent = new Class({
 		var i = timers.count;
 		var timeReq = function() {
 			startTime = new Date().getTime();
-			req.post(Object.merge(me,{t:startTime+that.timeOffset}));
+			req.post(Object.merge({t:startTime+that.timeOffset},me));
 		};
 		var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
 			if (response ) {

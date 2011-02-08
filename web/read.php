@@ -40,8 +40,8 @@ $time .= substr($utime,2,3);
 fclose($readpipe);
 
 if(strlen($response) > 0) {
-	$response = substr($response,1);
-	echo '<message time="'.$time.'">'.$response.'</message>';
+	list($n,$msg,$count) = explode('$',$response);
+	echo '<message time="'.$time.'" count="'.$count.'">'.$msg.'</message>';
 } else {
 echo '<error>zero length response = "'.$response.'"</error>';
 }
