@@ -262,5 +262,6 @@ function foot_content () {
 ?>	<div id="copyright">Air Hockey <span id="version">php:<?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>
 <?php
 }
+define('DEBUG',true); //forces uncompressed mootools
 require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
 ?>

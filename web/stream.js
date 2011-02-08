@@ -28,75 +28,76 @@ Comms = function () {
 	var readTimeoutValue;
 	var oid = 0;
 	var me;
-	var readTimeoutLimit;
     var reader = 0;
+    var readerStarted = false;
 	function readTimeout () {
-		messageBoard.appendText('Read Timeout ');
-		if(--readTimeoutLimit <= 0) {
-			reader.cancel();
-			failCallback('Read Timeout Limit Reached');
-		} else {
-			readTimerID = readTimeout.delay(readTimeoutValue);
-		}
-	}	
-    var messageBoard;	 
+		messageBoard.appendText(' [R:TO]');
+		reader.cancel();
+		failCallback();
+	};	
+    var messageBoard;
+ 
     return {
+    	initialize: function (myself,opId,errDiv,fail) {
+			me = myself;
+			oid = opId;
+			messageBoard = errDiv;
+			if (oid != 0) {
+				failCallback = fail;
+				//Set up the read request
+				reader = new Request({
+					url:'read.php',
+					link:'chain',
+					onSuccess: function(html) {
+						window.clearTimeout(readTimerID);
+						readTimerID = readTimeout.delay(readTimeoutValue);
+						var holder = new Element('div').set('html',html);
+						if(holder.getElement('error')) {
+							 messageBoard.appendText(holder.getElement('error').get('text'));
+						} else {
+							var m = holder.getElement('message');
+							if(m) {
+								messageCallback(m.get('time'),m.get('text'));
+							}
+						}
+						reader.post({oid:oid}); //Queue up next request 
+					}
+				});
+			}
+		},
         Stream : new Class({
             initialize: function(myURL) {
             	this.url = myURL;
+            	this.counter = 0;
              },                
 			send: function(myParams) {
-				var data = me;
-				if(myParams) Object.append(data,myParams);
-				if (sender != 0) sender.send({url:this.url,data:data,method:'post',onSuccess:function(html) {
+				if (sender != 0) sender.send({
+					url:this.url,
+					data:Object.merge(me,myParams,{c:++this.counter}),
+					method:'post',
+					onSuccess:function(html) {
 						var holder = new Element('div').set('html',html);
-						if(holder.getElement('error')) messageBoard.appendText(holder.getElement('error').get('text'));
-					}});
+						if(holder.getElement('error')) messageBoard.appendText(' [S:'+holder.getElement('error').get('text')+']');
+					}
+				});
 			}
 		}),
-		set: function(myself,opId,callback,timeout,limit,fail,errDiv) {
-			me = myself;
-			oid = opId;
+		set: function(callback,timeout) {
 			messageCallback = callback;
-			messageBoard = errDiv;
 			readTimeoutValue = timeout;
-			readTimeoutLimit = limit;
-			failCallback = fail;
 			if(oid != 0) {
 				//reset timeout
 				window.clearTimeout(readTimerID);
 				readTimerID = readTimeout.delay(readTimeoutValue);
-				if (reader == 0) { 
-					//Set up the first time (only)
-					reader = new Request({
-						url:'read.php',
-						link:'chain',
-						onSuccess: function(html) {
-							window.clearTimeout(readTimerID);
-							readTimerID = readTimeout.delay(readTimeoutValue);
-							var holder = new Element('div').set('html',html);
-							if(holder.getElement('error')) {
-								errDiv.appendText(holder.getElement('error').get('text'));
-							} else {
-								var m = holder.getElement('message');
-								if(m) {
-									messageCallback(m.get('time'),m.get('text'));
-									if(m=m.getNext()) {
-										errDiv.appendText('++++SECOND MESSAGE+++');
-										messageCallback(m.get('time'),m.get('text')); //do second message if we actually got one
-									}
-								}
-							}
-							reader.post({oid:oid}); //Queue up next request 
-						}
-					});
-					reader.post({oid:oid}); //Startup read request chain 
+				if(!readerStarted) {
+					reader.post({oid:oid}); //Startup read request sequence if not already going 
+					readerStarted = true;
 				}
 			}
 		},
 		die: function() {
 			if(sender != 0) {
-				if (reader) {
+				if (oid !=0 ) {
 					window.clearTimeout(readTimerID);
 					reader.cancel();  //Kill off any read requests as we are going to reset them
 				}

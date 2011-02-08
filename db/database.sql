@@ -54,7 +54,7 @@ INSERT INTO config(name,value) VALUES('MATCH_POLL',60000); --Milliseconds betwee
 INSERT INTO config(name,value) VALUES('MALLET_POSITION',148);  --Mallet starting position measured in model coordinate from goal
 
 -- Data only required when practicing
-INSERT INTO config(name,value) VALUES('PRACTICE_STARTUP_DELAY',2000); --Milliseconds to start whole model after loading 
+INSERT INTO config(name,value) VALUES('PRACTICE_STARTUP_DELAY',4000); --Milliseconds to start mallet moving towards puck initially
 INSERT INTO config(name,value) VALUES('PRACTICE_DELAY',3500); --Milliseconds after Match Start that We move practice mallet 
 INSERT INTO config(name,value) VALUES('PRACTICE_TICK',50); --Millisecond per tick in the Practice Model of the mallet
 INSERT INTO config(name,value) VALUES('PRACTICE_CENTRE_X',560); -- X coordinate of centre of circle for mallets rest motion

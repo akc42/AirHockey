@@ -36,21 +36,24 @@ var Opponent = new Class({
 			var t = ((new Date().getTime() + this.timeOffset)/100).toInt();
 			return t%10000;
 		};
-		function myFail (reason) {
-			that.fail(reason);
+		function myFail () {
+			that.fail();
 		};
-
+		function er(t,m) {
+			that.messageReceived.delay(1,that,m);
+		};
 		var awaitOpponent = function() {
 			if (master) {
-				Comms.set(me,oid,startMatchM,timers.opponent,1,myFail,els.em);
+				Comms.set(startMatchM,timers.opponent);
 				that.write('Start');
 			} else {
-				Comms.set(me,oid,startMatchS,timers.opponent,1,myFail,els.em);
+				Comms.set(startMatchS,timers.opponent);
 			}
 		};
 		var startMatchM = function(time,msg) {
 			var now = new Date().getTime() + that.timeOffset;
 			if(msg == 'Going') {
+				Comms.set(er,timers.timeout);
 				that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
 				that.els.em.appendText('"Going" not received got '.msg);
@@ -61,6 +64,7 @@ var Opponent = new Class({
 			var now = new Date().getTime() + that.timeOffset;
 			if(msg == 'Start') {
 				that.write('Going'); // Send something back to tell the other end to start
+				Comms.set(er,timers.timeout);				
 				that.links.match.start.delay(time+timers.startup - now,that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
 				that.els.em.appendText('"Start" not received got '.msg);
@@ -89,6 +93,7 @@ var Opponent = new Class({
 					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
 				} else {
 					that.timeOffset = that.timeOffset.toInt();
+					Comms.initialize(me,oid,els.em,myFail);
 					that.comms = new Comms.Stream('send.php');
 					awaitOpponent();
 				}
@@ -97,19 +102,10 @@ var Opponent = new Class({
 		timeReq();
 	},
 	start: function () {
-		var that = this;
-		function myFail (reason) {
-			window.clearInterval(that.poller);
-			that.fail(reason);
-		}
-		function er(t,m) {
-			that.messageReceived.delay(1,that,m);
-		};
 		function pollStart() {
 			this.poller=this.poll.periodical(this.timers.mallet,this);  //start sending my stuff on a regular basis
 		};
 		this.inSync = true;
-		Comms.set(this.me,this.oid,er,this.timers.timeout,this.timers.limit,myFail,this.els.em);
 		if(this.master) {
 			pollStart.delay(1,this);
 		} else {
@@ -150,15 +146,19 @@ var Opponent = new Class({
 		}
 	},
 	serve: function (p) {
-		this.setConfirmTimeout(1);
-		if(this.inSync) this.write('S:'+p.x+':'+p.y);
+		if(this.inSync) {
+			this.setConfirmTimeout(1);
+			this.write('S:'+p.x+':'+p.y);
+		}
 	},
 	setConfirmTimeout: function(v) {
 		this.awaitingConfirmation = v;
-		this.aCtimeoutID = this.confirmationTimeout.delay(1000,this,v);
+		window.clearTimeout(this.aCtimeoutID)
+		this.aCtimeoutID = this.confirmationTimeout.delay(5000,this,v);
 	},
 	confirmationTimeout: function(v) {
 this.els.em.appendText(' [X:'+this.awaitingConfirmation+':T'+v+']');
+		this.fail(); //kill it all off if we fail
 	},
 	poll : function() {
 		var reply = this.links.table.getUpdate();
@@ -247,8 +247,8 @@ this.els.em.appendText(' [X:'+this.awaitingConfirmation+':T'+v+']');
 					if (firm) {
 						this.write('D');
 
-					window.clearTimeout(this.aCtimeoutID);
-					this.awaitingConfirmation = 0;
+						window.clearTimeout(this.aCtimeoutID);
+						this.awaitingConfirmation = 0;
 					}
 				} else {
 					//regardless - send at least the mallet position
@@ -273,8 +273,7 @@ this.els.em.appendText(' [X:'+this.awaitingConfirmation+':T'+v+']');
 				this.els.em.appendText('Invalid Message:'+msg);
 		}
 	},
-	fail: function(reason) {
-		this.els.em.appendText(reason);
+	fail: function() {
 		this.write('A');
 		this.links.match.end();
 	}

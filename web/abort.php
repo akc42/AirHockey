@@ -46,12 +46,18 @@ if ($uid != $ID_MEMBER) {
 <?php
 	exit;
 }
+$uid = $_POST['uid'];
+// We delete any old fifo(s) and create new ones for this user and his opponent (to clear out stale messages)
+$old_umask = umask(0007);
+if(file_exists(AIR_HOCKEY_PIPE_PATH."msg".$uid)) unlink(AIR_HOCKEY_PIPE_PATH."msg".$uid);
+posix_mkfifo(AIR_HOCKEY_PIPE_PATH."msg".$uid,0660);
+if(file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) unlink(AIR_HOCKEY_PIPE_PATH."ack".$uid);
+posix_mkfifo(AIR_HOCKEY_PIPE_PATH."ack".$uid,0660);
+$uid = $_POST['oid'];
+if(file_exists(AIR_HOCKEY_PIPE_PATH."msg".$uid)) unlink(AIR_HOCKEY_PIPE_PATH."msg".$uid);
+posix_mkfifo(AIR_HOCKEY_PIPE_PATH."msg".$uid,0660);
+if(file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) unlink(AIR_HOCKEY_PIPE_PATH."ack".$uid);
+posix_mkfifo(AIR_HOCKEY_PIPE_PATH."ack".$uid,0660);
 
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'r+b'); //unlock any write waiting to go
-sleep(1);
-fclose($sendpipe);
-
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'r+b'); //unlock any previous read (cancel already happened)
-sleep(1);
-fclose($readpipe);
+umask($old_umask);
 ?><status>DONE</status>

@@ -99,7 +99,7 @@ var Opponent = new Class({
 		this.master = master;
 		this.inSync = false;
 		this.timeout = timers.timeout;
-		this.inServeMode = false;
+		this.inServeMode = true;
 		this.startup = timers.startup;
 		this.startDelay = positions.practice.delay;
 		this.model = {
@@ -111,23 +111,18 @@ var Opponent = new Class({
 			ran:positions.practice.ran,		//Max random about serve position to actually serve
 			servedelay:positions.practice.servedelay, //Delay after goal before serving
 			hitdelay:positions.practice.hitdelay,
-			tick:positions.practice.tick
+			tick:positions.practice.tick,
+			startup:positions.practice.startup
 		};
-		var startMatch = function () {
-			that.inSync = true;
-			that.links.match.start.delay(that.startup,that.links.match);	//we want to start the match from 1 second from when the server told us.
-			that.computer.match.start.delay(that.startup,that.computer.match); // start our own simulation too
-		};
-		Comms.set(me,0,null,0,1,null,els.em);
-		startMatch.delay(positions.practice.startup); //say opponent is there in 2 secs
+		Comms.initialize(me,0,els.em);
+		this.inSync = true;
+		this.links.match.start.delay(this.startup,this.links.match);	//we want to start the match from 1 second from when the server told us.
+		that.computer.match.start.delay(this.startup,this.computer.match); // start our own simulation too
 		
 
 	},
 	StartMouse: function () {
-		this.time = new Date().getTime();
-		this.mouseId = this.Mouse.periodical(this.model.tick,this);
-		this.model.state = 1;
-		this.computer.table.myMallet.held = true; //say I am holding the mallet
+		this.inServeMode = false;
 	},
 	Mouse: function () {
 		// this function models the mouse movement - and therefore the mallet movement of opponent.
@@ -246,8 +241,12 @@ var Opponent = new Class({
 		if(this.computer.table.myMallet.held) this.links.table.update(true,{x:m,y:n},null,null); //tell other table only if I have held		
 	},
 	start: function() {
-			this.StartMouse();	//and out control of our mallet
-			this.poller=this.poll.periodical(this.timers.mallet,this);  //start sending my stuff on a regular basis
+		this.time = new Date().getTime();
+		this.model.state = 1;
+		this.mouseId = this.Mouse.periodical(this.model.tick,this);
+		this.StartMouse.delay(this.model.startup,this);	//and out control of our mallet
+		this.poller=this.poll.periodical(this.timers.mallet,this);  //start sending my stuff on a regular basis
+		this.computer.table.myMallet.held = true; //say I am holding the mallet
 	},
 	end: function() {
 		this.inSync = false;
@@ -255,8 +254,6 @@ var Opponent = new Class({
 		this.computer.table.halt();
 		this.computer.table.stop();
 		this.mouseId = window.clearInterval(this.malletId);
-		var a = new Comms.Stream('abort.php');
-		a.send();
 		Comms.die.delay(1000); //ensure any last messages are gone
 	},
 	hit: function(mallet,puck,time) {
