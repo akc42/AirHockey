@@ -62,11 +62,11 @@ that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset
 			}
 		};
 		var startMatchS = function(time,msg) {
-			var now = new Date().getTime() + that.timeOffset;
+			var now = new Date().getTime() + that.timeOffset - roundtrip; //This end has an extra round trip to add on.
 			if(msg == 'Start') {
 				that.write('Going'); // Send something back to tell the other end to start
 				Comms.set(er,timers.timeout);				
-that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset);
+that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset+' roundtrip = '+roundtrip);
 				that.links.match.start.delay(Math.max(1,time+timers.startup - now),that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
 				that.els.em.appendText('"Start" not received got '.msg);
@@ -75,6 +75,7 @@ that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset
 		};	
 
 		var startTime;
+		var roundtrip = 0;
 		that.timeOffset = 0;
 		var achievedCloseOffset = false;
 		
@@ -85,6 +86,7 @@ that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset
 		};
 		var req = new Request.JSON({url:'time.php',onComplete: function(response,errorstr) {
 			if (response ) {
+				roundtrip += new Date().getTime() - startTime; 
 				if (Math.abs(response.error) < timers.tick/3) achievedCloseOffset = true;
 				if(achievedCloseOffset) {
 					that.timeOffset += response.error/2;
@@ -94,6 +96,7 @@ that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset
 				if (--i > 0 ) {
 					timeReq.delay(50);  //delay, otherwise if fast link it doesn't have time to exit this routing before re entering
 				} else {
+					roundtrip = roundtrip/timers.count;
 					that.timeOffset = that.timeOffset.toInt();
 					Comms.initialize(me,oid,els.em,myFail);
 					that.comms = new Comms.Stream('send.php');
