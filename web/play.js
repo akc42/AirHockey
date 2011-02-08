@@ -23,11 +23,6 @@ var Play = new Class({
 		var play = function(sound) {
 			if(soundReady) soundManager.play(sound);
 		};
-if(master) {
-	els.em.appendText('MASTER:');
-} else {
-	els.em.appendText('SLAVE:');
-}
 		this.links = {
 			table:null,
 			match:null,
