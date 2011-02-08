@@ -54,7 +54,6 @@ var Opponent = new Class({
 			var now = new Date().getTime() + that.timeOffset;
 			if(msg == 'Going') {
 				Comms.set(er,timers.timeout);
-that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset);
 				that.links.match.start.delay(Math.max(1,time+timers.startup - now),that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
 				that.els.em.appendText('"Going" not received got '.msg);
@@ -66,7 +65,6 @@ that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset
 			if(msg == 'Start') {
 				that.write('Going'); // Send something back to tell the other end to start
 				Comms.set(er,timers.timeout);				
-that.els.em.appendText('time = '+time+' now = '+now+' offset = '+that.timeOffset+' roundtrip = '+roundtrip);
 				that.links.match.start.delay(Math.max(1,time+timers.startup - now),that.links.match);	//we want to start same delay from when the server told us it would.
 			} else {
 				that.els.em.appendText('"Start" not received got '.msg);
