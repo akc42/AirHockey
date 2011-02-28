@@ -72,76 +72,81 @@ var Table = new Class({
 		this.tickId = window.clearInterval(this.tickId);
 	},
 	tick: function () {
+		var x,y,dx,dy,t;
+		var d1,d2,cos_t,sin_t,pvn,pvt;
 		var now = new Date().getTime();
 		var timeSince = now - this.time;
 		this.time = now;
+		var pucktime = Math.min(this.puck.timeToEdge(timeSince),timeSince);
 		if(this.ontable) {
 			this.myMallet.tick(timeSince);
-			if(this.puck.tick(timeSince)) {
-				var d1,d2,cos_t,sin_t,pvn,pvt;
-				//check for collision with my Mallet
-				var x = this.puck.x - this.myMallet.x;
-				var y = this.puck.y - this.myMallet.y;
-				var dx = this.puck.dx - this.myMallet.dx;
-				var dy = this.puck.dy - this.myMallet.dy;
-				var t;
-				if(dx != 0 || dy !=0) {
-						//calculate how long in the past the minimum pass of puck and mallet was
-					t = (x*dx + y*dy)/(dx*dx + dy*dy);
+			while (this.ontable & pucktime > 0  ) {
+				timeSince -= pucktime;
+				if(this.puck.tick(pucktime)) {
+					//check for collision with my Mallet
+					x = this.puck.x - this.myMallet.x;
+					y = this.puck.y - this.myMallet.y;
+					dx = this.puck.dx - this.myMallet.dx;
+					dy = this.puck.dy - this.myMallet.dy;
+					if(dx != 0 || dy !=0) {
+							//calculate how long in the past the minimum pass of puck and mallet was
+						t = (x*dx + y*dy)/(dx*dx + dy*dy);
 
-				} else {
-					t=0;
-				}
-				//if we are closer than the two radii, or if since the last tick we got closer
-				// (this if puck is moving really fast we may have missed it)
-				if ((x*x + y*y) < PM2 || (t > 0 && t < timeSince && ((x-dx*t)*(x-dx*t)+(y-dy*t)*(y-dy*t)) < PM2 )) {
-					this.links.play('mallet');
-					// Collision Occurred
-					if (!this.inP) {
-							// we hit the puck before we were supposed to
-							this.links.match.tFoul('Puck played too early');
 					} else {
-						//Check if puck is entirely on opponents side and so is opponents mallet, or my mallet is entirely his side
-						if ((this.puck.y < (TY2 -PR) && this.opmallet.y < (TY2-MR)) || this.myMallet.y < (TY2 - 2*MR)) {
-							this.links.match.tFoul('Invalid Hit - wrong side');
+						t=0;
+					}
+					//if we are closer than the two radii, or if since the last tick we got closer
+					// (this if puck is moving really fast we may have missed it)
+					if ((x*x + y*y) < PM2 || (t > 0 && t < timeSince && ((x-dx*t)*(x-dx*t)+(y-dy*t)*(y-dy*t)) < PM2 )) {
+						this.links.play('mallet');
+						// Collision Occurred
+						if (!this.inP) {
+								// we hit the puck before we were supposed to
+								this.links.match.tFoul('Puck played too early');
 						} else {
-							d2 = Math.sqrt(x*x+y*y); //keep earlier distance
-							if (t <= 0 || t > timeSince) {
-								x -= dx*this.timers.tick;  //step back to previous tick (in case centres have passed)
-								y -= dy*this.timers.tick;
+							//Check if puck is entirely on opponents side and so is opponents mallet, or my mallet is entirely his side
+							if ((this.puck.y < (TY2 -PR) && this.opmallet.y < (TY2-MR)) || this.myMallet.y < (TY2 - 2*MR)) {
+								this.links.match.tFoul('Invalid Hit - wrong side');
 							} else {
-								x -= dx*(t+10);  //at least 10 milliseconds beyond closest point
-								y -= dy*(t+10);
-							}
-							d1 = Math.sqrt(x*x+y*y);
-							if(d1 != 0) {
-								cos_t = x/d1; //cos theta where theta angle of normal to x axis
-								sin_t = y/d1; //sin theta where theta angle of normal to x axis
-							} else {
-								cos_t = 1; //got to assume something - 
-								sin_t = 0;
-							}
-							if (d2 < PM) {
-								d2 = 2*(PM-d2);
-								this.puck.x += d2*cos_t;
-								this.puck.y += d2*sin_t;
-							}
-							var mvn = this.myMallet.dx*cos_t + this.myMallet.dy * sin_t;  //mallet velocity along normal
-							pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
-							pvt = this.puck.dx*sin_t - this.puck.dy*cos_t;  //puck velicity tangent
+								d2 = Math.sqrt(x*x+y*y); //keep earlier distance
+								if (t <= 0 || t > timeSince) {
+									x -= dx*this.timers.tick;  //step back to previous tick (in case centres have passed)
+									y -= dy*this.timers.tick;
+								} else {
+									x -= dx*(t+10);  //at least 10 milliseconds beyond closest point
+									y -= dy*(t+10);
+								}
+								d1 = Math.sqrt(x*x+y*y);
+								if(d1 != 0) {
+									cos_t = x/d1; //cos theta where theta angle of normal to x axis
+									sin_t = y/d1; //sin theta where theta angle of normal to x axis
+								} else {
+									cos_t = 1; //got to assume something - 
+									sin_t = 0;
+								}
+								if (d2 < PM) {
+									d2 = 2*(PM-d2);
+									this.puck.x += d2*cos_t;
+									this.puck.y += d2*sin_t;
+								}
+								var mvn = this.myMallet.dx*cos_t + this.myMallet.dy * sin_t;  //mallet velocity along normal
+								pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
+								pvt = this.puck.dx*sin_t - this.puck.dy*cos_t;  //puck velicity tangent
 
-							var pvn2 = Math.min(2*mvn - pvn,this.timers.maxspeed); //puck normal after meeting mallet (although not beyond limit)
-							this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
-							this.puck.dy = pvn2*sin_t - pvt*cos_t;
-							// send model details as they are after the collision
-							this.links.opponent.hit(this.myMallet,this.puck,this.time);
-							this.links.scoreboard.status('');
+								var pvn2 = Math.min(2*mvn - pvn,this.timers.maxspeed); //puck normal after meeting mallet (although not beyond limit)
+								this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
+								this.puck.dy = pvn2*sin_t - pvt*cos_t;
+								// send model details as they are after the collision
+								this.links.opponent.hit(this.myMallet,this.puck,this.time);
+								this.links.scoreboard.status('');
+							}
 						}
 					}
+					pucktime = Math.min(this.puck.timeToEdge(timeSince),timeSince);
+				} else {
+					this.ontable = false;
 				}
-			} else {
-				this.ontable = false;
-			}
+			}	
 		}
 	},
  	inPlay: function () {
@@ -260,8 +265,6 @@ var opMallet = new Class ({
 			this.x = d.x;
 			this.y = d.y;
 		}
-		var a = (this.x - MR)/PX ;
-		var b = (this.y-MR)/PX;
 		if (this.el) this.el.setStyles({'top':((this.x - MR)/PX).toInt(),'right':((this.y-MR)/PX).toInt()});
 		return this;
 	}
@@ -349,6 +352,37 @@ var SimplePuck = new Class({
 		this.dx = p.dx;
 		this.dy = p.dy;
 	},
+	timeToEdge: function(ts) {
+		var x=0;
+		var y=0;
+		if (this.dx == 0 ) {
+			if(this.dy == 0) {
+				return ts;
+			}
+			if (this.dy > 0) {
+				return TYP - this.y;
+			}
+			return this.y-PR;
+		}
+		if (this.dy == 0 ) {
+			if(this.dx > 0) {
+				return TXP - this.x;
+			} else {
+				return this.x-PR;
+			}
+		}
+		if (this.dx > 0) {
+			x = (TXP - this.x)*(TXP - this.x);
+		} else {
+			x = (this.x-PR) *(this.x-PR);
+		}
+		if (this.dy > 0) {
+			y = (TYP - this.y)*(TYP -this.y);
+		} else {
+			y = (this.y-PR)*(this.y-PR);
+		}
+		return Math.sqrt(x + y);
+	},
 	tick: function(n) {
 		var that = this;
 		var m = function() {
@@ -375,29 +409,32 @@ var SimplePuck = new Class({
 				t = 2;
 				if (this.y < PR) {
 					if ( c() > 0) {
-						//we hit the side first
+						//we hit the side first - reflex in x axis and slow down
 						this.x = 2*PR-this.x;
 						this.dx = - (this.dx*0.96);
 					} else {
+						//we hit opponents end of table (we don't check - he does - for a goal) - we reflect in y
 						this.y = 2*PR - this.y;
 						this.dy = - (this.dy*0.96);
 					}
 				} else {
 					if (this.y > TYP) {
 						if (c() < (TYP-PR)) {
-							//hit the side first
+							//hit the side first - so reflect the puck in x-axis (and slow it down)
 							this.x = 2*PR-this.x;
 							this.dx = - (this.dx*0.96);
 						} else {
-							x = this.x - (this.y-TYP)/m();
+							x = this.x - (this.y-TYP)/m();  //Project x back to value at y=TYP
 							if (x > G1 && x < G2) {
 								t = 6; //goal scored
 								hit = false; //no need to carry on
+							} else {
+								this.y= 2*(TYP) - this.y; //no goal so can reflect and slow down
+								this.dy = -(this.dy * 0.96);
 							}
-							this.y= 2*(TYP) - this.y;
-							this.dy = -(this.dy * 0.96);
 						}
 					} else {
+						//Can only have hit the side, so reflect and slow down.
 						this.x = 2*PR-this.x;
 						this.dx = - (this.dx*0.96);
 					}
@@ -423,7 +460,7 @@ var SimplePuck = new Class({
 								this.x= 2*TXP - this.x;
 								this.dx = -(this.dx * 0.96);
 							} else {
-								x = this.x - (this.y-TYP)/m();
+								x = this.x - (this.y-TYP)/m(); //Project back to where y=TYP
 								if (x > G1 && x < G2) {
 									t = 6; //goal scored
 									hit = false; //no need to carry on
@@ -436,22 +473,25 @@ var SimplePuck = new Class({
 							this.dx = -(this.dx * 0.96);						}
 					}
 				} else {
+					// Didn't hit either side, but we might have hit the end
 					if (this.y < PR) {
+						//Its at oppenents end, so we don't check for a goal
 						hit= true;
 						t=2;
-						this.y = 2*PR - this.y;
+						this.y = 2*PR - this.y; //reflect in y-axis
 						this.dy = - (this.dy*0.96);
 					} else {
 						if (this.y > TYP) {
-							hit = true;
-							t=2;
-							x = this.x - (this.y-TYP)/m();
+							//Hit the end at my end
+							x = this.x - (this.y-TYP)/m(); //project x to when y was TYP
 							if (x > G1 && x < G2) {
 								t = 6; //goal scored
-								hit = false; //no need to carry on
+							} else {
+								t=2;
+								hit= true;
+								this.y= 2*TYP - this.y; //no goal so reflect it y-axis
+								this.dy = -(this.dy * 0.96);
 							}
-							this.y= 2*TYP - this.y;
-							this.dy = -(this.dy * 0.96);
 						}
 					}
 				}
