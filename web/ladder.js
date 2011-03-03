@@ -62,10 +62,10 @@ MBahladder = function() {
 		}
 		var statediv = this.getFirst().getNext();
 		if(statediv.hasClass('free') || statediv.hasClass('inviteFrom')) {
-			stateReq.post(Object.merge(ropt,{cmd:'A',oid:oid})); //accept an invite
+			stateReq.post(Object.merge({cmd:'A',oid:oid},ropt)); //accept an invite
 		} else {
 			if(statediv.hasClass('byInvite') || statediv.hasClass('inviteTo')) {
-				stateReq.post(Object.merge(ropt,{cmd:'I',oid:oid})); // send an invite
+				stateReq.post(Object.merge({cmd:'I',oid:oid},ropt)); // send an invite
 			} else {
 				if(changedState) {
 					/* even though the person we clicked on was not eligable to be invited, our
@@ -269,7 +269,11 @@ MBahladder = function() {
 			durationID = durationUpdate.periodical(1000);
 		},
 		logout: function () {
-		    if (doingExitToForum) stateReq.post(Object.merge(ropt,{state:0})); //say going offline (except when going to match or practice)
+
+		    if (doingExitToForum) {
+		    	ropt.state = 0;
+		    	stateReq.post(ropt); //say going offline (except when going to match or practice)
+		    }
 			window.clearInterval(pollerID); //stop poller
 			window.clearInterval(durationID);
 		}

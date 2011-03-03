@@ -96,10 +96,10 @@ function head_content() {
 window.addEvent('domready', function() {
 	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>},
 		<?php echo SPECTATOR; ?>,<?php echo get_param('POLL'); ?>);
-});
-window.addEvent('unload', function() {
-	MBahladder.logout();
-	
+	document.id('exittoforum').addEvent('click', function() {
+		MBahladder.logout();	
+	});
+
 });
 	// -->
 </script>
