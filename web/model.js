@@ -90,14 +90,16 @@ var Table = new Class({
 					dy = this.puck.dy - this.myMallet.dy;
 					if(dx != 0 || dy !=0) {
 							//calculate how long in the past the minimum pass of puck and mallet was
+							// this equation is the differencial (dD/dt) of D=(x-t*dx)^2 + (y-t*dy)^2 when dD/dt = 0
 						t = (x*dx + y*dy)/(dx*dx + dy*dy);
 
 					} else {
 						t=0;
 					}
-					//if we are closer than the two radii, or if since the last tick we got closer
-					// (this if puck is moving really fast we may have missed it)
-					if ((x*x + y*y) < PM2 || (t > 0 && t < timeSince && ((x-dx*t)*(x-dx*t)+(y-dy*t)*(y-dy*t)) < PM2 )) {
+					//if we are closer than the two radii, or ...
+					//  the time in the past when the puck was closest was in the period of the last tick and ...
+					//    that distance is less that the two radii
+					if ((x*x + y*y) < PM2 || (t > 0 && t < pucktime && ((x-dx*t)*(x-dx*t)+(y-dy*t)*(y-dy*t)) < PM2 )) {
 						this.links.play('mallet');
 						// Collision Occurred
 						if (!this.inP) {
