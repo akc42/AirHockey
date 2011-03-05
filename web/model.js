@@ -296,6 +296,7 @@ var myMallet = new Class({
 				}
 				that.mp.x=Math.max(MR,Math.min(that.mp.x,(TX-MR)));
 				that.mp.y=Math.max(MR,Math.min(that.mp.y,(TY-MR)));
+				if (that.el && that.held) that.el.setStyles({'top':((that.mp.x - MR)/PX).toInt(),'right':((that.mp.y-MR)/PX).toInt()});
 				return true;
 			}
 			e.stop();
