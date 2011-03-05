@@ -60,7 +60,7 @@ Comms = function () {
 							if(m) {
 								var c = m.get('count');
 								if(++counter != c) messageBoard.appendText(' [C:'+counter+':'+c+']'); //Should catch out of sequence counts
-								messageCallback(m.get('time'),m.get('text'));
+								messageCallback(m.get('time').toInt(),m.get('text'));
 							}
 						}
 						reader.post({oid:oid}); //Queue up next request 

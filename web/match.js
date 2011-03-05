@@ -46,7 +46,7 @@ var Match = new Class({
 			}
 		});
 	},
-	start: function(wait) {
+	start: function() {
 		var that = this;
 		var inPlay = function () {
 			that.links.table.inPlay();
