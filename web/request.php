@@ -76,7 +76,7 @@ if ($user['state'] == ACCEPTED) {
 		//Other end will be sitting reading my msg pipe
 
 		$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$uid,'r+');
-		fwrite($sendpipe,"$Abandon"); //Send the abandon
+		fwrite($sendpipe,'$Abandon'); //Send the abandon (careful with quoting - this is a real $ we must send)
 		fclose($sendpipe);
 		echo ',"state":'.$state ;
 	}
@@ -152,7 +152,12 @@ if ($state != $user['state'] ) {
 		UPDATE player SET state = ?, last_state = (strftime('%s','now')), iid = ?, last_poll = (strftime('%s','now')) WHERE pid = ?
 	");
 	$newstate->bindValue(1,$state,PDO::PARAM_INT);
-	$newstate->bindValue(2,$user['iid'],PDO::PARAM_INT);
+	if ( $state == MATCH || $state == INVITE ) {
+		$newstate->bindValue(2,$user['iid'],PDO::PARAM_INT); //keep the iid
+	} else {
+		$newstate->bindValue(2,0,PDO::PARAM_INT); //We can't have invited, so ensure its not set anymore
+		if ($user['iid'] != 0 ) $opponent = $user['iid']; //This causes us to send a state change for this user, so we clear our invite flag
+	}
 	$newstate->bindValue(3,$uid,PDO::PARAM_INT);
 	$newstate->execute();
 	$newstate->closeCursor();
@@ -166,10 +171,11 @@ require('./timeout.inc');
 if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 
 	$mstmt = $db->prepare("SELECT * FROM full_match WHERE last_activity >= ? ORDER BY start_time DESC");
-	$pstmt = $db->prepare("SELECT * FROM player WHERE last_state >= ? AND pid <> ? ORDER BY last_state DESC");
+	$pstmt = $db->prepare("SELECT * FROM player WHERE (last_state >= ? AND pid <> ?) OR pid = ? ORDER BY last_state DESC");
 	$mstmt->bindValue(1,$_POST['t'],PDO::PARAM_INT);
 	$pstmt->bindValue(1,$_POST['t'],PDO::PARAM_INT);
 	$pstmt->bindValue(2,$uid,PDO::PARAM_INT);
+	$pstmt->bindValue(3,$opponent,PDO::PARAM_INT); //ensures we include any opponent where we have changed our iid for them
 	$db->beginTransaction();
 	$mstmt->execute();
 	$matches = false;
@@ -234,21 +240,8 @@ if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 				echo '}';
 			}
 		}
-		if($pid == $opponent)  $opponent = 0;
 	}
 
-	if ($opponent != 0 ) {
-		//This user hasn't appeared in the above list, but we just changed the invite state
-		if ($users) {
-			echo ',';
-		} else {
-			echo ',"users":[' ;
-			$users = true;
-		}
-		echo '{"pid":'.$opponent.', "state":3';
-		if ($state = INVITE && $user['iid'] != 0 ) echo ', "invite":"T"';
-		echo '}';
-	}
 	if($users) echo ']';
 	$pstmt->closeCursor();
 	$db->rollBack();
