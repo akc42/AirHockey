@@ -238,7 +238,7 @@ var Opponent = new Class({
 		n=Math.max(TY2+MR,Math.min(n+my,TY-MR));
 		this.computer.table.myMallet.mp.x = m;  //tell my table
 		this.computer.table.myMallet.mp.y = n;
-		if(this.computer.table.myMallet.held) this.links.table.update(true,{x:m,y:n},null,null); //tell other table only if I have held		
+		this.links.table.update(true,{x:m,y:n},null,null); //tell other table only if I have held		
 	},
 	start: function() {
 		this.time = new Date().getTime();
@@ -281,7 +281,6 @@ var Opponent = new Class({
 	serve: function (p) {
 		if(this.inSync) {
 			this.computer.match.serve({x:p.x,y:TY-p.y});
-			this.computer.table.myMallet.held = true;  //He has servered, I can pick up my puck
 			this.links.match.serveConfirmed();
 		}
 	},

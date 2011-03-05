@@ -33,7 +33,10 @@ var TX2 = TX/2;
 var TY2 = TY/2;
 var TXP = TX-PR;
 var TYP = TY-PR;
-
+var MRR = (MR/PX).toInt(); //Real coordinate mallet radius
+var TXMR = ((TX-MR)/PX).toInt();  //Real width of table (minus mallet radius)
+var TYR = (TY/PX).toInt();  //Real length of table
+var TYMR = ((TY-MR)/PX).toInt(); //Real length of table (minus mallet radius)
 var Table = new Class({
 	initialize: function(links,timers,els,positions) {
 		var that = this;
@@ -46,20 +49,6 @@ var Table = new Class({
 			play:function(sound) {that.links.play(sound);}
 		},els.puck,{x:TX/2,y:TY/2,dx:0,dy:0});
 		this.myMallet = new myMallet(els,positions.mymallet);
-		if(els.table) els.table.addEvent('click',function(e) {
-			e.stop();
-			if(that.myServe) {
-				var mp ={y: TY-(e.page.x - els.table.getPosition().x)*PX,x:(e.page.y - els.table.getPosition().y)*PX}; // convert to internal co-ordinates
-				if(mp.y > TY2) {
-				//Make sure we are on the table and on my side				
-					mp.x = Math.max(PR,Math.min(mp.x,TXP));
-					mp.y = Math.max(TY2+PR,Math.min(mp.y,TYP));
-					that.place(mp);
-					that.myServe = false;
-					that.links.match.served(that.puck);
-				}
-			}
-		});
 		this.timers = timers;
 		this.timer = null;
 		this.halt();
@@ -78,8 +67,8 @@ var Table = new Class({
 		var timeSince = now - this.time;
 		this.time = now;
 		var pucktime = Math.min(this.puck.timeToEdge(timeSince),timeSince);
+		this.myMallet.tick(timeSince);
 		if(this.ontable) {
-			this.myMallet.tick(timeSince);
 			while (this.ontable & pucktime > 0  ) {
 				timeSince -= pucktime;
 				if(this.puck.tick(pucktime)) {
@@ -156,9 +145,21 @@ var Table = new Class({
 		this.links.scoreboard.status('Puck in play');
 	},
  	serve: function () {
-		this.myServe = true;
+ 		var self = this;
 		this.puck.remove();
 		this.myMallet.drop(); //have to serve before I can pick up the mallet again
+		if (this.els.table) this.els.table.addEvent('click', function (e) {
+	 			e.stop()
+				var mp ={y: TY-(e.page.x - self.els.table.getPosition().x)*PX,x:(e.page.y - self.els.table.getPosition().y)*PX}; // convert to internal co-ordinates
+				if(mp.y > TY2) {
+					self.els.table.removeEvents('click');
+				//Make sure we are on the table and on my side				
+					mp.x = Math.max(PR,Math.min(mp.x,TXP));
+					mp.y = Math.max(TY2+PR,Math.min(mp.y,TYP));
+					self.links.table.place(mp);
+					self.links.match.served(self.puck);
+				}
+			});
 	},
 	place: function (position) {
 		this.ontable = true;
@@ -173,9 +174,6 @@ var Table = new Class({
 		this.ontable = false;
 		this.puck.remove();
 		this.inP = false;
-		this.myServe = false;
-		this.myMallet.drop(); //drops the mallet - but also says can't pick it up again until ...
-		this.myMallet.hold(); //... but I am allowed to pick up the mallet again 
 		this.transition();
 	},
  	update:function(firm,mallet,puck,time) {
@@ -199,8 +197,6 @@ var Table = new Class({
 				this.puck.update();
 				this.ontable = true;
 				this.inP = true; //opponent hit the puck, so it must be in play
-				this.myServe = false;
-				this.myMallet.hold(); //can also pick up the mallet
 		  		this.links.scoreboard.foul(false);
 				this.links.scoreboard.status('');
 	  		} else {
@@ -275,69 +271,63 @@ var opMallet = new Class ({
 var myMallet = new Class({
 	Extends:opMallet,
 	initialize: function(els,position) {
-		var that = this;
 		this.parent(els.mymallet,position);
-		this.serve = false;
-		this.held = false;
 		this.mp.x = this.x;
 		this.mp.y = this.y;
 		this.els = els;
-		if(this.el) this.el.addEvent('mouseover',function(e) {
-			var setMalletPosition = function(e) {
-				var table = that.els.table.getPosition();
-				that.mp.x = (e.page.y - table.y)*PX;
-				that.mp.y = TY-(e.page.x - table.x)*PX;
-				if (that.mp.x < 0 || that.mp.y < 0) {
-					return false;
-				} else {
-					if (that.mp.x > TX || that.mp.y > TY) {
-						return false;
-					}
-				}
-				that.mp.x=Math.max(MR,Math.min(that.mp.x,(TX-MR)));
-				that.mp.y=Math.max(MR,Math.min(that.mp.y,(TY-MR)));
-				if (that.el && that.held) that.el.setStyles({'top':((that.mp.x - MR)/PX).toInt(),'right':((that.mp.y-MR)/PX).toInt()});
-				return true;
-			}
-			e.stop();
-			if (setMalletPosition(e)) {
-				if (!that.serve) {
-					if(!that.held) els.surround.addEvent('mousemove',function(e) {
-						if (that.held) {
-							if (!setMalletPosition(e)) {
-								that.held = false
-								els.surround.removeEvents('mousemove');
-							}
-						}
-					});
-					that.held = true;
-				}
-			}
-		});
+		this.hold();   //Say we can pick up the mallet
 	},
 	dx:0,
  	dy:0,
 	mp: {},
 	tick: function(time) {
-		if(this.held) {
 			if(time != 0) {
 				this.dx = (this.mp.x - this.x)/time; //set velocity from movement over the period
 				this.dy = (this.mp.y - this.y)/time;
-			} else {
-				var x = 1;
 			}
-			this.update(this.mp); //update position from where mouse moved it to
+			this.x = this.mp.x; //update position from where mouse moved it to
+			this.y = this.mp.y;
+	},
+ 	serve: function() {
+ 		var self = this;
+ 		if (this.el) {
+	 		this.els.surround.removeEvents('mousemove');
+	 		this.els.surround.removeEvents('mouseleave');
+	 		this.el.removeEvents('mouseover');
 		}
 	},
- 	drop: function() {
-		this.held = false;
-		if(this.els.surround) this.els.surround.removeEvents('mousemove');
-		this.serve = true;  //say can't pick up until served.
-	},
 	hold: function () {
-		this.serve = false; //not serving so can hold mallet
-	}
-	
+		var self = this;
+//		this.serve = false; //not serving so can hold mallet
+		if(this.el) this.el.addEvent('mouseover', function(e) {
+			// We have picked up the mallet - so now set it up so it follows the mouse
+			e.stop();
+			self.el.removeEvents('mouseover');
+			var table = self.els.table.getPosition();
+			self.els.surround.addEvent('mousemove', function(e) {
+				e.stop();
+				//Working in pixel coordinates
+				var x = Math.max(MRR,Math.min((e.page.y - table.y),TXMR));
+				var y = Math.max(MRR,Math.min((TYR-(e.page.x - table.x)),TYMR));
+				self.el.setStyles({'top':x-MRR,'right':y-MRR});
+				self.mp.x = x * PX;
+				self.mp.y = y * PX;
+			});
+			self.els.surround.addEvent('mouseleave',function(e) {
+				e.stop();
+				self.els.surround.removeEvents('mousemove');
+				self.els.surround.removeEvents('mouseleave');
+				self.hold(); //Say we can try and pick it up again
+			});
+		});
+	},
+	drop: function () {
+		if (this.el) {
+	 		this.els.surround.removeEvents('mousemove');
+ 			this.els.surround.removeEvents('mouseleave');
+ 			this.el.removeEvents('mouseover');
+ 		}
+ 	}
 });
 
 var SimplePuck = new Class({
