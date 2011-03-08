@@ -106,7 +106,7 @@ window.addEvent('domready', function() {
 <?php
 }	
 function content_title() {
-	echo 'Air Hockey Ladder';
+	echo 'Air Hockey Club Room';
 }
 
 function menu_items() {
