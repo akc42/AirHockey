@@ -274,6 +274,7 @@ var Opponent = new Class({
 	},
 	foul: function (msg) {
 		if(this.inSync) {
+			this.els.em.appendText('[F]');
 			this.computer.match.foul();
 			this.links.match.foulConfirmed(msg);
 		}
@@ -317,6 +318,7 @@ var DummyScoreboard = new Class({
 		this.links = links
 		this.countdown = null;
 		this.n = -1;
+		this.els = els
 	},
 	endMatch: function() {
 	},
@@ -333,17 +335,18 @@ var DummyScoreboard = new Class({
 			serveposition.y = this.links.opponent.getModel().serve.y+Number.random(-this.links.opponent.getModel().ran,this.links.opponent.getModel().ran);
 			this.links.table.place(serveposition);  //Tell table is on it
 			this.links.match.served(serveposition); //And signal everyone else
-			moveToHit.delay(this.links.opponent.getModel().hitdelay,this);			//And after at least the delay for in play - start moving to hit it
-			this.links.table.myMallet.held = true;   //say I am holding the mallet
-			this.links.opponent.getModel().state = 1;  //Move to go back to the circle
+			this.moveDelay = moveToHit.delay(this.links.opponent.getModel().hitdelay,this);			//And after at least the delay for in play - start moving to hit it
 		}
 		function moveToHit () {
 			this.links.opponent.getModel().state = 3;  //Now go to hit the puck
 			this.links.opponent.clearServeMode();
 		}
 		if(s) {
-			//Scoreboard has told me to serve, so now I need to
-			placePuck.delay(this.links.opponent.getModel().servedelay,this);
+			//Scoreboard has told me to serve, so now I need to start process going
+			this.links.opponent.getModel().state = 1;  //Move to go back to the circle
+			window.clearTimeout(this.placeDelay);
+			window.clearTimeout(this.moveDelay);
+			this.placeDelay = placePuck.delay(this.links.opponent.getModel().servedelay,this);
 			this.links.opponent.setServeMode();
 		}
 	},
