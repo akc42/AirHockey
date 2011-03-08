@@ -318,7 +318,6 @@ var DummyScoreboard = new Class({
 		this.links = links
 		this.countdown = null;
 		this.n = -1;
-		this.els = els
 	},
 	endMatch: function() {
 	},
