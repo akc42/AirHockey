@@ -139,14 +139,13 @@ remain in the list for about 10 minutes before they are removed.
 			be unable to pick up your mallet. As soon as both sides are ready the system starts to count down the 5 seconds to the start of
 			the match.  As soon as those 5 seconds start you will be able to pick up your mallet.</p>
 			<h4>Picking up the Mallet</h4>
-			<p>You mouse acts as your hands as far as the mallet goes.  Move the mouse over the top of the mallet when you are
-			allowed to pick up the mallet
+			<p>You mouse acts as your hands as far as the mallet goes.  Move the mouse over the top of the mallet 
 			and it will then stick to the mouse as you move it about.  When you reach the edge of the table, the mallet will not move any further,
-			although the mouse will continue to move.  As soon as the mouse crosses over the edge of the mallet you will drop the mallet and it will
-			be neccessary move the mouse back over the mallet to pick it up again.</p>
-			<p>You will also have to pick up the mallet after a foul or a goal (regarless of which side caused the foul or scored the goal). But
-			you will have to wait until either you have served (see below) or you opponent has served.  Before that time it will not be
-			possible to hold on to the mallet.
+			although it will continue to track the mouse in the direction parallet to the edge until the mouse moves outside of the table surround
+			(the green area) when the mallet will be dropped and will no longer track the mouse at all.  To pick up the mallet again you will have to 
+			move the mouse over the top of the mallet again.</p>
+			<p>When you have to serve, the mallet is also dropped.  You pick it up again after the serve in the same way (moving your mouse over the top
+			of the mallet).</p>
 			<h4>Playing the Puck</h4>
 			<p><img src="puck.gif" alt="The Puck" align="left"/>The puck is shown on the picture to the left, and at the start of a
 			match is automatically placed at the centre of the table.  <b><i>You may not play the puck until "Puck in Play" is shown in the Message
@@ -166,20 +165,21 @@ remain in the list for about 10 minutes before they are removed.
 			will be shown on the scoreboard.  You serve by clicking on the table surface, and this places the puck there.  You will be limited to
 			placing the puck on your side of the table, so nothing happens if you click on the opponents side. You have 10 seconds to place the puck
 			on the table when it is your turn to serve otherwise you will incur a foul.</p>
-			<p>Your opponent cannot pick his mallet up until you have placed the puck on the table, and similarly when it his turn to serve
-			you may not pick your mallet up before he has placed the puck (your mallet will be automatically dropped as soon as a foul or
-			goal occurs).</p>
+			
 			<p>You are not allowed to hit the puck for two seconds after placing it on the table.  This is to give your opponent time to
-			pick his mallet up.  However once the puck is in play, the normal rules about keeping keeping the puck on your side of the table apply.</p> 
+			position himself.  Once the puck is in play, the normal rules about keeping keeping the puck on your side of the table apply.</p> 
 			<h4>Time on your side</h4>
 			<p>You are limited to 7 seconds for the puck being on your side of the table.  If you keep it on your side for longer than this time it
 			is a foul.  This time starts as soon as the puck is in play after a serve, or when the centre of the puck crosses the centre line of the 
 			table on to your side.  It ends as soon as the centre of the puck crosses the centre line.</p>
 			<h4>Fouls</h4>
 			<p><img src="foul.gif" align="left" alt="Indicator that you caused a foul"/>Fouls are incurred for various infringements in the game.
-			As soon as a foul is declared the puck is out of play and your mallet is dropped.  If you caused the foul, your opponent gets to
+			As soon as a foul is declared the puck is out of play.  If you caused the foul, your opponent gets to
 			serve, if he caused it you get to serve.  This is indicated in the message area of the scoreboard with the indicator shown to the left if
-			the foul was your fault (you will get a serve indicator if it was your opponents foul).</p> 
+			the foul was your fault (you will get a serve indicator if it was your opponents foul).</p>
+		<h2>Practicing</h2>
+		<p>Practicing is just the same as playing a match except that the other side is the computer.  All the standard rules apply to both you and
+		and the computer.</p> 
 			
 		<h2>The Ladder</h2>
 			<h3>Background</h3>
