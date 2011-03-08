@@ -61,8 +61,6 @@ var Table = new Class({
 		this.tickId = window.clearInterval(this.tickId);
 	},
 	tick: function () {
-		var x,y,dx,dy,t;
-		var d1,d2,cos_t,sin_t,pvn,pvt;
 		var now = new Date().getTime();
 		var timeSince = now - this.time;
 		this.time = now;
@@ -72,73 +70,80 @@ var Table = new Class({
 			while (this.ontable & pucktime > 0  ) {
 				timeSince -= pucktime;
 				if(this.puck.tick(pucktime)) {
-					//check for collision with my Mallet
-					x = this.puck.x - this.myMallet.x;
-					y = this.puck.y - this.myMallet.y;
-					dx = this.puck.dx - this.myMallet.dx;
-					dy = this.puck.dy - this.myMallet.dy;
-					if(dx != 0 || dy !=0) {
-							//calculate how long in the past the minimum pass of puck and mallet was
-							// this equation is the differencial (dD/dt) of D=(x-t*dx)^2 + (y-t*dy)^2 when dD/dt = 0
-						t = (x*dx + y*dy)/(dx*dx + dy*dy);
-
-					} else {
-						t=0;
-					}
-					//if we are closer than the two radii, or ...
-					//  the time in the past when the puck was closest was in the period of the last tick and ...
-					//    that distance is less that the two radii
-					if ((x*x + y*y) < PM2 || (t > 0 && t < pucktime && ((x-dx*t)*(x-dx*t)+(y-dy*t)*(y-dy*t)) < PM2 )) {
-						this.links.play('mallet');
-						// Collision Occurred
-						if (!this.inP) {
-								// we hit the puck before we were supposed to
-								this.links.match.tFoul('Puck played too early');
-						} else {
-							//Check if puck is entirely on opponents side and so is opponents mallet, or my mallet is entirely his side
-							if ((this.puck.y < (TY2 -PR) && this.opmallet.y < (TY2-MR)) || this.myMallet.y < (TY2 - 2*MR)) {
-								this.links.match.tFoul('Invalid Hit - wrong side');
-							} else {
-								d2 = Math.sqrt(x*x+y*y); //keep earlier distance
-								if (t <= 0 || t > timeSince) {
-									x -= dx*this.timers.tick;  //step back to previous tick (in case centres have passed)
-									y -= dy*this.timers.tick;
-								} else {
-									x -= dx*(t+10);  //at least 10 milliseconds beyond closest point
-									y -= dy*(t+10);
-								}
-								d1 = Math.sqrt(x*x+y*y);
-								if(d1 != 0) {
-									cos_t = x/d1; //cos theta where theta angle of normal to x axis
-									sin_t = y/d1; //sin theta where theta angle of normal to x axis
-								} else {
-									cos_t = 1; //got to assume something - 
-									sin_t = 0;
-								}
-								if (d2 < PM) {
-									d2 = 2*(PM-d2);
-									this.puck.x += d2*cos_t;
-									this.puck.y += d2*sin_t;
-								}
-								var mvn = this.myMallet.dx*cos_t + this.myMallet.dy * sin_t;  //mallet velocity along normal
-								pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
-								pvt = this.puck.dx*sin_t - this.puck.dy*cos_t;  //puck velicity tangent
-
-								var pvn2 = Math.min(2*mvn - pvn,this.timers.maxspeed); //puck normal after meeting mallet (although not beyond limit)
-								this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
-								this.puck.dy = pvn2*sin_t - pvt*cos_t;
-								// send model details as they are after the collision
-								this.links.opponent.hit(this.myMallet,this.puck,this.time);
-								this.links.scoreboard.status('');
-							}
-						}
-					}
+					if(this.collisionCheck(pucktime)) this.links.opponent.hit(this.myMallet,this.puck,this.time);// tell other side;
+					this.puck.update();
 					pucktime = Math.min(this.puck.timeToEdge(timeSince),timeSince);
 				} else {
 					this.ontable = false;
 				}
 			}	
 		}
+	},
+	collisionCheck: function (timeSince) {
+		var x,y,dx,dy,t;
+		var d1,d2,cos_t,sin_t,pvn,pvt;
+		//check for collision with my Mallet
+		x = this.puck.x - this.myMallet.x;
+		y = this.puck.y - this.myMallet.y;
+		dx = this.puck.dx - this.myMallet.dx;
+		dy = this.puck.dy - this.myMallet.dy;
+		if(dx != 0 || dy !=0) {
+				//calculate how long in the past the minimum pass of puck and mallet was
+				// this equation is the differencial (dD/dt) of D=(x-t*dx)^2 + (y-t*dy)^2 when dD/dt = 0
+			t = (x*dx + y*dy)/(dx*dx + dy*dy);
+
+		} else {
+			t=0;
+		}
+		//if we are closer than the two radii, or ...
+		//  the time in the past when the puck was closest was in the period of the last tick and ...
+		//    that distance is less that the two radii
+		if ((x*x + y*y) < PM2 || (t > 0 && t < timeSince && ((x-dx*t)*(x-dx*t)+(y-dy*t)*(y-dy*t)) < PM2 )) {
+			this.links.play('mallet');
+			// Collision Occurred
+			if (!this.inP) {
+					// we hit the puck before we were supposed to
+					this.links.match.tFoul('Puck played too early');
+					return false;
+			}
+			//Check if puck is entirely on opponents side and so is opponents mallet, or my mallet is entirely his side
+			if ((this.puck.y < (TY2 -PR) && this.opmallet.y < (TY2-MR)) || this.myMallet.y < (TY2 - 2*MR)) {
+				this.links.match.tFoul('Invalid Hit - wrong side');
+				return false;
+			} 
+			d2 = Math.sqrt(x*x+y*y); //keep earlier distance
+			if (t <= 0 || t > timeSince) {
+				x -= dx*this.timers.tick;  //step back to previous tick (in case centres have passed)
+				y -= dy*this.timers.tick;
+			} else {
+				x -= dx*(t+10);  //at least 10 milliseconds beyond closest point
+				y -= dy*(t+10);
+			}
+			d1 = Math.sqrt(x*x+y*y);
+			if(d1 != 0) {
+				cos_t = x/d1; //cos theta where theta angle of normal to x axis
+				sin_t = y/d1; //sin theta where theta angle of normal to x axis
+			} else {
+				cos_t = 1; //got to assume something - 
+				sin_t = 0;
+			}
+			if (d2 < PM) {
+				d2 = 2*(PM-d2);
+				this.puck.x += d2*cos_t;
+				this.puck.y += d2*sin_t;
+			}
+			var mvn = this.myMallet.dx*cos_t + this.myMallet.dy * sin_t;  //mallet velocity along normal
+			pvn = this.puck.dx*cos_t + this.puck.dy*sin_t;  //puck velocity normal
+			pvt = this.puck.dx*sin_t - this.puck.dy*cos_t;  //puck velicity tangent
+
+			var pvn2 = Math.min(2*mvn - pvn,this.timers.maxspeed); //puck normal after meeting mallet (although not beyond limit)
+			this.puck.dx = pvn2*cos_t + pvt*sin_t; //translate back to x and y velocities
+			this.puck.dy = pvn2*sin_t - pvt*cos_t;
+			this.links.scoreboard.status('');
+			return true;
+		}
+		return false;
+
 	},
  	inPlay: function () {
 		this.inP = true;
@@ -177,7 +182,7 @@ var Table = new Class({
 		this.transition();
 	},
  	update:function(firm,mallet,puck,time) {
-		var hm,ho;
+		var x,y,dx,dy,t,hm,ho;
 		mallet.y = TY-mallet.y;	//need to reflect the fact that the other end is backwards
 		this.opmallet.update(mallet);
 		if(puck) {
@@ -194,9 +199,10 @@ var Table = new Class({
 			}
 			if (firm) {
 		  		this.puck.set(p);
-				this.puck.update();
 				this.ontable = true;
 				this.inP = true; //opponent hit the puck, so it must be in play
+				if (this.collisionCheck((new Date().getTime()) - this.time)) this.links.opponent.hit.delay(1,[this.myMallet,this.puck,this.time],this.links.opponent);// tell other side;
+				this.puck.update();
 		  		this.links.scoreboard.foul(false);
 				this.links.scoreboard.status('');
 	  		} else {
@@ -530,7 +536,6 @@ var ComplexPuck = new Class({
 				return false;
 			default:
 		}
-		this.update();
 		return true;
 	},
  	place: function(position) {
