@@ -274,7 +274,6 @@ var Opponent = new Class({
 	},
 	foul: function (msg) {
 		if(this.inSync) {
-			this.els.em.appendText('[F]');
 			this.computer.match.foul();
 			this.links.match.foulConfirmed(msg);
 		}
