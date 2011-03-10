@@ -66,6 +66,11 @@ MBahladder = function() {
 		} else {
 			if(statediv.hasClass('byInvite') || statediv.hasClass('inviteTo')) {
 				stateReq.post(Object.merge({cmd:'I',oid:oid},ropt)); // send an invite
+				if (!statediv.hasClass('.inviteTo')) $$('.inviteTo').each(function(el){ //this was not a clear current invite type so check others
+					el.removeClass('inviteTo'); //and remove possible invites TO them.
+					el.addClass('byInvite');
+					el.set('text','I');
+				});  
 			} else {
 				if(changedState) {
 					/* even though the person we clicked on was not eligable to be invited, our
