@@ -43,11 +43,11 @@ WHERE mid IN (
 $setdelete = $db->prepare("
 UPDATE match SET abandon = 'D', last_activity = (strftime('%s','now')) 
 WHERE 
-	(abandon = 'A' OR abandon = 'P')
+	(ifnull(abandon,'') = 'A' OR ifnull(abandon,'') = 'P')
 	AND end_time IS NOT NULL AND end_time < ?"
 );
 
-$mremove = $db->prepare("DELETE FROM match WHERE (start_time < ? AND  eid IS NULL) OR (abandon = 'D' AND end_time < ? )");
+$mremove = $db->prepare("DELETE FROM match WHERE (start_time < ? AND  eid IS NULL) OR (ifnull(abandon,'') = 'D' AND end_time < ? )");
 
 $premove = $db->prepare("
 DELETE FROM player 

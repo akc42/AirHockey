@@ -153,7 +153,7 @@ function content() {
 	$result->closeCursor();
 	$matchlistsize = get_param('MAX_MATCHLIST_SIZE');
 	if($nomatches < $matchlistsize) {
-		$result = $db->query("SELECT * FROM full_match WHERE end_time IS NOT NULL AND abandon <> 'D' ORDER BY start_time DESC LIMIT "
+		$result = $db->query("SELECT * FROM full_match WHERE end_time IS NOT NULL AND ifnull(abandon,'') <> 'D' ORDER BY start_time DESC LIMIT "
 								.($matchlistsize - $nomatches));
 		while ($row=$result->fetch(PDO::FETCH_ASSOC)) {
 			$nomatches++;
