@@ -64,7 +64,7 @@ var Table = new Class({
 		var now = new Date().getTime();
 		var timeSince = now - this.time;
 		this.time = now;
-		var pucktime = Math.min(this.puck.timeToEdge(timeSince),timeSince);
+		var pucktime = this.puck.timeToEdge(timeSince);
 		this.myMallet.tick(timeSince);
 		if(this.ontable) {
 			while (this.ontable & pucktime > 0  ) {
@@ -72,7 +72,7 @@ var Table = new Class({
 				if(this.puck.tick(pucktime)) {
 					if(this.collisionCheck(pucktime)) this.links.opponent.hit(this.myMallet,this.puck,this.time);// tell other side;
 					this.puck.update();
-					pucktime = Math.min(this.puck.timeToEdge(timeSince),timeSince);
+					pucktime = this.puck.timeToEdge(timeSince);
 				} else {
 					this.ontable = false;
 				}
@@ -355,32 +355,22 @@ var SimplePuck = new Class({
 		var x=0;
 		var y=0;
 		if (this.dx == 0 ) {
-			if(this.dy == 0) {
-				return ts;
-			}
-			if (this.dy > 0) {
-				return TYP - this.y;
-			}
-			return this.y-PR;
+			x = ts;
+		} else if (this.dx > 0) {
+			x = (TXP - this.x)/this.dx;
+		} else {
+			x = (PR-this.x)/this.dx;
 		}
+		if (x<0) x = ts;
 		if (this.dy == 0 ) {
-			if(this.dx > 0) {
-				return TXP - this.x;
-			} else {
-				return this.x-PR;
-			}
-		}
-		if (this.dx > 0) {
-			x = (TXP - this.x)*(TXP - this.x);
+			y = ts;
+		} else if (this.dy > 0) {
+			y = (TYP - this.y)/this.dy;
 		} else {
-			x = (this.x-PR) *(this.x-PR);
+			y = (PR - this.y)/this.dy;
 		}
-		if (this.dy > 0) {
-			y = (TYP - this.y)*(TYP -this.y);
-		} else {
-			y = (this.y-PR)*(this.y-PR);
-		}
-		return Math.sqrt(x + y);
+		if (y<0) y = ts;
+		return Math.min(x,y,ts);
 	},
 	tick: function(n) {
 		var that = this;
