@@ -37,7 +37,7 @@ Comms = function () {
 		failCallback();
 	};	
     var messageBoard;
- 
+ 	var open = true;
     return {
     	initialize: function (myself,opId,errDiv,fail) {
 			me = myself;
@@ -74,7 +74,7 @@ Comms = function () {
             	this.counter = 0;
              },                
 			send: function(myParams) {
-				if (sender != 0) sender.send({
+				if (open) sender.send({
 					url:this.url,
 					data:Object.merge({c:++this.counter},me,myParams),
 					method:'post',
@@ -99,13 +99,14 @@ Comms = function () {
 			}
 		},
 		die: function() {
-			if(sender != 0) {
-				if (oid !=0 ) {
-					window.clearTimeout(readTimerID);
-					reader.cancel();  //Kill off any read requests as we are going to reset them
-				}
+			function shutdown () {
+				if (oid != 0 ) reader.cancel();//Kill off any read requests as we are going to reset them
 				sender.cancel();
-				sender = 0; //ensure nothing else goes
+			}
+			if(open) {
+				if (oid !=0 ) window.clearTimeout(readTimerID);
+				shutdown.delay(2000);  //Wait 2 seconds to ensure that all traffic in flight completes.	
+				open = false; //ensure nothing else goes
 			}
 		}
     }

@@ -60,17 +60,29 @@ if($version < 3) {
 }
 
  
-
-
-
-$user = $db->prepare("INSERT OR REPLACE INTO player(pid,name) VALUES (?,?)");
-$user->bindValue(1,$uid,PDO::PARAM_INT);
-$user->bindValue(2,$name);
-
+$exists = $db->prepare("SELECT count(*) AS ex FROM player WHERE pid = ?");
+$exists->bindValue(1,$uid,PDO::PARAM_INT);
 $db->beginTransaction();
-$user->execute();
-$user->closeCursor();
+$exists->execute();
+if(($present = $exists->fetchColumn()) && $present == '1') {
+	$exists->closeCursor();
+	$update = $db->prepare("UPDATE player SET name = ?, last_poll = (strftime('%s','now')), last_state = (strftime('%s','now')), state = 1 WHERE pid = ?");
+	$update->bindValue(1,$name);
+	$update->bindValue(2,$uid,PDO::PARAM_INT);
+	$update->execute();
+	$update->closeCursor();
+	unset($update);
+} else {
+	$exists->closeCursor();
+	$insert = $db->prepare("INSERT INTO player(pid,name) VALUES (?,?)");
+	$insert->bindValue(1,$uid,PDO::PARAM_INT);
+	$insert->bindValue(2,$name);
+	$insert->execute();
+	$insert->closeCursor();
+	unset($insert);
+}
 $db->commit();
+unset($exists);
 $db->exec("PRAGMA foreign_keys = ON");
 
 

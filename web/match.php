@@ -74,7 +74,7 @@ if($row = $match->fetch(PDO::FETCH_ASSOC)) {
 				$musigma->execute();
 				$w = $musigma->fetch(PDO::FETCH_ASSOC);
 				$musigma->closeCursor();
-				$musigma->bindValue(1,$loser,PDA::PARAM_INT);
+				$musigma->bindValue(1,$loser,PDO::PARAM_INT);
 				$musigma->execute();
 				$l = $musigma->fetch(PDO::FETCH_ASSOC);
 				$musigma->closeCursor();
@@ -92,7 +92,7 @@ if($row = $match->fetch(PDO::FETCH_ASSOC)) {
 				$l['mu'] -= ($q/(1/($lns*$lns)+1/$ld2))*$lg*$lE;
 				$w['sigma'] = sqrt(1/(1/($wns*$wns) + 1/$wd2));
 				$l['sigma'] = sqrt(1/(1/($lns*$lns) + 1/$ld2));
-				$update = $db->prepare("UPDATE player SET mu = ?, sigma = ? last_match = (strftime('%s','now')) WHERE pid = ?");
+				$update = $db->prepare("UPDATE player SET mu = ?, sigma = ?, last_match = (strftime('%s','now')) WHERE pid = ?");
 				$update->bindValue(1,$w['mu']);
 				$update->bindValue(2,$w['sigma']);
 				$update->bindvalue(3,$winner,PDO::PARAM_INT);

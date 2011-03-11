@@ -118,7 +118,7 @@ var Opponent = new Class({
 	end: function() {
 		this.inSync = false;
 		this.poller = window.clearInterval(this.poller);
-		Comms.die(); //need to wait for last message to have gone
+		Comms.die(); //This waits two seconds to ensure last message has gone.
 	},
 	write: function(msg) {
 		this.comms.send({msg:msg});
