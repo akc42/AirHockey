@@ -184,7 +184,7 @@ remain in the list for about 10 minutes before they are removed.
 		<h2>The Ladder</h2>
 			<h3>Background</h3>
 			<p>The ladder mechanism for this Air Hockey game is based around
-			<a href="http://math.bu.edu/people/mg/glicko/glicko.doc/glicko.html">The Glick System</a>.  This aims to create a dynamic scoring system
+			<a href="http://math.bu.edu/people/mg/glicko/glicko.doc/glicko.html">The Glicko System</a>.  This aims to create a dynamic scoring system
 			where plays of similar skill levels have a similar ranking on the ladder.  There are three key values that each play has which are recorded.
 			The first we call "mu" and and is our estimation of the skill level of the player.  When a player first joins the ladder we don't know what
 			value to give him, so we give him an average score of 1500.  The second value is called "sigma" and represents the standard deviation of mu.
