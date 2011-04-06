@@ -53,10 +53,10 @@ function site_get_content() {
 ?><div id="rules">
 		<h1>The Rules of Online Air Hockey</h1>
 		<h2>Introduction</h2>
-			<p>Welcome to the Melinda's Backups Online AirHockey System.  This system provides a mechanism for playing, over the 
+			<p>Welcome to the Online AirHockey System.  This system provides a mechanism for playing, over the 
 			internet, a	simulation of air hockey.  The basic rules of the game are taken from the <a href="www.airhockey.com">United
 			States Air Hockey Association</a> and adapted slightly for the limitations of on-line play</p>
-			<p>The system comes in two parts.  The initial page where people can meet up, get a view of matches in progress and if
+			<p>The system comes in two parts.  The initial page, the Club Room, where people can meet up, get a view of matches in progress and if
 	they wish initiate a match, or go and play a single person practice game.  The second part is the game screen itself, consisting of a 
 	hockey table, along with puck and mallets, and a scoreboard.</p>
 		<h2>The Opening Screen</h2>
