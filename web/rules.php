@@ -20,25 +20,36 @@
 
 */
 
-function head_content() {
-?>	<title>Melinda's Backups Air Hockey Ladder Rules</title>
-	<link rel="stylesheet" type="text/css" href="airh.css"/>
+function site_get_page_title() {
+	echo "Air Hockey Rules";
+}
+
+function site_get_head_content() {
+?>	<link rel="stylesheet" type="text/css" href="airh.css"/>
 	<!--[if lt IE 7]>
 		<link rel="stylesheet" type="text/css" href="airh-ie.css"/>
 	<![endif]-->
 <?php
 }
-
-function content_title() {
+function site_get_body_class() {
+	echo 'rules';
+}	
+function site_get_section_title() {
 	echo 'Air Hockey Rules';
 }
-
-function menu_items() {
-?>	<a href="index.php"><img id="exittoforum" src="exit.gif" alt="exit to matches summary page"/></a>
+function site_get_application_info() {
+?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><img id="exittoforum" src="exit-f.gif" /></a>
+<?php
+}
+function site_get_banner() {
+}
+function site_get_menu(){
+?><li><a href="/forum"><span>Exit to Forum</span></a></li>
+<li><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><span>Exit to Clubroom</span></a></li>
 <?php
 }
 
-function content() {
+function site_get_content() {
 ?><div id="rules">
 		<h1>The Rules of Online Air Hockey</h1>
 		<h2>Introduction</h2>
@@ -214,9 +225,10 @@ remain in the list for about 10 minutes before they are removed.
 <?php
 }
 
-function foot_content () {
-?>	<div id="copyright">Air Hockey <span id="version">php:<?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>
-<?php
+function site_get_application_attribution () {
+?>Air Hockey <span id="version"><?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
+}
+function site_close_hook() {
 }
 require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
 ?>

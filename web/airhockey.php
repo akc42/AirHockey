@@ -19,9 +19,12 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-function head_content() {
-?>	<title>Air Hockey Game</title>
-	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+function site_get_page_title() {
+	echo "Air Hockey Game";
+}
+
+function site_get_head_content() {
+?>	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
 	<meta name="description" content="Logout Page for Air Hockey - You are not allowed to enter Air Hockey if you are a guest of the forum.  This is the landing page if you try." />
 	<meta name="keywords" content="Air Hockey Community Forum" />
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
@@ -32,25 +35,37 @@ function head_content() {
 	</style>
 <?php
 }
-function content_title() {
-	echo 'Airhockey Guest Page';
+function site_get_body_class() {
+	echo 'rules';
+}	
+function site_get_section_title() {
+	echo 'Air Hockey Guests';
 }
-function menu_items() {
+function site_get_application_info() {
+?><a href="/forum"><img id="exittoforum" src="exit-f.gif" /></a>
+<?php
 }
-function content() {
+function site_get_banner() {
+}
+function site_get_menu(){
+?><li><a href="/forum"><span>Exit to Forum</span></a></li>
+<?php
+}
+function site_get_content() {
 ?>
 	<h1>Air Hockey</h1>
 	<p>Air Hockey is just one of the exiting facilities available to the members of our community.  To
 		use it you have to be logged on to the forum, and at the moment you aren't.  If you are
-		member please <a href="/forum/index.php?action=login">Login First</a>.  If not, <a href="/forum/index.php?action=register">please consider joining</a>.</p>
+		member please <a href="/forum/index.php?action=login">Login First</a>.  If not, <a href="/forum/index.php?action=register">please 
+		consider joining</a>.</p>
 
 	<div id="eoc"><a href="/forum/index.php">Enter Our Community</a></div>
 <?php
 }
-
-function foot_content() {
-?><div id="copyright">Air Hockey <span id="version">php:<?php include('version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>
-<?php
+function site_get_application_attribution () {
+?>Air Hockey <span id="version"><?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
+}
+function site_close_hook() {
 }
 require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
 ?>

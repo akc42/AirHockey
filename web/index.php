@@ -94,15 +94,20 @@ if(file_exists(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid)) unlink(AIR_H
 posix_mkfifo(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid,0660);
 umask($old_umask);
 
-function head_content() {
+function site_get_page_title() {
+	echo "Air Hockey Ladder";
+}
+
+function site_get_head_content() {
 	global $uid,$time;
-?>   <title>Melinda's Backups Air Hockey Ladder</title>
+?> 
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
+	<script src="/js/mootools-core-1.3-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 <script type="text/javascript">
 	<!--
 window.addEvent('domready', function() {
-	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>,ahv:<?php echo AIR_HOCKEY_VARIANT; ?>},
+	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>,ahv:"<?php echo AIR_HOCKEY_VARIANT; ?>"},
 		<?php echo SPECTATOR; ?>,<?php echo get_param('POLL'); ?> );
 	document.id('exittoforum').addEvent('click', function() {
 		MBahladder.logout();	
@@ -112,21 +117,29 @@ window.addEvent('domready', function() {
 	// -->
 </script>
 <?php
+}
+function site_get_body_class() {
+	echo 'ladder';
 }	
-function content_title() {
+function site_get_section_title() {
 	echo 'Air Hockey Club Room';
 }
 
-function menu_items() {
+function site_get_application_info() {
 ?><a href="/forum"><img id="exittoforum" src="exit-f.gif" /></a>
 <?php
 }
-
-function content() {
+function site_get_banner() {
+}
+function site_get_menu(){
+?><li><a href="/forum"><span>Exit to Forum</span></a></li>
+<?php
+}
+function site_get_content() {
 	global $db,$uid,$name;
 	$db->beginTransaction();
 ?>
-	<p> An explanation of how to play can be found <b><a href="rules.php">here</a></b></p>
+	<p> An explanation of how to play can be found <b><a href="rules.php?ahv=<?php echo AIR_HOCKEY_VARIANT; ?>">here</a></b></p>
 	<div id="matchlist">
 		<div id="matchlistheader">Recent and Current Matches</div>
 <?php
@@ -250,9 +263,10 @@ function content() {
 <?php
 	$db->rollBack();
 }
-function foot_content () {
-?>	<div id="copyright">Air Hockey <span id="version">php:<?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>
-<?php
+function site_get_application_attribution () {
+?>Air Hockey <span id="version"><?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
+}
+function site_close_hook() {
 }
 require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
 ?>

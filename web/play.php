@@ -74,12 +74,16 @@ if (isset($_GET['mid'])) {
 }
 $db->commit();
 
-function head_content() {
+function site_get_page_title() {
+	echo "Air Hockey Match";
+}
+
+function site_get_head_content() {
 	global $db,$mid,$startTime,$uid,$oid,$isMaster;
 	$db->beginTransaction();
-?>	<title>Melinda's Backups Air Hockey Game Play Screen</title>
-	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
+?><link rel="stylesheet" type="text/css" href="airh.css"/>
+	<script src="/js/mootools-core-1.3-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="/js/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="stream.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="scorer.js" type="text/javascript" charset="UTF-8"></script>
@@ -156,7 +160,8 @@ window.addEvent('domready', function() {
 <?php
 }
 ?>			
-			}
+			},
+			"<?php echo AIR_HOCKEY_VARIANT; ?>"			
 		);
 });
 window.addEvent('unload', function() {
@@ -212,16 +217,26 @@ soundManager.onload = function() {
 <?php
 	$db->rollBack();
 }
-function content_title() {
+function site_get_body_class() {
+	echo 'match';
+}	
+function site_get_section_title() {
 	echo 'Air Hockey Match';
 }
-
-function menu_items() {
-?>		<img id="exittoforum" src="/static/images/exit.gif" alt="abandonmatch" />
+function site_get_application_info() {
+?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><img id="exittoforum" src="exit-f.gif" /></a>
+<?php
+}
+function site_get_banner() {
+}
+function site_get_menu(){
+?><li><a href="/Forum"><span>Exit to Forum</span></a></li>
+<li><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><span>Exit to Clubroom</span></a></li>
 <?php
 }
 
-function content() {
+
+function site_get_content() {
 	global $mid,$myName,$opName,$oid, $row;
 ?>	<div id="msgframe"><div id="message"></div></div>
 	<div id="info">
@@ -258,9 +273,10 @@ function content() {
 <?php
 }
 
-function foot_content () {
-?>	<div id="copyright">Air Hockey <span id="version">php:<?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL</div>
-<?php
+function site_get_application_attribution () {
+?>Air Hockey <span id="version"><?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
+}
+function site_close_hook() {
 }
 require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
 ?>
