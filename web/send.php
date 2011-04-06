@@ -20,19 +20,19 @@
 
 */
 /* copied from index.php */
-define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
+define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/cf/');
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
-if(!(isset($_POST['uid']) && isset($_POST['msg']))) {
+if(!(isset($_POST['uid']) && isset($_POST['msg']) && isset($_POST['ahv']))) {
 	echo '<error>Invalid Parameters</error>';
 	exit;
 }
 list($utime,$now1) = explode(" ",microtime());
 $now1 .= substr($utime,2,3);
 
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['uid'],'rb'); //This waits until an read request is outstanding
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['uid'],'r+b');
+$readpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/ack'.$_POST['uid'],'rb'); //This waits until an read request is outstanding
+$sendpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/msg'.$_POST['uid'],'r+b');
 $r=fread($readpipe,10); //not reading, but syncronising with other end (this will be satisfied as EOF as other side closes)
 fclose($readpipe);
 fwrite($sendpipe,"$".$_POST['msg'].'$'.$_POST['c']);

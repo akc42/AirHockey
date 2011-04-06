@@ -38,11 +38,13 @@ Comms = function () {
 	};	
     var messageBoard;
  	var open = true;
+	var ahv;
     return {
-    	initialize: function (myself,opId,errDiv,fail) {
+    	initialize: function (myself,opId,errDiv,fail,ahvar) {
 			me = myself;
 			oid = opId;
 			messageBoard = errDiv;
+			ahv = ahvar;
 			if (oid != 0) {
 				failCallback = fail;
 				//Set up the read request
@@ -63,7 +65,7 @@ Comms = function () {
 								messageCallback(m.get('time').toInt(),m.get('text'));
 							}
 						}
-						reader.post({oid:oid}); //Queue up next request 
+						reader.post({oid:oid,ahv:ahv}); //Queue up next request 
 					}
 				});
 			}
@@ -76,7 +78,7 @@ Comms = function () {
 			send: function(myParams) {
 				if (open) sender.send({
 					url:this.url,
-					data:Object.merge({c:++this.counter},me,myParams),
+					data:Object.merge({c:++this.counter,ahv:ahv},me,myParams),
 					method:'post',
 					onSuccess:function(html) {
 						var holder = new Element('div').set('html',html);

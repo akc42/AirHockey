@@ -19,7 +19,15 @@
     see <http://www.gnu.org/licenses/>.
 
 */
+/* Following Definition must also exist in read.php and send.php */
 define('AIR_HOCKEY_DATABASE','/home/alan/dev/airhock/db/');
+
+
+if(isset($_REQUEST['ahv'])) {
+	define('AIR_HOCKEY_VARIANT',$_REQUEST['ahv']);
+} else {
+	define('AIR_HOCKEY_VARIANT','cf');  //This is the chandlerfamily variant.
+}
 
 function get_param($name) {
 	global $db;
@@ -32,11 +40,11 @@ function get_param($name) {
 }
 
 
-if(!file_exists(AIR_HOCKEY_DATABASE.'airhock.db')) {
-	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.'airhock.db');
-    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'database.sql'));
+if(!file_exists(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT.'.db')) {
+	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT.'.db');
+    $db->exec(file_get_contents('./database.sql'));
 } else {
-	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.'airhock.db');
+	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT.'.db');
 }
 $db->setAttribute(PDO::ATTR_TIMEOUT,25);  //set 25 second timeout on obtaining a lock
 $db->exec("PRAGMA foreign_keys = ON");

@@ -19,18 +19,19 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-/* copied from index.php */
-define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
+/* copied from db.inc */
+
+define('AIR_HOCKEY_DATABASE','/home/alan/dev/airhock/db/');
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
-if(!(isset($_POST['oid']))) {
+if(!(isset($_POST['oid']) && isset($_POST['ahv']))) {
 ?><error>Log - Hacking attempt - wrong parameters</error>
 <?php
 	exit;
 }
-$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'ack'.$_POST['oid'],'r+b'); //Say I am ready for a send from the other end
-$readpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$_POST['oid'],'rb');
+$sendpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/ack'.$_POST['oid'],'r+b'); //Say I am ready for a send from the other end
+$readpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/msg'.$_POST['oid'],'rb');
 fclose($sendpipe);//this tells other end it may now write to the pipe
 $response=fread($readpipe,400);
 

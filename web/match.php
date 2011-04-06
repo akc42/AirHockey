@@ -24,7 +24,7 @@
 	Handles the case when a score occurs
 */
 
-if(!(isset($_POST['uid'])  && isset($_POST['pass'])&& isset($_POST['m'])&& isset($_POST['g'])&& isset($_POST['h'])&& isset($_POST['a']))) {
+if(!(isset($_POST['uid'])  && isset($_POST['pass'])&& isset($_POST['m'])&& isset($_POST['g'])&& isset($_POST['h'])&& isset($_POST['a']) && isset($_POST['ahv']))) {
 ?><error>Log - Hacking attempt - wrong parameters</error>
 <?php
 	exit;

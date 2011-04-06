@@ -22,10 +22,6 @@
 
 // Show all errors:
 error_reporting(E_ALL);
-/* 
-Path to the pipe directory.  If you change it here, also change it in abort.php read.php, request.php and send.php 
-*/
-define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
@@ -49,14 +45,14 @@ $result = $db->query("SELECT count(*) FROM sqlite_master WHERE name = 'config' ;
 if(!($result && ($present = $result->fetchColumn()) && $present == '1')) {
 	//NO CONFIG TABLE - so database must be at version 1 - update to version 2
 	$result->closeCursor();
-    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'update1.sql'));	    
+    $db->exec(file_get_contents('./update1.sql'));	    
 } else {
 	$result->closeCursor();
 }
 
 $version = get_param('version');
 if($version < 3) {
-    $db->exec(file_get_contents(AIR_HOCKEY_DATABASE.'update2.sql'));
+    $db->exec(file_get_contents('./update2.sql'));
 }
 
  
@@ -92,10 +88,10 @@ require('./timeout.inc');
 
 // We delete any old fifo(s) for this user (to clear out stale messages) and create new ones
 $old_umask = umask(0007);
-if(file_exists(AIR_HOCKEY_PIPE_PATH."msg".$uid)) unlink(AIR_HOCKEY_PIPE_PATH."msg".$uid);
-posix_mkfifo(AIR_HOCKEY_PIPE_PATH."msg".$uid,0660);
-if(file_exists(AIR_HOCKEY_PIPE_PATH."ack".$uid)) unlink(AIR_HOCKEY_PIPE_PATH."ack".$uid);
-posix_mkfifo(AIR_HOCKEY_PIPE_PATH."ack".$uid,0660);
+if(file_exists(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/msg".$uid)) unlink(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/msg".$uid);
+posix_mkfifo(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/msg".$uid,0660);
+if(file_exists(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid)) unlink(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid);
+posix_mkfifo(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid,0660);
 umask($old_umask);
 
 function head_content() {
@@ -106,8 +102,8 @@ function head_content() {
 <script type="text/javascript">
 	<!--
 window.addEvent('domready', function() {
-	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>},
-		<?php echo SPECTATOR; ?>,<?php echo get_param('POLL'); ?>);
+	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>,ahv:<?php echo AIR_HOCKEY_VARIANT; ?>},
+		<?php echo SPECTATOR; ?>,<?php echo get_param('POLL'); ?> );
 	document.id('exittoforum').addEvent('click', function() {
 		MBahladder.logout();	
 	});

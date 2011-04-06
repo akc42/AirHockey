@@ -27,7 +27,7 @@
 var PM3 = PR+MR/2;	//Convenient constant used in model
 var Opponent = new Class({
 //'my' in this class refers to the opponent, which I am simulating
-	initialize: function(links,me,oid,master,timers,els,positions) {
+	initialize: function(links,me,oid,master,timers,els,positions,ahv) {
 		var that = this;
 		/*	This structure is the equivalent of the 'links' structure in the main game, but is the 
 			simulations version with all the coordinates reversed */
@@ -114,7 +114,7 @@ var Opponent = new Class({
 			tick:positions.practice.tick,
 			startup:positions.practice.startup
 		};
-		Comms.initialize(me,0,els.em);
+		Comms.initialize(me,0,els.em,ahv);
 		this.inSync = true;
 		this.links.match.start.delay(this.startup,this.links.match);	//we want to start the match from 1 second from when the server told us.
 		that.computer.match.start.delay(this.startup,this.computer.match); // start our own simulation too

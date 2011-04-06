@@ -34,10 +34,8 @@
 		oid - the opponent we are trying to tell - if cmd is set
 
 */
-/* copied from index.php */
-define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/');
 
-if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['t'])  && isset($_POST['state'])) || (isset($_POST['cmd']) && !isset($_POST['oid'])))
+if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['t'])  && isset($_POST['state']) && isset($_POST['ahv'])) || (isset($_POST['cmd']) && !isset($_POST['oid'])))
 	die('Log - Hacking attempt - wrong parameters');
 $uid = $_POST['user']; //extra security 
 if ($_POST['pass'] != sha1("Air".$uid))
@@ -75,7 +73,7 @@ if ($user['state'] == ACCEPTED) {
 		// I am not able to accept so we must abandon things
 		//Other end will be sitting reading my msg pipe
 
-		$sendpipe=fopen(AIR_HOCKEY_PIPE_PATH.'msg'.$uid,'r+');
+		$sendpipe=fopen(AIR_HOCKEY_DATABASE.'msg'.$uid,'r+');
 		fwrite($sendpipe,'$Abandon'); //Send the abandon (careful with quoting - this is a real $ we must send)
 		fclose($sendpipe);
 		echo ',"state":'.$state ;

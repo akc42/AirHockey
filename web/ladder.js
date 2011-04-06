@@ -202,11 +202,11 @@ MBahladder = function() {
 			if (response.state) {
 				if(response.state == 5) {
 				    doingExitToForum = false;
-					window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass+'&mid='+response.mid);
+					window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass+'&mid='+response.mid+'&ahv'+ropt.ahv);
 				} else {
 					if(response.state == 6) {
 					    doingExitToForum = false;
-						window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass);
+						window.location.assign('play.php?user='+ropt.user+'&pass='+ropt.pass+'&ahv'+ropt.ahv);
 					}
 				}
 			}

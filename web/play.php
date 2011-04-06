@@ -19,7 +19,7 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-if(!(isset($_GET['user']) && isset($_GET['pass'])))
+if(!(isset($_GET['user']) && isset($_GET['pass']) && isset($_GET['ahv'])))
 	die('Log - Hacking attempt - wrong parameters');
 $uid = $_GET['user'];
 if ($_GET['pass'] != sha1("Air".$uid))

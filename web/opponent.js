@@ -19,7 +19,7 @@
 
 */
 var Opponent = new Class({
-	initialize: function(links,me,oid,master,timers,els,positions) {
+	initialize: function(links,me,oid,master,timers,els,positions,ahv) {
 		var that = this;
 		this.links = links;
 		this.me = me;
@@ -96,7 +96,7 @@ var Opponent = new Class({
 				} else {
 					roundtrip = roundtrip/timers.count;
 					that.timeOffset = that.timeOffset.toInt();
-					Comms.initialize(me,oid,els.em,myFail);
+					Comms.initialize(me,oid,els.em,myFail,ahv);
 					that.comms = new Comms.Stream('send.php');
 					awaitOpponent();
 				}

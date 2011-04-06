@@ -23,7 +23,7 @@ function head_content() {
 ?>	<title>Air Hockey Game</title>
 	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
 	<meta name="description" content="Logout Page for Air Hockey - You are not allowed to enter Air Hockey if you are a guest of the forum.  This is the landing page if you try." />
-	<meta name="keywords" content="Melinda's Backups Melinda Doolittle Air Hockey Community Forum" />
+	<meta name="keywords" content="Air Hockey Community Forum" />
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
 	<style type="text/css">
 		#eoc{font-family:"Times New Roman", Times, Serif;font-size:18pt;text-align:center;padding:20px;}
