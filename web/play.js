@@ -19,7 +19,7 @@
 
 */
 var Play = new Class({
-	initialize: function(mid,startTime,me,oid,master,timers,els,positions) {
+	initialize: function(mid,startTime,me,oid,master,timers,els,positions,ahv) {
 		var play = function(sound) {
 			if(soundReady) soundManager.play(sound);
 		};
@@ -34,7 +34,7 @@ var Play = new Class({
 		this.links.table = new Table(this.links,timers,els,positions);
 
 		//this needs to be last, as it starts everything off - the rest has to be set up before it
-		this.links.opponent = new Opponent(this.links,me,oid,master,timers,els,positions);
+		this.links.opponent = new Opponent(this.links,me,oid,master,timers,els,positions,ahv);
 
 		//This will need to follow Opponent as it sets up who I am for the poll parameter
 		var pollReq = new Comms.Stream('poll.php')
