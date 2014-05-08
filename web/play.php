@@ -25,7 +25,7 @@ $uid = $_GET['user'];
 if ($_GET['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_GET['pass'].' expected: '.sha1("Air".$uid));
 		
-require_once('./db.inc');
+require_once('./inc/db.inc');
 
 $player = $db->prepare("SELECT name FROM player WHERE pid = ?");
 $player->bindValue(1,$uid,PDO::PARAM_INT);
@@ -274,7 +274,7 @@ function site_get_content() {
 }
 
 function site_get_application_attribution () {
-?>Air Hockey <span id="version"><?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
+?>Air Hockey <span id="version"><?php include('./inc/sversion.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
 }
 function site_close_hook() {
 }

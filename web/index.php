@@ -36,7 +36,7 @@ if(isset($user_info['id'])) { //check if this is SMFv2
 }
 $name = &$user_info['name'];
 
-require_once('./db.inc');
+require_once('./inc/db.inc');
 $time = time();  //We need to set time BEFORE this following INSERT happens so its state change is seen.
 
 $db->exec("PRAGMA foreign_keys = OFF");
@@ -45,14 +45,14 @@ $result = $db->query("SELECT count(*) FROM sqlite_master WHERE name = 'config' ;
 if(!($result && ($present = $result->fetchColumn()) && $present == '1')) {
 	//NO CONFIG TABLE - so database must be at version 1 - update to version 2
 	$result->closeCursor();
-    $db->exec(file_get_contents('./update1.sql'));	    
+    $db->exec(file_get_contents('./inc/update1.sql'));	    
 } else {
 	$result->closeCursor();
 }
 
 $version = get_param('version');
 if($version < 3) {
-    $db->exec(file_get_contents('./update2.sql'));
+    $db->exec(file_get_contents('./inc/update2.sql'));
 }
 
  
@@ -83,7 +83,7 @@ $db->exec("PRAGMA foreign_keys = ON");
 
 
 //Timeout users who are supposed to be on line, but haven't contacted for a while
-require('./timeout.inc');
+require('./inc/timeout.inc');
 
 
 // We delete any old fifo(s) for this user (to clear out stale messages) and create new ones
@@ -264,7 +264,7 @@ function site_get_content() {
 	$db->rollBack();
 }
 function site_get_application_attribution () {
-?>Air Hockey <span id="version"><?php include('./version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
+?>Air Hockey <span id="version"><?php include('./inc/version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
 }
 function site_close_hook() {
 }

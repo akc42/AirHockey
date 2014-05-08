@@ -35,7 +35,7 @@ if ($_POST['pass'] != sha1("Air".$uid)) {
 <?php
 	exit;
 }
-require_once('./db.inc');
+require_once('./inc/db.inc');
 
 $player = $db->prepare("UPDATE player SET last_poll = (strftime('%s','now')) WHERE pid = ?");
 $player->bindValue(1,$uid,PDO::PARAM_INT);

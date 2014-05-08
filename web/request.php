@@ -41,7 +41,7 @@ $uid = $_POST['user']; //extra security
 if ($_POST['pass'] != sha1("Air".$uid))
 	die('Log - Hacking attempt got: '.$_POST['pass'].' expected: '.sha1("Air".$uid));
 
-require_once('./db.inc');
+require_once('./inc/db.inc');
 
 $last = $_POST['t'];
 
@@ -164,7 +164,7 @@ if ($state != $user['state'] ) {
 
 $db->commit();
 //Timeout users who are supposed to be on line, but haven't contacted for a while and old matches.
-require('./timeout.inc');
+require('./inc/timeout.inc');
 
 if ($state == SPECTATOR || $state == ANYONE || $state == INVITE ) {
 

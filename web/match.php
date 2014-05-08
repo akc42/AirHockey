@@ -36,7 +36,7 @@ if ($_POST['pass'] != sha1("Air".$uid)) {
 }
 $mid = $_POST['m'];
 
-require_once('./db.inc');
+require_once('./inc/db.inc');
 
 $g = $_POST['g'];
 

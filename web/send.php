@@ -20,7 +20,7 @@
 
 */
 /* copied from index.php */
-define('AIR_HOCKEY_PIPE_PATH',	'/home/alan/dev/airhock/db/cf/');
+define('AIR_HOCKEY_DATABASE',	'/home/alan/dev/airhock/db/');
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
