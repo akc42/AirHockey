@@ -274,7 +274,7 @@ function site_get_content() {
 }
 
 function site_get_application_attribution () {
-?>Air Hockey <span id="version"><?php include('./inc/sversion.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
+?>Air Hockey <span id="version"><?php include('./inc/version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
 }
 function site_close_hook() {
 }

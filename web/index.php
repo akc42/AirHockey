@@ -102,7 +102,7 @@ function site_get_head_content() {
 	global $uid,$time;
 ?> 
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/js/mootools-core-1.3-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 <script type="text/javascript">
 	<!--
