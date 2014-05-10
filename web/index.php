@@ -94,11 +94,11 @@ if(file_exists(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid)) unlink(AIR_H
 posix_mkfifo(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid,0660);
 umask($old_umask);
 
-function site_get_page_title() {
+function page_title() {
 	echo "Air Hockey Ladder";
 }
 
-function site_get_head_content() {
+function head_content() {
 	global $uid,$time;
 ?> 
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
@@ -118,24 +118,15 @@ window.addEvent('domready', function() {
 </script>
 <?php
 }
-function site_get_body_class() {
-	echo 'ladder';
-}	
-function site_get_section_title() {
+function content_title() {
 	echo 'Air Hockey Club Room';
 }
 
-function site_get_application_info() {
-?><a href="/forum"><img id="exittoforum" src="exit-f.gif" /></a>
+function menu_items() {
+?><a href="/forum"><img id="exittoforum" src="exit-f.gif" alt="Exit to Forum"/></a>
 <?php
 }
-function site_get_banner() {
-}
-function site_get_menu(){
-?><li><a href="/forum"><span>Exit to Forum</span></a></li>
-<?php
-}
-function site_get_content() {
+function main_content() {
 	global $db,$uid,$name;
 	$db->beginTransaction();
 ?>
@@ -263,10 +254,9 @@ function site_get_content() {
 <?php
 	$db->rollBack();
 }
-function site_get_application_attribution () {
+function foot_content () {
 ?>Air Hockey <span id="version"><?php include('./inc/version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
 }
-function site_close_hook() {
-}
+
 require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
 ?>

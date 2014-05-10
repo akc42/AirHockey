@@ -74,15 +74,14 @@ if (isset($_GET['mid'])) {
 }
 $db->commit();
 
-function site_get_page_title() {
+function page_title() {
 	echo "Air Hockey Match";
 }
 
-function site_get_head_content() {
+function head_content() {
 	global $db,$mid,$startTime,$uid,$oid,$isMaster;
 	$db->beginTransaction();
 ?><link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/js/mootools-core-1.3-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="/js/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="stream.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
@@ -169,7 +168,7 @@ window.addEvent('unload', function() {
 	
 });
 var soundReady = false;
-soundManager.url = '';
+soundManager.url = '/js/';
 soundManager.debugMode = false;
 soundManager.onload = function() {
 	soundManager.createSound({
@@ -217,26 +216,16 @@ soundManager.onload = function() {
 <?php
 	$db->rollBack();
 }
-function site_get_body_class() {
-	echo 'match';
-}	
-function site_get_section_title() {
+function content_title() {
 	echo 'Air Hockey Match';
 }
-function site_get_application_info() {
-?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><img id="exittoforum" src="exit-f.gif" /></a>
-<?php
-}
-function site_get_banner() {
-}
-function site_get_menu(){
-?><li><a href="/Forum"><span>Exit to Forum</span></a></li>
-<li><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><span>Exit to Clubroom</span></a></li>
+function menu_items() {
+?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><img id="exittoforum" src="exit.gif" alt="Exit To Clubroom"/></a>
 <?php
 }
 
 
-function site_get_content() {
+function main_content() {
 	global $mid,$myName,$opName,$oid, $row;
 ?>	<div id="msgframe"><div id="message"></div></div>
 	<div id="info">
@@ -273,10 +262,9 @@ function site_get_content() {
 <?php
 }
 
-function site_get_application_attribution () {
+function foot_content () {
 ?>Air Hockey <span id="version"><?php include('./inc/version.inc');?></span> &copy; 2009-2011 Alan Chandler.  Licenced under the GPL<?php
 }
-function site_close_hook() {
-}
+
 require_once($_SERVER['DOCUMENT_ROOT'].'/inc/template.inc'); 
 ?>
