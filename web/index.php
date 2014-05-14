@@ -19,14 +19,14 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-
+define('NO_LOGIN_URL','/airhockey.php');  //define a page which is to be displayed if user is not logged on
 // Show all errors:
 error_reporting(E_ALL);
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/forum/SSI.php');
 //If not logged in to the forum, not allowed any further so redirect to page to say so
 if($user_info['is_guest']) {
-	header( 'Location: airhockey.php' ) ;
+	header( 'Location: '.NO_LOGIN_URL ) ;
 	exit;
 };
 if(isset($user_info['id'])) { //check if this is SMFv2
@@ -102,7 +102,7 @@ function head_content() {
 	global $uid,$time;
 ?> 
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script>
+<!-- <script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> #expect this is provided -->
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
 <script type="text/javascript">
 	<!--
