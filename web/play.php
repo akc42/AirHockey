@@ -81,7 +81,8 @@ function page_title() {
 function head_content() {
 	global $db,$mid,$startTime,$uid,$oid,$isMaster;
 	$db->beginTransaction();
-?><link rel="stylesheet" type="text/css" href="airh.css"/>
+?>	<link rel="stylesheet" type="text/css" href="airh.css"/>
+	<script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
 	<script src="/js/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="stream.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
@@ -97,7 +98,7 @@ function head_content() {
 	}
 ?>	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
 	<script type="text/javascript">
-	<!--
+
 var MBahplay;
 
 window.addEvent('domready', function() {
@@ -211,7 +212,7 @@ soundManager.onload = function() {
 	soundReady=true;
 };
 
-	// -->
+
 </script>
 <?php
 	$db->rollBack();

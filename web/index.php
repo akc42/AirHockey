@@ -102,10 +102,10 @@ function head_content() {
 	global $uid,$time;
 ?> 
 	<link rel="stylesheet" type="text/css" href="airh.css"/>
-<!-- <script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> #expect this is provided -->
+	<script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
 	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
-<script type="text/javascript">
-	<!--
+	<script type="text/javascript">
+
 window.addEvent('domready', function() {
 	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>,ahv:"<?php echo AIR_HOCKEY_VARIANT; ?>"},
 		<?php echo SPECTATOR; ?>,<?php echo get_param('POLL'); ?> );
@@ -114,8 +114,8 @@ window.addEvent('domready', function() {
 	});
 
 });
-	// -->
-</script>
+	
+	</script>
 <?php
 }
 function content_title() {
