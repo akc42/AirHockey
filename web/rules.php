@@ -51,7 +51,7 @@ function main_content() {
 	hockey table, along with puck and mallets, and a scoreboard.</p>
 		<h2>The Opening Screen</h2>
 		<h3>Introduction</h3>
-		<p> <img src="overview.jpg" alt="opening screen" align="right"/>When you first arrive at the airhockey page, either directly
+		<p> <img src="img/overview.jpg" alt="opening screen" align="right"/>When you first arrive at the airhockey page, either directly
 			or via the forum, or as a result of completing practice or a match, you will see the screen shown on the right.. There
 			are three main areas below the page heading, a list of matches, information about yourself and others online, and a ladder
 			showing the ranking of all recent players.</p>
@@ -67,8 +67,8 @@ display gives the time that the match ended.</p>
  the game will be displayed in a red colour as opposed to the normal black.  These "Abandoned" games will only
 remain in the list for about 10 minutes before they are removed.
 		<h3>Your own state and your relationship with other players who are online</h3>
-			<div style="float:left;margin:10px"><img src="spectator.jpg" alt="spectator state" /><br/>
-				<img src="aspectator.jpg" alt="as a spectator"/></div>
+			<div style="float:left;margin:10px"><img src="img/spectator.jpg" alt="spectator state" /><br/>
+				<img src="img/aspectator.jpg" alt="as a spectator"/></div>
 			<p>There are four lines in your area indicating which state you are currently in, and allowing you to change state.  A
 				green tick indicates your current state.   When you first join this page you automatically start
 				in spectator mode (as shown to the left). In this state, others will see you in their list of online players just
@@ -77,9 +77,9 @@ remain in the list for about 10 minutes before they are removed.
 				someone else, you will just remain and watch the matches as they unfold.</p>
 			<div style="clear:both"></div>
 			<div style="float:left;margin:10px">
-				<img src="practice.jpg" alt="wanting to practice"/><br/>
-				<img src="anyone1.jpg" alt="play anyone state" /><br/>
-				<img src="anyone.jpg" alt="as someone who will play anyone"/></div>
+				<img src="img/practice.jpg" alt="wanting to practice"/><br/>
+				<img src="img/anyone1.jpg" alt="play anyone state" /><br/>
+				<img src="img/anyone.jpg" alt="as someone who will play anyone"/></div>
 			<p>If you wish to practice, click on the line that says "practice", and after briefly showing your state as practice (see left)
 				you will be taken to the main playing a match
 				screen, described in the section below. You will be playing against a computer opponent, and unlike a proper match others will not
@@ -96,10 +96,10 @@ remain in the list for about 10 minutes before they are removed.
 				and he never arrives.  You will be informed the match has been abandoned within about 30 seconds.</p>
 			<div style="clear:both"></div>
 			<div style="float:left;margin:10px">
-				<img src="byinvite1.jpg" alt="will play by invite"/><br/>
-				<img src="byinvite.jpg" alt="is willing to play by invite" /><br/>
-				<img src="inviteto.jpg" alt="you have invited this player to a match" /><br/>
-				<img src="invitefrom.jpg" alt="this player has invited you to a match"/></div>
+				<img src="img/byinvite1.jpg" alt="will play by invite"/><br/>
+				<img src="img/byinvite.jpg" alt="is willing to play by invite" /><br/>
+				<img src="img/inviteto.jpg" alt="you have invited this player to a match" /><br/>
+				<img src="img/invitefrom.jpg" alt="this player has invited you to a match"/></div>
 			<p>The final possibility is for you to indicate that you wish to play by invite (your mode with the green tick is shown on the
 				left, together with the picture below which shows another player who is also in this mode, indicated by an "I" on a green
 				background).  In this mode, if you click on a player who is in invite mode also, you invite that player to join you in a match.
@@ -114,7 +114,7 @@ remain in the list for about 10 minutes before they are removed.
 			<div style="clear:both"></div>			
 		<h2>Playing a Match</h2>
 			<h3>Basic Layout of Screen</h3>
-			<p><img src="play.jpg" alt="Annotated View of Play Screen" align="right"/>The basic play screen is shown to the right.  It shows the key areas of this screen.</p>
+			<p><img src="img/play.jpg" alt="Annotated View of Play Screen" align="right"/>The basic play screen is shown to the right.  It shows the key areas of this screen.</p>
 			<p>The table itself is at the left of the screen.  This comprises a light blue table surface with a lime green surround.  The table edge
 				is the boundary between these two areas.  At each end of the table is a red area which represents the goal.  Your goal (into which
 				your opponent has to try and hit the puck) is on the left, your opponents goal (into which you are trying to hit the puck) is on
@@ -148,17 +148,17 @@ remain in the list for about 10 minutes before they are removed.
 			<p>When you have to serve, the mallet is also dropped.  You pick it up again after the serve in the same way (moving your mouse over the top
 			of the mallet).</p>
 			<h4>Playing the Puck</h4>
-			<p><img src="puck.gif" alt="The Puck" align="left"/>The puck is shown on the picture to the left, and at the start of a
+			<p><img src="img/puck.gif" alt="The Puck" align="left"/>The puck is shown on the picture to the left, and at the start of a
 			match is automatically placed at the centre of the table.  <b><i>You may not play the puck until "Puck in Play" is shown in the Message
 			Area.</i></b>.  Hitting before this time will be a Foul.</p>
 			<p>As well as having to wait until the puck is in play to hit it, there are also some limitations on <i>where</i> you may hit
 			the puck.  You may always hit the puck when it is on your side of the centre line, but you may also hit it in some limited
 			circumstances when it is on the opponents side.  This is best described by saying when you may <b>not</b> play the puck.</p>
-			<p><img src="wrongside1.jpg" align="right" alt="Puck and Mallet on other side" />Firstly, you may not hit the puck when
+			<p><img src="img/wrongside1.jpg" align="right" alt="Puck and Mallet on other side" />Firstly, you may not hit the puck when
 			both the puck and the opponents mallet is fully on their side of the table. The diagram on the right shows this position with
 			the opponents mallet just on their side of the table, and with the puck also just over the line.  If you hit the puck in this
 			position it will be a foul</p>
-			<p><img src="wrongside.jpg" align="right" alt="Your Mallet almost on opponents side" />Secondly, you may not hit the puck when your
+			<p><img src="img/wrongside.jpg" align="right" alt="Your Mallet almost on opponents side" />Secondly, you may not hit the puck when your
 			mallet is completely over the centre line.  The diagram on the right shows your mallet being just in the position where it is
 			illegal to hit the puck, and if you do it will be a foul.</p>
 			<h4>Serving</h4>
@@ -174,7 +174,7 @@ remain in the list for about 10 minutes before they are removed.
 			is a foul.  This time starts as soon as the puck is in play after a serve, or when the centre of the puck crosses the centre line of the 
 			table on to your side.  It ends as soon as the centre of the puck crosses the centre line.</p>
 			<h4>Fouls</h4>
-			<p><img src="foul.gif" align="left" alt="Indicator that you caused a foul"/>Fouls are incurred for various infringements in the game.
+			<p><img src="img/foul.gif" align="left" alt="Indicator that you caused a foul"/>Fouls are incurred for various infringements in the game.
 			As soon as a foul is declared the puck is out of play.  If you caused the foul, your opponent gets to
 			serve, if he caused it you get to serve.  This is indicated in the message area of the scoreboard with the indicator shown to the left if
 			the foul was your fault (you will get a serve indicator if it was your opponents foul).</p>

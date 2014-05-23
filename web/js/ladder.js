@@ -56,7 +56,7 @@ MBahladder = function() {
 			personalState.set('html',pstext);  //removes tick image
 			personalState = document.id('S3');  //we set ourselves into invite mode
 			pstext = personalState.get('text');
-			personalState.set('html', pstext+'<img src="tick.gif" alt="selected" />') ;
+			personalState.set('html', pstext+'<img src="img/tick.gif" alt="selected" />') ;
 			ropt.state = 3;  //set ourselves into invite mode
 			changedState = true;
 		}

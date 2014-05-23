@@ -81,14 +81,14 @@ var Scoreboard = new Class({
 	},
 	serve: function(s) {
 		if(s) {
-			this.els.server.set('html','<img src="serve.gif" alt="my serve" />');
+			this.els.server.set('html','<img src="img/serve.gif" alt="my serve" />');
 		} else {
 			this.els.server.set('html','');
 		}
 	},
 	foul: function(s) {
 		if(s) {
-			this.els.server.set('html','<img src="foul.gif" alt="my foul" />');
+			this.els.server.set('html','<img src="img/foul.gif" alt="my foul" />');
 		} else {
 			this.els.server.set('html','');
 		}
