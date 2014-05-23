@@ -81,22 +81,22 @@ function page_title() {
 function head_content() {
 	global $db,$mid,$startTime,$uid,$oid,$isMaster;
 	$db->beginTransaction();
-?>	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
-	<script src="/js/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="stream.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="model.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="scorer.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="scoreboard.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="match.js" type="text/javascript" charset="UTF-8"></script>
+?>	<link rel="stylesheet" type="text/css" href="css/airh.css"/>
+	<script src="js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
+	<script src="js/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/stream.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/model.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/scorer.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/scoreboard.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/match.js" type="text/javascript" charset="UTF-8"></script>
 <? if(!isset($_GET['mid'])) {
-?>	<script src="practice.js" type="text/javascript" charset="UTF-8"></script>
+?>	<script src="js/practice.js" type="text/javascript" charset="UTF-8"></script>
 <?php
 	} else {
-?>	<script src="opponent.js" type="text/javascript" charset="UTF-8"></script>
+?>	<script src="js/opponent.js" type="text/javascript" charset="UTF-8"></script>
 <?php
 	}
-?>	<script src="play.js" type="text/javascript" charset="UTF-8"></script>
+?>	<script src="js/play.js" type="text/javascript" charset="UTF-8"></script>
 	<script type="text/javascript">
 
 var MBahplay;
@@ -169,42 +169,42 @@ window.addEvent('unload', function() {
 	
 });
 var soundReady = false;
-soundManager.url = '/js/';
+soundManager.url = 'js/';
 soundManager.debugMode = false;
 soundManager.onload = function() {
 	soundManager.createSound({
 		id : 'mallet',
-		url : 'mallet.mp3',
+		url : 'sounds/mallet.mp3',
 		autoLoad : true ,
 		autoPlay : false 
 	});
 	soundManager.createSound({
 		id : 'table',
-		url : 'table.mp3',
+		url : 'sounds/table.mp3',
 		autoLoad : true ,
 		autoPlay : false 
 	});
 	soundManager.createSound({
 		id : 'count',
-		url : 'count.mp3',
+		url : 'sounds/count.mp3',
 		autoLoad : true ,
 		autoPlay : false 
 	});
 	soundManager.createSound({
 		id : 'start',
-		url : 'start.mp3',
+		url : 'sounds/start.mp3',
 		autoLoad : true ,
 		autoPlay : false 
 	});
 	soundManager.createSound({
 		id : 'goal',
-		url : 'goal.mp3',
+		url : 'sounds/goal.mp3',
 		autoLoad : true ,
 		autoPlay : false 
 	});
 	soundManager.createSound({
 		id : 'foul',
-		url : 'foul.mp3',
+		url : 'sounds/foul.mp3',
 		autoLoad : true ,
 		autoPlay : false 
 	});
@@ -221,7 +221,7 @@ function content_title() {
 	echo 'Air Hockey Match';
 }
 function menu_items() {
-?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><img id="exittoforum" src="exit.gif" alt="Exit To Clubroom"/></a>
+?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><img id="exittoforum" src="img/exit.gif" alt="Exit To Clubroom"/></a>
 <?php
 }
 

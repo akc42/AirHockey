@@ -101,9 +101,9 @@ function page_title() {
 function head_content() {
 	global $uid,$time;
 ?> 
-	<link rel="stylesheet" type="text/css" href="airh.css"/>
-	<script src="/js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
-	<script src="ladder.js" type="text/javascript" charset="UTF-8"></script>
+	<link rel="stylesheet" type="text/css" href="css/airh.css"/>
+	<script src="js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
+	<script src="js/ladder.js" type="text/javascript" charset="UTF-8"></script>
 	<script type="text/javascript">
 
 window.addEvent('domready', function() {
@@ -123,7 +123,7 @@ function content_title() {
 }
 
 function menu_items() {
-?><a href="/forum"><img id="exittoforum" src="exit-f.gif" alt="Exit to Forum"/></a>
+?><a href="/forum"><img id="exittoforum" src="img/exit-f.gif" alt="Exit to Forum"/></a>
 <?php
 }
 function main_content() {
@@ -202,7 +202,7 @@ function main_content() {
 			<div id="meHeader"><?php echo $name ; ?></div>
 			<div id="meOption">
 				<div class="ps" id="<?php echo 'S'.PRACTICE; ?>" >Practice</div>
-				<div class="ps" id="<?php echo 'S'.SPECTATOR; ?>" >Spectator<img src="tick.gif" alt="Selected" /></div>
+				<div class="ps" id="<?php echo 'S'.SPECTATOR; ?>" >Spectator<img src="img/tick.gif" alt="Selected" /></div>
 				<div class="ps" id="<?php echo 'S'.INVITE; ?>" >By Invites Only</div>
 				<div class="ps" id="<?php echo 'S'.ANYONE; ?>" >Will Play Anyone</div>
 			</div>
