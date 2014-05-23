@@ -254,9 +254,9 @@ function main_content() {
 	<div id="surround">
 		<div id="mygoal"></div>	
 		<div id="table">
-			<img id="puck" src="puck.gif"/>
-			<img id="opmallet" src="mallet.gif" />
-			<img id="mymallet" src="mallet.gif"/>
+			<img id="puck" src="img/puck.gif"/>
+			<img id="opmallet" src="img/mallet.gif" />
+			<img id="mymallet" src="img/mallet.gif"/>
 		</div>
 		<div id="opgoal"></div>
 	</div>

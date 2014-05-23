@@ -320,7 +320,7 @@ overflow:hidden;
 }
 
 #table {
-	background:url(img/table.gif);
+	background:url(../img/table.gif);
 	border:1px solid black;
 	width:600px;
 	height:280px;
@@ -409,7 +409,7 @@ overflow:hidden;
 	
 
 .serve {
-	background-image:url("img/serve.gif");
+	background-image:url("../img/serve.gif");
 }
 
 #msgframe {

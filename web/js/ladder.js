@@ -242,7 +242,7 @@ MBahladder = function() {
 				personalState.set('html',pstext); //This should remove the tick image
 				personalState = this;
 				pstext = this.get('text');
-				this.set('html', pstext+'<img src="tick.gif" alt="selected" />') ;
+				this.set('html', pstext+'<img src="img/tick.gif" alt="selected" />') ;
 				//only do something if now checked
 				ropt.state = this.get('id').substr(1).toInt();
 				stateReq.post(ropt);
