@@ -19,7 +19,7 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-if(!(isset($_GET['user']) && isset($_GET['pass']) && isset($_GET['ahv'])))
+if(!(isset($_GET['user']) && isset($_GET['pass'])))
 	die('Log - Hacking attempt - wrong parameters');
 $uid = $_GET['user'];
 if ($_GET['pass'] != sha1("Air".$uid))
@@ -82,22 +82,43 @@ function head_content() {
 	global $db,$mid,$startTime,$uid,$oid,$isMaster;
 	$db->beginTransaction();
 ?>	<link rel="stylesheet" type="text/css" href="css/airh.css"/>
-	<script src="js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
 	<script src="js/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="UTF-8"></script>
+<?php 
+	if (defined('DEBUG')) {
+?>	<script src="js/mootools-core-1.5.0-full-nocompat.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/stream.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/model.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/scorer.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/scoreboard.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/match.js" type="text/javascript" charset="UTF-8"></script>
-<? if(!isset($_GET['mid'])) {
+<?php 	if(!isset($_GET['mid'])) {
 ?>	<script src="js/practice.js" type="text/javascript" charset="UTF-8"></script>
 <?php
-	} else {
+		} else {
 ?>	<script src="js/opponent.js" type="text/javascript" charset="UTF-8"></script>
 <?php
-	}
+		}
 ?>	<script src="js/play.js" type="text/javascript" charset="UTF-8"></script>
-	<script type="text/javascript">
+<?php 
+		} else {
+?>	<script src="js/mootools-core-1.5.0-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
+	<script src="js/stream-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/mode-min-<?php include('./inc/version.inc');?>l.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/scorer-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/scoreboard-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/match-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+<?php 
+		if(!isset($_GET['mid'])) {
+?>	<script src="js/practice-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+<?php
+		} else {
+?>	<script src="js/opponent-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+<?php
+		}
+?>	<script src="js/play-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+<?php 
+	}
+?>	<script type="text/javascript">
 
 var MBahplay;
 

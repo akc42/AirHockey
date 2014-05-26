@@ -35,7 +35,7 @@
 
 */
 
-if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['t'])  && isset($_POST['state']) && isset($_POST['ahv'])) || (isset($_POST['cmd']) && !isset($_POST['oid'])))
+if(!(isset($_POST['user'])  && isset($_POST['pass'])&& isset($_POST['t'])  && isset($_POST['state'])) || (isset($_POST['cmd']) && !isset($_POST['oid'])))
 	die('Log - Hacking attempt - wrong parameters');
 $uid = $_POST['user']; //extra security 
 if ($_POST['pass'] != sha1("Air".$uid))

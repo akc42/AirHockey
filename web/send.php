@@ -31,8 +31,8 @@ if(!(isset($_POST['uid']) && isset($_POST['msg']) && isset($_POST['ahv']))) {
 list($utime,$now1) = explode(" ",microtime());
 $now1 .= substr($utime,2,3);
 
-$readpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/ack'.$_POST['uid'],'rb'); //This waits until an read request is outstanding
-$sendpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/msg'.$_POST['uid'],'r+b');
+$readpipe=fopen(AIR_HOCKEY_DATABASE.'ack'.$_POST['uid'],'rb'); //This waits until an read request is outstanding
+$sendpipe=fopen(AIR_HOCKEY_DATABASE.'msg'.$_POST['uid'],'r+b');
 $r=fread($readpipe,10); //not reading, but syncronising with other end (this will be satisfied as EOF as other side closes)
 fclose($readpipe);
 fwrite($sendpipe,"$".$_POST['msg'].'$'.$_POST['c']);

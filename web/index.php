@@ -88,10 +88,10 @@ require('./inc/timeout.inc');
 
 // We delete any old fifo(s) for this user (to clear out stale messages) and create new ones
 $old_umask = umask(0007);
-if(file_exists(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/msg".$uid)) unlink(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/msg".$uid);
-posix_mkfifo(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/msg".$uid,0660);
-if(file_exists(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid)) unlink(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid);
-posix_mkfifo(AIR_HOCKEY_DATABASE.AIR_HOCKEY_VARIANT."/ack".$uid,0660);
+if(file_exists(AIR_HOCKEY_DATABASE."msg".$uid)) unlink(AIR_HOCKEY_DATABASE."msg".$uid);
+posix_mkfifo(AIR_HOCKEY_DATABASE."msg".$uid,0660);
+if(file_exists(AIR_HOCKEY_DATABASE."ack".$uid)) unlink(AIR_HOCKEY_DATABASE."ack".$uid);
+posix_mkfifo(AIR_HOCKEY_DATABASE."ack".$uid,0660);
 umask($old_umask);
 
 function page_title() {
@@ -102,20 +102,29 @@ function head_content() {
 	global $uid,$time;
 ?> 
 	<link rel="stylesheet" type="text/css" href="css/airh.css"/>
-	<script src="js/mootools-core-1.4.5-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
+<?php 
+	if (defined('DEBUG')) {
+?>	<script src="js/mootools-core-1.5.0-full-nocompat.js" type="text/javascript" charset="UTF-8"></script> 
 	<script src="js/ladder.js" type="text/javascript" charset="UTF-8"></script>
+<?php 
+	} else {
+?>	<script src="js/mootools-core-1.5.0-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/ladder-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
+<?php 
+	}
+?>
 	<script type="text/javascript">
-
+<!--
 window.addEvent('domready', function() {
-	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>,ahv:"<?php echo AIR_HOCKEY_VARIANT; ?>"},
+	MBahladder.init({user: <?php echo $uid;?>,pass : '<?php echo sha1("Air".$uid); ?>', t:<?php echo $time ;?>},
 		<?php echo SPECTATOR; ?>,<?php echo get_param('POLL'); ?> );
 	document.id('exittoforum').addEvent('click', function() {
 		MBahladder.logout();	
 	});
 
 });
-	
-	</script>
+//-->	
+	</script><noscript>This application requires that Javascript is enabled in your browser!</noscript> 
 <?php
 }
 function content_title() {

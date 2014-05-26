@@ -30,8 +30,8 @@ if(!(isset($_POST['oid']) && isset($_POST['ahv']))) {
 <?php
 	exit;
 }
-$sendpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/ack'.$_POST['oid'],'r+b'); //Say I am ready for a send from the other end
-$readpipe=fopen(AIR_HOCKEY_DATABASE.$_POST['ahv'].'/msg'.$_POST['oid'],'rb');
+$sendpipe=fopen(AIR_HOCKEY_DATABASE.'ack'.$_POST['oid'],'r+b'); //Say I am ready for a send from the other end
+$readpipe=fopen(AIR_HOCKEY_DATABASE.'msg'.$_POST['oid'],'rb');
 fclose($sendpipe);//this tells other end it may now write to the pipe
 $response=fread($readpipe,400);
 

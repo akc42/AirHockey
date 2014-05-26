@@ -35,7 +35,7 @@ function content_title() {
 	echo 'Air Hockey Rules';
 }
 function menu_items() {
-?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>" alt="Exit to Clubroom"><img id="exittoforum" src="exit.gif" alt="Exit to Clubroom"/></a>
+?><a href="index.php" alt="Exit to Clubroom"><img id="exittoforum" src="exit.gif" alt="Exit to Clubroom"/></a>
 <?php
 }
 

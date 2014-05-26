@@ -5,7 +5,7 @@ allowing players to meet other players and initiate matches.
 A video which explains all this is available on YouTube at
 http://youtu.be/U2wpxycGq38
 
-The software is currently configured to use mootools 1.3. It is also
+The software is currently configured to use mootools 1.5. It is also
 configured to use a templating system so that it can sit within an
 existing site and look like it. Details can be seen by examining the
 code.
@@ -16,5 +16,5 @@ players.
 
 I am particularly proud of the high speed system for keeping the
 players up to date.  It seems to work quite well on most linux hosting
-systems (using apache) but rely on named pipes for communication
+systems (using apache or nginx/php-fpm) where it relies on named pipes for communication
 between the players.
