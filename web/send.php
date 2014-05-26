@@ -24,7 +24,7 @@ define('AIR_HOCKEY_DATABASE',	'/home/alan/dev/airhock/db/');
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
-if(!(isset($_POST['uid']) && isset($_POST['msg']) && isset($_POST['ahv']))) {
+if(!(isset($_POST['uid']) && isset($_POST['msg']))) {
 	echo '<error>Invalid Parameters</error>';
 	exit;
 }

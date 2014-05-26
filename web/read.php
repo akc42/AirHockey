@@ -25,7 +25,7 @@ define('AIR_HOCKEY_DATABASE','/home/alan/dev/airhock/db/');
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: -1"); // Date in the past
-if(!(isset($_POST['oid']) && isset($_POST['ahv']))) {
+if(!(isset($_POST['oid']))) {
 ?><error>Log - Hacking attempt - wrong parameters</error>
 <?php
 	exit;
