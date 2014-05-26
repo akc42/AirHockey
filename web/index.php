@@ -139,7 +139,7 @@ function main_content() {
 	global $db,$uid,$name;
 	$db->beginTransaction();
 ?>
-	<p> An explanation of how to play can be found <b><a href="rules.php?ahv=<?php echo AIR_HOCKEY_VARIANT; ?>">here</a></b></p>
+	<p> An explanation of how to play can be found <b><a href="rules.php?>">here</a></b></p>
 	<div id="matchlist">
 		<div id="matchlistheader">Recent and Current Matches</div>
 <?php

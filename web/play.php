@@ -181,8 +181,7 @@ window.addEvent('domready', function() {
 <?php
 }
 ?>			
-			},
-			"<?php echo AIR_HOCKEY_VARIANT; ?>"			
+			}			
 		);
 });
 window.addEvent('unload', function() {
@@ -242,7 +241,7 @@ function content_title() {
 	echo 'Air Hockey Match';
 }
 function menu_items() {
-?><a href="index.php?ahv=<?php echo $_GET['ahv'];?>"><img id="exittoforum" src="img/exit.gif" alt="Exit To Clubroom"/></a>
+?><a href="index.php"><img id="exittoforum" src="img/exit.gif" alt="Exit To Clubroom"/></a>
 <?php
 }
 

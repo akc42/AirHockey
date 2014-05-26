@@ -40,7 +40,7 @@ function get_param($name) {
 
 if(!file_exists(AIR_HOCKEY_DATABASE.'airhock.db')) {
 	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.'airhock.db');
-    $db->exec(file_get_contents('./database.sql'));
+    $db->exec(file_get_contents(realpath(dirname(__FILE__)).'/database.sql'));
 } else {
 	$db = new PDO('sqlite:'.AIR_HOCKEY_DATABASE.'airhock.db');
 }
