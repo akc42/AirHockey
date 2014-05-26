@@ -23,7 +23,7 @@
 define('DEBUG','yes'); //Comment out to get compressed js
 
 /* Following Definition must also exist in read.php and send.php */
-define('AIR_HOCKEY_DATABASE','/home/alan/dev/airhock/db/');
+define('AIR_HOCKEY_DATABASE','/home/alan/dev/test-db/airhock-dev/');
 
 
 
