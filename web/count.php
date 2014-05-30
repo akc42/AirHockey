@@ -19,7 +19,7 @@
     see <http://www.gnu.org/licenses/>.
 
 */
-require_once('./inx/db.inc');
+require_once('./inc/db.inc');
 require('./inc/timeout.inc');
 // Set up a user record with type = spectator
 $result=$db->query('SELECT count(*) as players FROM player WHERE state <> '.OFFLINE.' ;');
