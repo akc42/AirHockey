@@ -15,13 +15,13 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with AirHockey (file supporting/COPYING.txt).  If not, 
+    along with AirHockey (file supporting/COPYING.txt).  If not,
     see <http://www.gnu.org/licenses/>.
 
 */
 require_once('./inc/db.inc');
 require('./inc/timeout.inc');
-// Set up a user record with type = spectator
+// Count players who are not in the OFFLINE state
 $result=$db->query('SELECT count(*) as players FROM player WHERE state <> '.OFFLINE.' ;');
 if ($count=$result->fetchColumn()) {
     echo $count;

@@ -103,7 +103,7 @@ function head_content() {
 		} else {
 ?>	<script src="js/mootools-core-1.5.0-full-nocompat-yc.js" type="text/javascript" charset="UTF-8"></script> 
 	<script src="js/stream-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
-	<script src="js/model-min-<?php include('./inc/version.inc');?>l.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/model-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/scorer-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/scoreboard-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
 	<script src="js/match-min-<?php include('./inc/version.inc');?>.js" type="text/javascript" charset="UTF-8"></script>
