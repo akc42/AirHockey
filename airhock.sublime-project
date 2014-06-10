@@ -1,0 +1,12 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": ".",
+      "exclude_folders":[".settings"],
+      "exclude_files":[".project"]
+
+		}
+	]
+}
