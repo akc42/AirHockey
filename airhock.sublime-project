@@ -4,8 +4,8 @@
 		{
 			"follow_symlinks": true,
 			"path": ".",
-      "exclude_folders":[".settings"],
-      "exclude_files":[".project"]
+      "folder_exclude_patterns":[".settings"],
+      "file_exclude_patterns":[".project"]
 
 		}
 	]
